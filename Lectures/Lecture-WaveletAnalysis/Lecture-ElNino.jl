@@ -6,20 +6,18 @@ using InteractiveUtils
 
 # ╔═╡ d2361176-db34-450c-8721-ed4391b90e9c
 begin
-	using Base64
 	using CairoMakie
 	using ColorSchemes
 	using ColorTypes
+	using CSV
+	using ColorSchemes
 	using CommonMark
-	using ContinuousWavelets
-	using Distributions
-	using DSP
 	using FFTW
-	using LinearAlgebra
+	using DataFrames
 	using PlutoUI
-	using Random
 	using SpecialFunctions
 	using StatsFuns
+	using Statistics
 end
 
 # ╔═╡ 7795206a-d190-408b-946a-3be1cbc848d7
@@ -48,621 +46,208 @@ $(LocalResource("Pics/TimeDomainBanner.jpg"))
 
 # ╔═╡ 090ffe2f-b381-49ec-bc08-53219c690e77
 md"""
-# Wavelet Analysis
+# The El Niño–Southern Oscillation
 
 ***
 
-## PSD Varying Time-Series
-***
+- In this exercize we analyse the Niño3 sea surface temperature (SST) used as a measure of the amplitude of the El Niño–Southern Oscillation (ENSO).
 
-- The trigonometric basis functions used in the Fourier transform have an infinite extent and for this reason the Fourier transform may not be the best method to analyze non periodic time series data, such as the case of a localized event (e.g., a burst that decays over some time scale so that the PSD is also varying with time).
+- The Niño3 SST index is defined as the seasonal SST averaged over the central Pacific (5°S–5°N, 90°–150°W). 
 
-- We can (and actually do) evaluate the PSD for finite stretches of time series in order to detect its changes.
+- Data sources are discussed in [Torrence & Compo (1998)](https://ui.adsabs.harvard.edu/abs/1998BAMS...79...61T/abstract)
 
-- This approach (called *spectrogram*, or *dynamical power spectra analysis*, or even *windowed Fourier transform*) suffers from degraded spectral resolution and is sensitive to the specific choice of time series segmentation length.
-
-### Windowed Fourier transform
-***
-
-- The FT is performed on a sliding segment of length $T$ from a time series of time step $δt$ and total length $Nδt$, thus returning frequencies from $T^{−1}$ to $2δt^{−1}$ at each time step. 
-
-- The segments can be windowed with an arbitrary function such as a boxcar (no smoothing) or any other choice.
-
-- The WFT represents an inaccurate and inefficient method of time–frequency localization, as it imposes a scale or “response interval” T into the analysis. 
-
-- The inaccuracy arises from the aliasing of high- and low-frequency components that do not fall within the frequency range of the window. The inefficiency comes from the $T/(2δt)$ frequencies, which must be analyzed at each time step.
-
+- The seasonal means for the entire record have been removed to define an anomaly time series.
 
 """
 
 # ╔═╡ 6721746e-71e6-4d3d-a32a-6c0385986351
-md"""
-## Wavelets
-***
-
-- A popular family of basis functions is called wavelets.
-
-    - By construction, wavelets are localized in both frequency and time domains. 
-
-- Individual wavelets are specified by a set of *wavelet filter coefficients*. Given a wavelet, a complete orthonormal set of basis functions can be constructed by scalings and translations.
-
-- Different wavelet families trade the localization of a wavelet with its smoothness. Popular wavelets include “Mexican hat”, Haar and Daubechies wavelets. 
-
-- A wavelet is a “small wave,” where small derives from the fact that it is mostly limited to an interval of time. 
-
-- A (mother) wavelet $ψ$ has to satisfy two requirements: its integral must be zero and the integral of its square must be unity:
-
-```math
-\int_{-\infty}^\infty \Psi(t) dt = 0 \qquad \int_{-\infty}^\infty \Psi^2(t) dt = 1
-```
-
-- It is easy to see that these requirements imply that $ψ(t)$ is essentially non-zero only over a limited range of t and that it has to extend both above and below zero.
-
-$(LocalResource("Pics/wavelets.png"))
-
-- Three examples of wavelets. From left to right: Haar wavelet, mexican hat and morlet wavelet.
-"""
-
-# ╔═╡ caa79afb-d9cb-483f-87f3-05bfa215d047
-md"""
-For instance, the Mexican hat function is:
-
-```math
-m(x) = \frac{2}{\sqrt{3 \sigma} \pi^{\frac{1}{4}}} \left(1-\frac{x^2}{\sigma^2}\right) e^{\frac{-x^2}{2 \sigma^2}}
-```
-"""
-
-# ╔═╡ efe4400e-dce7-40ab-b142-6ac560b98eaf
 begin
-	function mexican_hat(x, mu, sigma)
-	    term1 = 2 / (sqrt(3 * sigma) * pi^0.25)
-	    term2 = (1 - x^2 / sigma^2)
-	    term3 = exp(-x^2 / (2 * sigma^2))
-	    return term1 * term2 * term3
-	end
-	
-	xvals = -10:0.1:10
-	yvals = mexican_hat.(xvals, 0, 1) 
-	
-	fig, ax, plt = lines(xvals, yvals, 
-	    axis = (
-	        title = "Mexican Hat Wavelet",
-	        xlabel = "x",
-	        ylabel = "ψ(x)"
-	    )
-	)
-	
-	fig
-end
-
-# ╔═╡ 4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
-md"""
-- The Mexican hat function/wavelet is actually the rescaled negative second derivative of the gaussian function:
-
-```math
-g(x) = \frac{1}{\sigma \sqrt{2 \pi}} e^{\frac{- (x-mu)^2}{2 \sigma^2}}
-```
-"""
-
-# ╔═╡ edcc2680-4e10-41a1-a55f-be64b0ae8911
-md"- And a Morlet wavelet is nothing more than a sine wave multiplied by a Gaussian envelope:"
-
-# ╔═╡ e05f97a3-92ee-40b8-8ec9-ed31b7444f77
-function morlet(t, ω0=6.0)
-	# t: time vector
-	# ω0: central frequency (typically >= 5 for admissibility)
-    # The normalization factor (π^(-1/4)) is often omitted 
-    # for simple visualization purposes
-    return exp.(im * ω0 .* t) .* exp.(-t.^2 ./ 2)
+	df = CSV.read("ElNino_data.csv", DataFrame; comment="#") 
+	t   = df[:,1]  # time (year)
+	sst = df[:,2]  # el nino signal (sea surface temperature SST)
+	x   = df[:,3];  # el nino temperature anomaly
 end;
-
-# ╔═╡ a3febf86-fb21-4f2a-9699-0597b21fcd46
-begin
-	time_range = range(-5, 5, length=1000)
-	ω0_obs = Observable(1.0)
-	
-	real_part = lift(w -> real.(morlet(time_range, w)), ω0_obs)
-	imag_part = lift(w -> imag.(morlet(time_range, w)), ω0_obs)
-	envelope  = lift(w -> abs.(morlet(time_range, w)), ω0_obs)
-	
-	figmor = Figure(size = (800, 600))
-	axmor  = Axis(figmor[1, 1], 
-	           title = lift(w -> "Morlet Wavelet (ω₀ = $(round(w, digits=1)))", ω0_obs),
-	           xlabel = "Time", ylabel = "Amplitude")
-	
-	# 3. Plot using the Observables
-	lines!(axmor, time_range, real_part, color = :blue, label = "Real", linewidth = 2)
-	lines!(axmor, time_range, imag_part, color = :red, linestyle = :dash, label = "Imaginary")
-	lines!(axmor, time_range, envelope,  color = :black, linewidth = 1.5, label = "Envelope")
-	
-	axislegend(axmor)
-	ylims!(axmor, -1.1, 1.1) # Keep the y-axis stable
-	
-	# 4. Record the Animation
-	# This loops through frequencies from 1 to 15
-	frames = range(1, 15, length=120)
-	
-	anim = record(figmor, "Pics/morlet_animation.mp4", frames; framerate = 30) do w
-	    ω0_obs[] = w
-	end
-end;
-
-# ╔═╡ 34602c8b-5977-446b-9af0-0911704e1199
-LocalResource("Pics/morlet_animation.mp4")
-
-# ╔═╡ 0bac9591-9018-47af-b567-ec756f8c6c42
-cm"""
-- A continuous wavelet analysis (CWT) compares the signal to shifted and compressed or stretched versions of a wavelet. Stretching or compressing a function is collectively referred to as *dilation* or *scaling* and corresponds to the physical notion of scale. By comparing the signal to the wavelet at various scales and positions, you obtain a function of two variables.
-
-- A wavelet can therefore be shifted by ``τ`` and dilated by a scale parameter ``σ``:
-
-
-```math
- \Psi_{\tau,\sigma}(t) = \frac{1}{\sqrt{\sigma}} \Psi\left(\frac{t-\tau}{\sigma}\right) 
-```
-
-- Again ``ψ(t)`` is essentially non-zero only over a limited range of ``t`` and that it has to extend both above and below zero.
-
-
-    
-- The wavelet transform of a function ``f(t)`` is computed by correlating ``f(t)`` with the complex conjugate of ``ψ_{τ,σ}(t)`` (wavelets can also be complex functions):
-
-```math
-W[f(\tau,\sigma)] = \int_{-\infty}^\infty f(t) \Psi_{\tau,\sigma}^*(t)dt
-```
-    
-- By continuously varying the values of the scale parameter, ``σ``, and the position parameter, ``τ``, you obtain the CWT coefficients that are typically shown by a 2D plot.
-
-
-"""
-
-# ╔═╡ e9ad5fc9-21f8-48b6-a103-0321607a9a12
-cm"""
-- Again referring to the Morlet wavelet, we can write it as: ``w(t|t_0, f_0, Q) = A e^{i 2 \pi f_0 (t-t_0)} e^{-f_0^2 (t-t_0)^2 / Q^2}``, where ``t_0``  is the central time, ``f_0``  is the central frequency, and the dimensionless parameter ``Q`` is a model parameter which controls the width of the frequency window.
-
-$(LocalResource("Pics/waveletex1.png"))
-    
-- The Fourier transform of the previous wavelet is:
-
-```math
-W(t|t_0, f_0, Q) = \left( \frac{\pi}{f_0^2/Q^2} \right)^{1/2} \exp[i 2 \pi f_0 t_0] \exp[-\frac{\pi^2 Q^2 (f-f_0)^2}{Q f_0^2}]
-```
-
-- Roughly speaking, one might think to it as a “matched filters”.
-
-- Given a signal ``h(t)``, its wavelet transform is given by the convolution:
-
-```math
-H_w(t_0; f_0, Q) = \int_{-\infty}^\infty h(t)w(t|t_0, f_0, Q)
-```
-    
-- By the convolution theorem, we can write the Fourier transform of ``H_w``  as the pointwise product of the Fourier transforms of ``h(t)`` (e.g. by a DFT) and of ``w(t | t_0, f_0, Q)``.
-    
-- Then, the wavelet PSD, can be defined by:
-
-```math
-     {\rm PSD}_w(f_0, t_0; Q) = |H_w(t_0; f_0, Q)|^2
-```
-    
-- As said, unlike the typical Fourier-transform PSD, the wavelet PSD allows detection of frequency information which is localized in time.
-
-- A scaled wavelet is evaluated for various values of the scale ``\sigma`` (usually taken to be multiples of the lowest possible frequency), as well as all values of ``\tau`` between the start and end dates. A two-dimensional picture of the variability can then be constructed by plotting the wavelet amplitude and phase.
-
-- This is indeed one the approaches (we are simplifying a lot here…) used in the, e.g., LIGO/Virgo projects to detect gravitational wave events. 
-
-- Because of the noise level in the GW measurements, rather than a standard wavelet they instead use functions which are tuned to the expected form of the signal (i.e., matched filters).
-
-
-        
-- Example with a localized Gaussian noise:
-    
-$(LocalResource("Pics/waveletex2.png"))
-
-- The upper panel shows the signal. The middle panel shows an example wavelet and the lower panel shows the power spectral density as a function of the frequency ``f_0`` and the time ``t_0``, for ``Q = 1.0``.
-
-- And now a different example:
-
-$(LocalResource("Pics/waveletex3.png"))
-
-- The upper panel shows the input signal, which consists of a Gaussian spike in the presence of white (Gaussian) noise. The middle panel shows again an example wavelet. The lower panel shows the PSD as a function of the frequency ``f_0`` and the time ``t_0``, for ``Q = 0.3``.
-"""
-
-# ╔═╡ a37c5419-797a-4626-8138-2f2d5ab8f416
-md"""
-#### Exercize: wavelet analysis of a chirp signal
-***
-
-- Let's define a "chirp" signal:
-"""
-
-# ╔═╡ f3f93bff-1c39-4652-aa41-0b7d88ad9caf
-begin
-	function chirp(t, T, A, phi, omega, beta)
-	    signal = A .* sin.(phi .+ omega .* (t .- T) .+ beta .* (t .- T).^2)
-	    signal[t .< T] .= 0
-	    return signal
-	end
-	
-	N = 4096
-	t = range(-50,50,N)
-	h_true = chirp(t, -20, 0.8, 0, 0.2, 0.02)
-	d = Normal(0.,1.)
-	h = h_true .+ rand(d,N)
-end;
-
-# ╔═╡ 13fbe8ec-5266-4b72-b85e-f171c8c7ba90
-begin
-	fg1 = Figure()
-	
-	ax1fg1 = Axis(fg1[1, 1],
-	    xlabel="Time (s)",
-	    ylabel="Flux (arbitrary units)",
-	    )
-	
-	lines!(t,h,label="Chirp signal")
-	lines!(t,h_true,label="Chirp signal without noise")
-	
-	axislegend()
-	
-	fg1
-end
-
-# ╔═╡ 8550f405-2819-4a33-9cd2-c72dbbb04a87
-md"""
-- Let's now compute a Fourier periodogram
-"""
-
-# ╔═╡ 0e3b9aaf-0d91-4c60-8118-5624273d3983
-begin
-	# We use the DSP package
-	
-	dt = 100/4096
-	psd = periodogram(h, fs=1/dt)
-	
-	fg2 = Figure()
-	
-	ax1fg2 = Axis(fg2[1, 1],
-	    xlabel = "Frequency (Hz)",
-	    ylabel = "Power",
-	    )
-	
-	lines!(psd.freq,psd.power,color=:blue,label="PSD")
-	
-	xlims!(0,1)
-	
-	axislegend()
-	
-	
-	fg2
-end
-
-# ╔═╡ 7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
-md"""
-- The periodogram shows power at the lowest frequencies with a break at frequencies higher than $\sim 0.5$Hz, i.e. for time-scales shorter than $\sim 1$s.
-
-- Let's try to study the time-evolution of the PSD by a *spectrogram*:
-"""
-
-# ╔═╡ 738b344d-e2ae-4f99-b755-38c0dcdc3da3
-begin
-	tper = spectrogram(h,div(length(h),5),0,fs=1/dt)
-	
-	fg3 = Figure()
-	
-	axfg3 = Axis(fg3[1, 1],
-	    xlabel="Time (s)",
-	    ylabel="Frequency (Hz)",
-	    )
-	
-	p = heatmap!(tper.time.-50,tper.freq,tper.power',colorscale=log10)
-	Colorbar(fg3[:, end+1], p)
-	
-	ylims!(0,1)
-	
-	fg3
-	
-end
-
-# ╔═╡ 576eb9f0-40c6-4a9a-9504-d562452541e6
-md"""
-- And, it is indeed clearly visible a signal appearing at about -20s with frequncy increasing with time.
-
-- Nevertheless, this is not an optimal solution since the number of bins is arbitrary, and clearly we reduce the resolution of the analysis decreasing the length of the time-series.
-
-
-
-- This is where a wavelet analysis can give a contribution.
-"""
-
-# ╔═╡ 6e81c233-8aa5-4ab4-a011-c56ad0026ea9
-begin
-	c = wavelet(Morlet(π), Q=8, β=1, averagingType=NoAve(), p=4)
-	
-	res = cwt(h, c)
-end;
-
-# ╔═╡ 6a71ccd0-8ee7-4c39-b8c7-88b398e98d1a
-begin
-	fg4 = Figure()
-	
-	axfg4 = Axis(fg4[1, 1],
-	    xlabel=L"Time index $\rightarrow$",
-	    ylabel=L"Frequency index $\rightarrow$",
-	    xticklabelsvisible=false,
-	    yticklabelsvisible=false,
-	    )
-	
-	p4 = heatmap!(abs.(res))
-	Colorbar(fg4[:, end+1], p4)
-	
-	fg4
-end
-
-# ╔═╡ f153fdfa-57d5-4112-8d59-847ee1ec06ca
-md"""
-- And we can appreciate how the formation and evolution of the signal is clealry visible in the plot.
-"""
-
-# ╔═╡ 138dc591-5a42-4ae7-8b34-863c947b59e3
-md"""
-
-## Wavelets: a few more technical concepts
-***
-
-### What is the *scale* parameter?
-***
-
-- There could be some confusion between the *scale* of a wavelet and the *frequency", the *scale* matches the extent over time of the wavelet. 
-
-- Essentially, a mother wavelet function is built and has an extent over time of *base-duration* and the Continuous Wavelet Transform (CWT) is performed for each value of ``scales``, `s`, with a child wavelet of duration $base-duration \times s$. 
-
-- This child wavelet is convolved (it's like a moving average with the child wavelet instead of ones for the window) with the data array.
-
-- The mother wavelet is described by the function of time $\Psi(t)$
-- The child function at scale $s$ is $\Psi_{s,x}(t) = \frac{1}{\sqrt{s} } \frac{\Psi(t-x)}{s}$
-    - where $x$ is the shift parameter used to convolve the signal being analysed with the wavelet.
-
-
-
-- The frequency associated to the scale value $s$ is $frequency = \frac{central-frequency}{s}$, where the $central-frequency$ is a parameter of the chosen wavelet.
-
-- The central frequency corresponds to the signal frequency to which the wavelet function will be the most sensitive for scale $s=1$.
-"""
-
-# ╔═╡ 463ed10c-6321-4e26-ae0d-1bc5b5eb6754
-LocalResource("Pics/centralfrequency.png")
-
-# ╔═╡ bf197511-19c5-443b-a541-7608b61518c4
-md"""
-- In the right plot (Frequency), the yellow vertical line show the location of the peak: this is the *central frequency* of the wavelet.
-
-- The bandwidth parameter selects how much the wavelet is sensitive to the frequencies around the central one. On the frequency plot, the bandwidth is represented by the width of the bell shaped curve (also called the *wings*).
-"""
-
-# ╔═╡ 03a06450-8121-48fc-bd7f-d129c52d3f64
-md"""
-### So, which period value correspond to a given *scale*?
-
-
-- Wavelet functions are designed to be compact in time and frequency. When looking at the plot above, you can see that the oscillations falls quickly around the center of the function. This *compactness in time* allow the scalogram to show local measurements of the signal *variations*. In fact, from the considerations above: $period =\frac{s}{central-frequency}$
-
-- Of course, please pay attention that, at a given scale, the wavelet sensitivity is maximum to the central frequency but the bandwidth is not null, hence it will also probe frequency around the *central frequency* value.
-
-- This will appear on scaleogram as a smoothing effect along the Y axis. This property will also manifest in time domain where the signal decrease *smoothly* to zero around the maximum oscillation amplitude.
-
-> For this reason it is probably better to use the term of *pseudo period* to describe the time scale. This property manifest on the *scaleograms* wih some amount of fuzziness around the signal features which are well localized in time. This fuzziness is proportional to the scale $s$.  
-
-- Another important factor is the choice of a set of scaling parameters $s$, such that we adequately sample all the frequencies present in our time series. 
-- We typically first choose the smallest resolvable scale, $s_0$, as some multiple of our time resolution of the input data, $\delta t$. 
-- The larger scales (longer periods) are (often) chosen as power-of-two multiples of this smallest scale.
-- A common choice for the scake scould then be: $s_j = s_0 2^{j\delta_j}$, for $j = 1, ..., J$.
-- And therefore the maximum scale becomes: $J = \delta_j^{-1} \log_2(N\delta t/s_0)$.
-
-> The difference between period and scale is essentially that the scale refers to the width of the wavelet. As the scale increases and the wavelet gets wider, it includes more of the time series, and the finer details get smeared out.
-> The scale can be defined as the distance between oscillations in the wavelet (e.g. for the Morlet), or it can be some average width of the entire wavelet (e.g. for the Marr or Mexican hat).
-
-- The period (or inverse frequency) is the approximate Fourier period that corresponds to the oscillations within the wavelet. For all wavelets, there is a one-to-one relationship between the scale and period. The relationship can be derived by finding the wavelet transform of a pure cosine wave with a known Fourier period, and then computing the scale at which the wavelet power spectrum reaches its maximum.
-
-"""
-
-# ╔═╡ 9d0b25ab-b8bc-455c-bf42-40f0d085be08
-md"""
-### Example: data with two periodic signals
-***
-"""
-
-# ╔═╡ 1c4ceb56-af5c-4f12-860d-d64380e7a0ca
-begin
-	n = 300
-	time = 0:(n-1)          # same as np.arange(n)
-	
-	p1 = 20;  f1 = 1 / p1
-	p2 = 60;  f2 = 1 / p2
-	
-	data = cos.(2π * f1 * time) .+ 0.6 * cos.(2π * f2 * time)
-end;
-
-# ╔═╡ 46e6b3f3-0376-4a30-9b70-16d0f35a2f86
-begin
-	figex = Figure()
-	    
-	ax1 = Axis(figex[1,1],
-	        xlabel = "time (s)",
-	        title  = "Time domain signal with two cos() waves with period p1=$p1 s and p2=$p2 s"
-	        )
-	
-	lines!(ax1, time, data; color = :royalblue)
-	
-	figex
-end
-
-# ╔═╡ 2861b272-16b1-4176-bc77-494b809908e1
-begin
-	dtex = mean(diff(time))          # assume quasi-regular sampling
-	nvoices = 8
-	noctave = 6.5
-	s0 = 1.0
-	
-	wave, period, power, global_ws, variance, scale, coi = cwt_tc(data,dtex,noctave = noctave, nvoices= nvoices, s0=s0)
-end;
-
-# ╔═╡ 83c25944-1fae-4207-a423-78aa974314f5
-begin
-	lminp = minimum(period)
-	lmaxp = maximum(period)
-	#yticks_pos = lminp:1:lmaxp
-	#yticks_lbl = string.(Int.(yticks_pos))
-	
-	figtc1 = Figure(size = (1000, 650))
-	
-	axtc1 = Axis(figtc1[1,1],
-	    xlabel = "time (s)",
-	    ylabel = "period (s)",
-	    title  = "Scaleogram with linear period yscale",
-	    #yticks = (yticks_pos, yticks_lbl),
-	    # NO limits=(…, lmaxp, lminp) here — let auto-range work
-	)
-	
-	ylims!(axtc1, round(minimum(period), RoundDown), round(maximum(period), RoundUp))
-	
-	# Wavelet power spectrum
-	hm = heatmap!(axtc1, time, period, power';
-	    colormap     = :turbo,
-	    colorrange   = (0, quantile(vec(power), 0.98)),
-	    interpolate  = false,                # critical for CairoMakie + possibly irregular t
-	    transparency = true,
-	    alpha        = 0.65
-	)
-	
-	# Cone of influence
-	lines!(axtc1, time, coi, color=:black, linewidth=2.2, label="COI")
-	
-	
-	axislegend(axtc1, position = :rt)
-	
-	Colorbar(figtc1[1,2], hm,
-	        label = "power",
-	        height = Relative(0.7),
-	        width = 18
-	    )
-	
-	axtc1.yreversed=true
-	
-	# Annotations at original p1/p2 (they'll land approximately correctly)
-	v = n ÷ 2
-	text!(axtc1, v, p1; text="p1=$(p1)s", align=(:center, :bottom),
-	      color=:white, fontsize=25, strokecolor=:white, strokewidth=1.5)
-	text!(axtc1, v, p2; text="p2=$(p2)s", align=(:center, :bottom),
-	      color=:white, fontsize=25, strokecolor=:white, strokewidth=1.5)
-	
-	figtc1
-end
-
-# ╔═╡ b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
-md"""
-- The two periodic signals do appear as continuous stripes along the time axis (X). The wavelet captures the signal at its frequency of sensitivity.  
-    
-- The visible height of the two signals expands with the scale value. This happens becausethe wavelet signal is scaled by a factor $s$.
-
-- The solid black lines identify the Cone Of Influence (COI), they represent the locations where the data is strongly affected by border effects due to the extent in time of the child wavelet.
-"""
-
-# ╔═╡ 517ff59c-aee6-4e66-b87c-e1e16921a758
-md"""
-### Effect of  holes in data
-***
-
-- In real life, data has holes, the observed phenomenon amplitude can vary over time, etc.
-
-- The following example has a hole at the beginning and a ramp to zero is applied at the end to get some hint on how these effects do appear on the *scaleogram*. 
-"""
-
-# ╔═╡ c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
-begin
-	data2 = copy(data)            # explicit copy is usually safer
-	
-	data2[50:80] .= 0
-	
-	nholes = length(data2)
-	data2[151:end] .*= (n-150:-1:1) ./ (n-150)
-end;
-
-# ╔═╡ 579ec13a-188a-4d38-957e-666c62e6231d
-begin
-	figtc2 = Figure()
-	    
-	ax1tc2 = Axis(figtc2[1,1],
-	        xlabel = "time (s)",
-	        title  = "Adding a hole and extinction in the data stream"
-	        )
-	
-	lines!(ax1tc2, time, data; color = :cyan)
-	lines!(ax1tc2, time, data2; color = :royalblue)
-	
-	figtc2
-end
-
-# ╔═╡ 7433ebb9-bdb5-4478-bf81-5246f2603a88
-waveh, periodh, powerh, global_wsh, varianceh, scaleh, coih = cwt_tc(data2, dtex, noctave = noctave, nvoices= nvoices, s0=s0);
-
-# ╔═╡ 254d346e-8861-4bbf-ac15-f49d0d8c52d3
-begin
-	lminph = minimum(periodh)
-	lmaxph = maximum(periodh)
-	#yticks_pos = lminp:1:lmaxp
-	#yticks_lbl = string.(Int.(yticks_pos))
-	
-	figtc3 = Figure(size = (1000, 650))
-	
-	axtc3 = Axis(figtc3[1,1],
-	    xlabel = "time (s)",
-	    ylabel = "period (s)",
-	    title  = "Scaleogram with linear period yscale",
-	    #yticks = (yticks_pos, yticks_lbl),
-	    # NO limits=(…, lmaxp, lminp) here — let auto-range work
-	)
-	
-	ylims!(axtc3, round(minimum(periodh), RoundDown), round(maximum(periodh), RoundUp))
-	
-	# Wavelet power spectrum
-	hmtc3 = heatmap!(axtc3, time, periodh, powerh';
-	    colormap     = :turbo,
-	    colorrange   = (0, quantile(vec(power), 0.98)),
-	    interpolate  = false,                # critical for CairoMakie + possibly irregular t
-	    transparency = true,
-	    alpha        = 0.65
-	)
-	
-	# Cone of influence
-	lines!(axtc3, time, coih, color=:black, linewidth=2.2, label="COI")
-	
-	
-	axislegend(axtc3, position = :rt)
-	
-	Colorbar(figtc3[1,2], hmtc3,
-	        label = "power",
-	        height = Relative(0.7),
-	        width = 18
-	    )
-	
-	axtc3.yreversed=true
-	
-	# Annotations at original p1/p2 (they'll land approximately correctly)
-	vh = nholes ÷ 2
-	text!(axtc3, vh, p1; text="p1=$(p1)s", align=(:center, :bottom),
-	      color=:white, fontsize=25, strokecolor=:white, strokewidth=1.5)
-	text!(axtc3, vh, p2; text="p2=$(p2)s", align=(:center, :bottom),
-	      color=:white, fontsize=25, strokecolor=:white, strokewidth=1.5)
-	
-	figtc3
-end
 
 # ╔═╡ cf2a10d9-12c8-46ca-8493-0d902f153932
-md"""
-- As you can see, the scale influence not only the sensitivity on the Y axis but has also a smoothing effect on the X axis: the second cos() line at period does not "see" the first hole in the data, but the signal amplitude has diminished.
+begin
+	fig_ts = Figure(size = (900, 580))
+	    
+	ax1 = Axis(fig_ts[1,1],
+	        xlabel = "time (year)",
+	        ylabel = "SST (°C)",
+	        title  = "El Niño – Sea Surface Temperature"
+	        )
+	
+	lines!(ax1, t, sst; color = :royalblue)
+	
+	ax2 = Axis(fig_ts[2,1],
+	        xlabel = "time (year)",
+	        ylabel = "Temperature Anomaly (°C)",
+	        title  = "El Niño – Anomaly"
+	        )
+	
+	lines!(ax2, t, x; color = :crimson)
+	
+	fig_ts
+end
 
-- The second observation is the apparition on a weak spurious line at period~30. This is due to the sharp cut applied on the data between 50 and 100. This effect is another example of aliasing in frequency.
+# ╔═╡ ea016e4b-21c6-4e84-a646-444d6fb9a1b5
+begin
+	# ────────────────────────────────────────────────
+	#  Wavelet parameters
+	# ────────────────────────────────────────────────
+	dt = mean(diff(t))          # assume quasi-regular sampling
+	nvoices = 16
+	noctave = 5
+	s0 = 1.0
+end;
+
+# ╔═╡ d87f7818-4dd9-457b-b15b-6056df5e4683
+wave, period, power, global_ws, variance, scale, coi = cwt_tc(x,dt,noctave = noctave, nvoices= nvoices, s0=s0);
+
+# ╔═╡ 00d6567b-5706-4cd8-9e01-567a8d36e150
+begin
+	# Significance testing
+	lag1 = 0.72
+	signif, fft_theor = wave_signif(variance, dt, scale, 0, lag1)
+	
+	sig95 = signif .* ones(length(x))'          # (J+1) × N
+	sig95 = power ./ sig95                      # ratio > 1 → significant
+	
+	# Global wavelet spectrum significance
+	dof = length(x) .- scale
+	global_signif, _ = wave_signif(variance, dt, scale, 1, lag1, -1, dof)
+end;
+
+# ╔═╡ 2b63c7ed-51da-4415-a380-000db490a137
+begin
+	# ────────────────────────────────────────────────
+	#  Wavelet power spectrum (heatmap + contour + COI)
+	# ────────────────────────────────────────────────
+	log_period = log2.(period)
+	lminp = floor(minimum(log_period))
+	lmaxp = ceil(maximum(log_period))
+	yticks_pos = lminp:1:lmaxp
+	yticks_lbl = string.(Int.(2 .^ yticks_pos))
+end;
+
+# ╔═╡ 90ec63d7-5694-4e2f-8420-11923054541b
+begin
+	fig_wave = Figure(size = (1000, 650))
+	
+	ax = Axis(fig_wave[1,1],
+	    xlabel = "time (year)",
+	    ylabel = "period (years)",
+	    title  = "Wavelet Power Spectrum (El Niño)",
+	    yticks = (yticks_pos, yticks_lbl),
+	    # NO limits=(…, lmaxp, lminp) here — let auto-range work
+	)
+	
+	# Optional: force nice round limits after plotting if needed
+	ylims!(ax, round(minimum(log_period), RoundDown), round(maximum(log_period), RoundUp))
+	
+	
+	# Wavelet power spectrum
+	hm = heatmap!(ax, t, log_period, power';
+	    colormap     = :turbo,
+	    colorrange   = (0, quantile(vec(power), 0.98)),
+	    interpolate  = false,                # critical for CairoMakie + possibly irregular t
+	    transparency = true,
+	    alpha        = 0.65
+	)
+	
+	
+	# Cone of influence
+	lines!(ax, t, log2.(coi), color=:black, linewidth=2.2, label="COI")
+	
+	# Then your significance contourf! (which should work fine without interpolate)
+	contourf!(ax, t, log_period, sig95';
+	    levels     = [1.0, maximum(sig95) + 1.0],
+	    colormap   = cgrad([:transparent, ColorTypes.RGBA(0.0f0, 0.0f0, 0.0f0, 0.18f0)]),
+	    extendhigh = :auto,
+	    transparency = true
+	)
+	
+	
+	axislegend(ax, position = :rt)
+	
+	Colorbar(fig_wave[1,2], hm,
+	        label = "power",
+	        height = Relative(0.7),
+	        width = 18
+	    )
+	
+	ax.yreversed=true
+	
+	fig_wave
+end
+
+# ╔═╡ 4764ec57-550b-4afb-855e-6838e444b622
+md"""
+- The figure shows that the power is concentrated within the ENSO band of 2–8 years, although there is appreciable power at longer periods. 
+
+- It is also possible to see variations in the frequency of occurrence and amplitude of El Niño (warm) and La Niña (cold) events.
+    - During 1875–1920 and 1960–90 there were many warm and cold events of large amplitude, while during 1920–60 there were few events.
+    - From 1875–1910, there was a slight shift from a period near 4 yr to a period closer to 2 yr, while from 1960–90 the shift is from shorter to longer periods.
 """
+
+# ╔═╡ fc09bcf9-6512-4881-babb-52a0e7f8ccdf
+md"""
+### Cone of influence
+***
+
+- Because one is dealing with finite-length time series, errors will occur at the beginning and end of the wavelet power spectrum, as the Fourier transform assumes the data is cyclic.
+- One solution is to pad the end of the time series with zeroes before doing the wavelet transform and then remove them afterward (there are othe recipes, anyway, such as cosine damping, etc.)
+- Here, the time series is padded with sufficient zeroes to bring the total length `N` up to the next-higher power of two, thus limiting the edge effects and speeding up the Fourier transform.
+- Padding with zeroes introduces discontinuities at the endpoints and, as one goes to larger scales, decreases the amplitude near the edges as more zeroes enter the analysis.
+
+- The cone of influence (COI) is the region of the wavelet spectrum in which edge effects become important and is defined here as the e-folding time for the autocorrelation of wavelet power at each scale.
+- This e-folding time is chosen so that the wavelet power for a discontinuity at the edge drops by a factor $e^{−2}$ and ensures that the edge effects are negligible beyond this point.
+"""
+
+# ╔═╡ 83785073-c8da-4ceb-a7f2-685cd6e920f1
+md"""
+### Theoretical spectrum and significance levels
+***
+
+- To determine significance levels for wavelet spectra, one first needs to choose an appropriate background spectrum.
+- It is then assumed that different realizations of the geophysical process will be randomly distributed about this mean or expected background, and the actual spectrum can be compared against this random distribution.
+- For many geophysical phenomena, an appropriate background spectrum is either white noise (with a flat Fourier spectrum) or red noise (increasing power with decreasing frequency).
+
+
+- A simple model for red noise is the univariate lag-1 autoregressive (AR(1), or Markov) process.
+"""
+
+# ╔═╡ dd8bfd81-5e0d-4cb7-887a-dfacf1ede27c
+begin
+	fig_global = Figure(size = (780, 520))
+	
+	axg = Axis(fig_global[1,1],
+	    xlabel = "period (years)",
+	    ylabel = "log₂(power)",
+	    title  = "Global Wavelet Power Spectrum",
+	    xreversed = true,
+	    xticks = (yticks_pos, yticks_lbl),
+	    # NO limits=... here — auto-range + reversal handles it
+	)
+	
+	lines!(axg, log_period, vec(log2.(global_ws)),
+	    color = :dodgerblue,
+	    linewidth = 2.5,
+	    label = "global wavelet spectrum"
+	)
+	
+	scatter!(axg, log_period, vec(log2.(global_signif)),
+	    color = :black,
+	    markersize = 8,
+	    strokewidth = 0.8,
+	    label = "95% significance (red noise)"
+	)
+	
+	axislegend(axg, position = :rt)
+	
+	fig_global
+end
 
 # ╔═╡ bde447ae-3998-4a1a-8e4e-32f97b2854a1
 md"""
@@ -670,19 +255,7 @@ md"""
 
 Material and papers related to the topics discussed in this lecture.
 
-- [Belloni & Bhattacharya (2022) - "Basics of Fourier Analysis for High-Energy Astronomy”](https://ui.adsabs.harvard.edu/abs/2022hxga.book....7B/abstract)
-- [Ivezić et al. (2020) - "Statistics, Data Mining, and Machine Learning in Astronomy"](https://ui.adsabs.harvard.edu/abs/2020sdmm.book.....I/abstract)
-"""
-
-# ╔═╡ c4b73630-ba8d-4403-9b7b-b498eac9792b
-md"""
-## Further Material
-
-Papers for examining more closely some of the discussed topics.
-
 - [Torrence & Compo (1998) - "A Practical Guide to Wavelet Analysis"](https://ui.adsabs.harvard.edu/abs/1998BAMS...79...61T/abstract)
-
-
 """
 
 # ╔═╡ af38d725-6e0f-4958-85bb-1be029ba3fb5
@@ -690,7 +263,7 @@ md"""
 ### Credits
 ***
 
-This notebook contains material obtained from [https://www.astroml.org/book_figures/chapter10/fig_chirp2_PSD.html](https://www.astroml.org/book_figures/chapter10/fig_chirp2_PSD.html), [https://github.com/alsauve/scaleogram/blob/master/doc/scale-to-frequency.ipynb](https://github.com/alsauve/scaleogram/blob/master/doc/scale-to-frequency.ipynb), [https://paos.colorado.edu/research/wavelets/wavelet1.html](https://paos.colorado.edu/research/wavelets/wavelet1.html0), [https://paos.colorado.edu/research/wavelets/faq.html](https://paos.colorado.edu/research/wavelets/faq.html). 
+This notebook contains material obtained from [https://github.com/berndblasius/WaveletAnalysis/tree/masterl](https://github.com/berndblasius/WaveletAnalysis/tree/master). 
 """
 
 # ╔═╡ 241907cb-1fb0-4963-8bb9-7894136e43de
@@ -703,8 +276,8 @@ cm"""
     <td>Next lecture</td>
   </tr>
   <tr>
-    <td><a href="./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl">Science case about variable stars</a></td>
-    <td><a href="./open?path=Lecture-WaveletAnalysis/Lecture-ElNino.jl">Science case about climate data</a></td>
+    <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis//Lecture-Wavelet-Analysis.jl">Lecture about wavelet analysis</a></td>
+    <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl">Lecture about time domain analysis</a></td>
   </tr>
  </table>
 
@@ -721,31 +294,27 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-ContinuousWavelets = "96eb917e-2868-4417-9cb6-27e7ff17528f"
-DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
-Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 
 [compat]
+CSV = "~0.10.16"
 CairoMakie = "~0.15.9"
 ColorSchemes = "~3.31.0"
 ColorTypes = "~0.12.1"
 CommonMark = "~1.0.1"
-ContinuousWavelets = "~1.1.8"
-DSP = "~0.8.4"
-Distributions = "~0.25.123"
+DataFrames = "~1.8.1"
 FFTW = "~1.10.0"
-PlutoUI = "~0.7.79"
+PlutoUI = "~0.7.80"
 SpecialFunctions = "~2.7.1"
 StatsFuns = "~1.5.2"
 """
@@ -756,12 +325,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "35971b2a7181bc37f691acbdd275b7170d8797fc"
-
-[[deps.ANSIColoredPrinters]]
-git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
-uuid = "a4c015fc-c6ff-483c-b24f-f7ea428134e9"
-version = "0.0.1"
+project_hash = "79e5c589ae44bb28fef300067ffe1ddc733d7c62"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -848,11 +412,6 @@ git-tree-sha1 = "bca794632b8a9bbe159d56bf9e31c422671b35e0"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
 
-[[deps.Bessels]]
-git-tree-sha1 = "4435559dc39793d53a9e3d278e185e920b4619ef"
-uuid = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
-version = "0.2.8"
-
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -879,6 +438,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
+
+[[deps.CSV]]
+deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
+git-tree-sha1 = "8d8e0b0f350b8e1c91420b5e64e5de774c2f0f4d"
+uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+version = "0.10.16"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
@@ -957,11 +522,14 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "019ad9e55bb3549403f2d5a9b314fbb29a806ecb"
 uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 version = "1.0.1"
-weakdeps = ["Markdown", "MarkdownAST"]
 
     [deps.CommonMark.extensions]
     CommonMarkMarkdownASTExt = "MarkdownAST"
     CommonMarkMarkdownExt = "Markdown"
+
+    [deps.CommonMark.weakdeps]
+    Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
+    MarkdownAST = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -995,31 +563,26 @@ weakdeps = ["IntervalSets", "LinearAlgebra", "StaticArrays"]
     ConstructionBaseLinearAlgebraExt = "LinearAlgebra"
     ConstructionBaseStaticArraysExt = "StaticArrays"
 
-[[deps.ContinuousWavelets]]
-deps = ["AbstractFFTs", "Documenter", "FFTW", "Interpolations", "LinearAlgebra", "SpecialFunctions", "Wavelets"]
-git-tree-sha1 = "17066a488f55711113968c2844ec4e455151251a"
-uuid = "96eb917e-2868-4417-9cb6-27e7ff17528f"
-version = "1.1.8"
-
 [[deps.Contour]]
 git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
-[[deps.DSP]]
-deps = ["Bessels", "FFTW", "IterTools", "LinearAlgebra", "Polynomials", "Random", "Reexport", "SpecialFunctions", "Statistics"]
-git-tree-sha1 = "5989debfc3b38f736e69724818210c67ffee4352"
-uuid = "717857b8-e6f2-59f4-9121-6e50c889abd2"
-version = "0.8.4"
-weakdeps = ["OffsetArrays"]
-
-    [deps.DSP.extensions]
-    OffsetArraysExt = "OffsetArrays"
+[[deps.Crayons]]
+git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
+uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
+version = "4.1.1"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
+
+[[deps.DataFrames]]
+deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
+git-tree-sha1 = "d8928e9169ff76c6281f39a659f9bca3a573f24c"
+uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+version = "1.8.1"
 
 [[deps.DataStructures]]
 deps = ["OrderedCollections"]
@@ -1068,12 +631,6 @@ version = "0.25.123"
 git-tree-sha1 = "7442a5dfe1ebb773c29cc2962a8980f47221d76c"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.5"
-
-[[deps.Documenter]]
-deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", "DocStringExtensions", "Downloads", "Git", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "MarkdownAST", "Pkg", "PrecompileTools", "REPL", "RegistryInstances", "SHA", "TOML", "Test", "Unicode"]
-git-tree-sha1 = "56e9c37b5e7c3b4f080ab1da18d72d5c290e184a"
-uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "1.17.0"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -1258,24 +815,6 @@ git-tree-sha1 = "6570366d757b50fabae9f4315ad74d2e40c0560a"
 uuid = "59f7168a-df46-5410-90c8-f2779963d0ec"
 version = "5.2.3+0"
 
-[[deps.Git]]
-deps = ["Git_LFS_jll", "Git_jll", "JLLWrappers", "OpenSSH_jll"]
-git-tree-sha1 = "824a1890086880696fc908fe12a17bcf61738bd8"
-uuid = "d7ba0133-e1db-5d97-8f8c-041e4b3a1eb2"
-version = "1.5.0"
-
-[[deps.Git_LFS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "bb8471f313ed941f299aa53d32a94ab3bee08844"
-uuid = "020c3dae-16b3-5ae5-87b3-4cb189e250b2"
-version = "3.7.0+0"
-
-[[deps.Git_jll]]
-deps = ["Artifacts", "Expat_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Libiconv_jll", "OpenSSL_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "dc34a3e3d96b4ed305b641e626dc14c12b7824b8"
-uuid = "f8c6e375-362e-5223-8a59-34ff63f689eb"
-version = "2.53.0+0"
-
 [[deps.Glib_jll]]
 deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
 git-tree-sha1 = "24f6def62397474a297bfcec22384101609142ed"
@@ -1381,6 +920,19 @@ git-tree-sha1 = "d1b1b796e47d94588b3757fe84fbf65a5ec4a80d"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.5"
 
+[[deps.InlineStrings]]
+git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
+uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
+version = "1.4.5"
+
+    [deps.InlineStrings.extensions]
+    ArrowTypesExt = "ArrowTypes"
+    ParsersExt = "Parsers"
+
+    [deps.InlineStrings.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+    Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
+
 [[deps.IntegerMathUtils]]
 git-tree-sha1 = "4c1acff2dc6b6967e7e750633c50bc3b8d83e617"
 uuid = "18e54dd8-cb9d-406c-a71d-865a43cbb235"
@@ -1459,6 +1011,11 @@ weakdeps = ["Dates", "Test"]
     [deps.InverseFunctions.extensions]
     InverseFunctionsDatesExt = "Dates"
     InverseFunctionsTestExt = "Test"
+
+[[deps.InvertedIndices]]
+git-tree-sha1 = "6da3c4316095de0f5ee2ebd875df8721e7e0bdbe"
+uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+version = "1.3.1"
 
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "b2d91fe939cae05960e760110b328288867b5758"
@@ -1550,11 +1107,6 @@ version = "2.10.3+0"
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
-
-[[deps.LazilyInitializedFields]]
-git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
-uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
-version = "1.3.0"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1694,12 +1246,6 @@ deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
 
-[[deps.MarkdownAST]]
-deps = ["AbstractTrees", "Markdown"]
-git-tree-sha1 = "93c718d892e73931841089cdc0e982d6dd9cc87b"
-uuid = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
-version = "0.1.3"
-
 [[deps.MathTeXEngine]]
 deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "GeometryBasics", "LaTeXStrings", "REPL", "RelocatableFolders", "UnicodeFun"]
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
@@ -1794,12 +1340,6 @@ version = "3.4.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
-
-[[deps.OpenSSH_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "OpenSSL_jll", "Zlib_jll"]
-git-tree-sha1 = "301412a644646fdc0ad67d0a87487466b491e53d"
-uuid = "9bd350c2-7e96-507f-8002-3f2e150b4e1b"
-version = "10.2.1+0"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -1906,25 +1446,11 @@ git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
 
-[[deps.Polynomials]]
-deps = ["LinearAlgebra", "OrderedCollections", "Setfield", "SparseArrays"]
-git-tree-sha1 = "2d99b4c8a7845ab1342921733fa29366dae28b24"
-uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-version = "4.1.1"
-
-    [deps.Polynomials.extensions]
-    PolynomialsChainRulesCoreExt = "ChainRulesCore"
-    PolynomialsFFTWExt = "FFTW"
-    PolynomialsMakieExt = "Makie"
-    PolynomialsMutableArithmeticsExt = "MutableArithmetics"
-    PolynomialsRecipesBaseExt = "RecipesBase"
-
-    [deps.Polynomials.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+[[deps.PooledArrays]]
+deps = ["DataAPI", "Future"]
+git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
+uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+version = "1.4.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -1937,6 +1463,18 @@ deps = ["TOML"]
 git-tree-sha1 = "8b770b60760d4451834fe79dd483e318eee709c4"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.5.2"
+
+[[deps.PrettyTables]]
+deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
+git-tree-sha1 = "211530a7dc76ab59087f4d4d1fc3f086fbe87594"
+uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+version = "3.2.3"
+
+    [deps.PrettyTables.extensions]
+    PrettyTablesTypstryExt = "Typstry"
+
+    [deps.PrettyTables.weakdeps]
+    Typstry = "f0ed7684-a786-439e-b1e3-3b82803b501e"
 
 [[deps.Primes]]
 deps = ["IntegerMathUtils"]
@@ -2008,12 +1546,6 @@ git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
-[[deps.RegistryInstances]]
-deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
-git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
-uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
-version = "0.1.0"
-
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
 git-tree-sha1 = "ffdaf70d81cf6ff22c2b6e733c900c3321cab864"
@@ -2059,15 +1591,15 @@ git-tree-sha1 = "9b81b8393e50b7d4e6d0a9f14e192294d3b7c109"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.3.0"
 
+[[deps.SentinelArrays]]
+deps = ["Dates", "Random"]
+git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
+uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
+version = "1.4.9"
+
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 version = "1.11.0"
-
-[[deps.Setfield]]
-deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
-git-tree-sha1 = "c5391c6ace3bc430ca630251d02ea9687169ca68"
-uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
-version = "1.1.2"
 
 [[deps.ShaderAbstractions]]
 deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "Observables", "StaticArrays"]
@@ -2190,6 +1722,12 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
 
+[[deps.StringManipulation]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "d05693d339e37d6ab134c5ab53c29fce5ee5d7d5"
+uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
+version = "0.4.4"
+
 [[deps.StructArrays]]
 deps = ["ConstructionBase", "DataAPI", "Tables"]
 git-tree-sha1 = "a2c37d815bf00575332b7bd0389f771cb7987214"
@@ -2213,16 +1751,18 @@ version = "0.7.2"
 
 [[deps.StructUtils]]
 deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "28145feabf717c5d65c1d5e09747ee7b1ff3ed13"
+git-tree-sha1 = "fa95b3b097bcef5845c142ea2e085f1b2591e92c"
 uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
-version = "2.6.3"
+version = "2.7.1"
 
     [deps.StructUtils.extensions]
     StructUtilsMeasurementsExt = ["Measurements"]
+    StructUtilsStaticArraysCoreExt = ["StaticArraysCore"]
     StructUtilsTablesExt = ["Tables"]
 
     [deps.StructUtils.weakdeps]
     Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
     Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
@@ -2335,11 +1875,11 @@ version = "1.28.0"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.Wavelets]]
-deps = ["DSP", "FFTW", "LinearAlgebra", "Reexport", "SpecialFunctions", "Statistics"]
-git-tree-sha1 = "d0ec97a100abbe47a5e9a02361841da49cce6029"
-uuid = "29a6e085-ba6d-5f35-a997-948ac2efa89a"
-version = "0.10.1"
+[[deps.WeakRefStrings]]
+deps = ["DataAPI", "InlineStrings", "Parsers"]
+git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
+uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
+version = "1.4.2"
 
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
@@ -2352,6 +1892,11 @@ deps = ["LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "1.1.0"
+
+[[deps.WorkerUtilities]]
+git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
+uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
+version = "1.6.1"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2526,45 +2071,18 @@ version = "4.1.0+0"
 # ╟─c0c5e6e6-de5f-4973-8dfa-6bed30c474a4
 # ╟─f40ad72a-b6fd-4024-ab09-de1b6e31501b
 # ╟─090ffe2f-b381-49ec-bc08-53219c690e77
-# ╟─6721746e-71e6-4d3d-a32a-6c0385986351
-# ╟─caa79afb-d9cb-483f-87f3-05bfa215d047
-# ╟─efe4400e-dce7-40ab-b142-6ac560b98eaf
-# ╟─4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
-# ╟─edcc2680-4e10-41a1-a55f-be64b0ae8911
-# ╟─e05f97a3-92ee-40b8-8ec9-ed31b7444f77
-# ╟─a3febf86-fb21-4f2a-9699-0597b21fcd46
-# ╟─34602c8b-5977-446b-9af0-0911704e1199
-# ╟─0bac9591-9018-47af-b567-ec756f8c6c42
-# ╟─e9ad5fc9-21f8-48b6-a103-0321607a9a12
-# ╟─a37c5419-797a-4626-8138-2f2d5ab8f416
-# ╟─f3f93bff-1c39-4652-aa41-0b7d88ad9caf
-# ╟─13fbe8ec-5266-4b72-b85e-f171c8c7ba90
-# ╟─8550f405-2819-4a33-9cd2-c72dbbb04a87
-# ╟─0e3b9aaf-0d91-4c60-8118-5624273d3983
-# ╟─7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
-# ╟─738b344d-e2ae-4f99-b755-38c0dcdc3da3
-# ╟─576eb9f0-40c6-4a9a-9504-d562452541e6
-# ╠═6e81c233-8aa5-4ab4-a011-c56ad0026ea9
-# ╟─6a71ccd0-8ee7-4c39-b8c7-88b398e98d1a
-# ╟─f153fdfa-57d5-4112-8d59-847ee1ec06ca
-# ╟─138dc591-5a42-4ae7-8b34-863c947b59e3
-# ╟─463ed10c-6321-4e26-ae0d-1bc5b5eb6754
-# ╟─bf197511-19c5-443b-a541-7608b61518c4
-# ╟─03a06450-8121-48fc-bd7f-d129c52d3f64
-# ╟─9d0b25ab-b8bc-455c-bf42-40f0d085be08
-# ╠═1c4ceb56-af5c-4f12-860d-d64380e7a0ca
-# ╟─46e6b3f3-0376-4a30-9b70-16d0f35a2f86
-# ╠═2861b272-16b1-4176-bc77-494b809908e1
-# ╠═83c25944-1fae-4207-a423-78aa974314f5
-# ╟─b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
-# ╟─517ff59c-aee6-4e66-b87c-e1e16921a758
-# ╠═c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
-# ╠═579ec13a-188a-4d38-957e-666c62e6231d
-# ╠═7433ebb9-bdb5-4478-bf81-5246f2603a88
-# ╠═254d346e-8861-4bbf-ac15-f49d0d8c52d3
-# ╟─cf2a10d9-12c8-46ca-8493-0d902f153932
+# ╠═6721746e-71e6-4d3d-a32a-6c0385986351
+# ╠═cf2a10d9-12c8-46ca-8493-0d902f153932
+# ╠═ea016e4b-21c6-4e84-a646-444d6fb9a1b5
+# ╠═d87f7818-4dd9-457b-b15b-6056df5e4683
+# ╠═00d6567b-5706-4cd8-9e01-567a8d36e150
+# ╠═2b63c7ed-51da-4415-a380-000db490a137
+# ╠═90ec63d7-5694-4e2f-8420-11923054541b
+# ╟─4764ec57-550b-4afb-855e-6838e444b622
+# ╟─fc09bcf9-6512-4881-babb-52a0e7f8ccdf
+# ╟─83785073-c8da-4ceb-a7f2-685cd6e920f1
+# ╠═dd8bfd81-5e0d-4cb7-887a-dfacf1ede27c
 # ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
-# ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b
 # ╟─af38d725-6e0f-4958-85bb-1be029ba3fb5
 # ╟─241907cb-1fb0-4963-8bb9-7894136e43de
 # ╟─d3b81af7-b85b-4212-82a2-0f97ec31a484
