@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 #> [frontmatter]
 #> title = "Time-Domain Astrophysics Course"
@@ -25,7 +25,7 @@ md"""
 
 # ╔═╡ bfe2b83c-dba1-4c64-a35f-83264822c9d7
 md"""
-**This is a `pluto` notebook**
+**This is a `Pluto` notebook**
 """
 
 # ╔═╡ 9883ac05-9471-4ed1-ac19-9b42ca193360
@@ -62,7 +62,7 @@ md"""
 7. [Science case: Variable stars](./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl)
 8. [Lecture: Wavelet Analysis](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl)
 9. [Science case: Climate data](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl)
-10. [Lecture: Time Domain analysis](./open?path=Lectures/Lecture - Time Domain Analysis/Lecture-Time-Domain.jl)
+10. [Lecture: Time Domain analysis](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl)
 11. [Science case: AGN and Blazars](./open?path=Lectures/Science Case - AGN and Blazars/Lecture-AGN-and-Blazars.jl)
 12. [Lecture: Time of Arrival](./open?path=Lectures/Lecture - Time of Arrival/Lecture-Time-of-Arrival.jl)
 13. [Science case: FRBs](./open?path=Lectures/Science Case - FRBs/Lecture-FRBs.jl)

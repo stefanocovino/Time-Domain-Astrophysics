@@ -142,7 +142,9 @@ O_{21} \equiv \frac{p(M_2|D,I)}{p(M_1|D,I} = \frac{p(M_2|I)}{p(M_1|I)} \frac{p(D
 
 - This is a very sophisticated approach but, often, computationally hard to apply. There are simpler tools, although with limitations and assumptions.
 
-- Let's follow a simple example, just to understand how a Bayes factor works: we are comparing two models: $M_1$, with a single parameter. $\theta$, and $M_0$ with $\theta$ fixed at a given value $\theta_0$. So, $M_$ has no free parameters.
+
+
+- Let's follow a simple example, just to understand how a Bayes factor works: we are comparing two models: $M_1$, with a single parameter. $\theta$, and $M_0$ with $\theta$ fixed at a given value $\theta_0$. So, $M_0$ has no free parameters.
 
 - In most cases the likelikood function, $\mathcal{L}(\theta) = p(D|\theta,M_1)$, is much more peaked than the prior, so that the prior is essentially constant over the range of significant likelyhood. Therefore, if $\hat{\theta}$ is the maximum of likelyhood, we can write:
 
