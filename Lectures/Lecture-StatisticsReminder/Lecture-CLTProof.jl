@@ -225,8 +225,8 @@ cm"""
   </tr>
   <tr>
     <td>html</td>
-    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl">Reminder of frequentist statistics</a></td>
-    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl">Reminder of frequentist statistics</a></td>
+    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Reminder of frequentist statistics</a></td>
+    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Reminder of frequentist statistics</a></td>
   </tr>
  </table>
 

@@ -892,7 +892,7 @@ $(LocalResource("Pics/bayesianls.png"))
 
     - More technically, this is indeed the probability conditioned on the assumption that the data are drawn from a sinusoidal model.
 
-- Some more detail about the derivation of the LS periodogram in a Bayesian framework can be found [here](./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-BayesLS.jl). 
+- Some more detail about the derivation of the LS periodogram in a Bayesian framework can be found here ([notebook](./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-BayesLS.jl), [html](../../Lectures/Lecture-Lomb-Scargle/Lecture-BayesLS.html)). 
 """
 
 # ╔═╡ 467e6316-fa6d-4487-86cc-8ba408577fe7
@@ -1164,15 +1164,21 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl">Science case: X-ray binariess</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl">Science case about variable stars</a></td>
   </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.html">Science case: X-ray binariess</a></td>
+    <td><a href="../../Lectures/ScienceCase-VariableStars/Lecture-VariableStars.html">Science case about variable stars</a></td>
+  </tr>
  </table>
-
 
 """
 
