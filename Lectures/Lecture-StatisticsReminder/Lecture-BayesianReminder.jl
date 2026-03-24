@@ -17,6 +17,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 11e8bdad-39b4-41b7-a75d-484412b76190
+# ╠═╡ show_logs = false
 begin
 	using CairoMakie
 	using CommonMark
