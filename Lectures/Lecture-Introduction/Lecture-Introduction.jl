@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -178,20 +178,20 @@ $(LocalResource("Pics/Bayesians.png"))
 - `Python` is *de-facto* the standard language in data science.
     - Yet, while this language is definitely truly amazing, well designed and worth mastering, for the specific needs of scientific computing there are alternatives of growing popularity.
 
-- We threfore provide examples mainly with `Julia`, and encourage the students to get some confidence with this programming language too.
+- We threfore provide examples written in `Julia`, and encourage the students to get some confidence with this programming language too.
 
-- Indeed, we provide examples mainly with `Julia`, and encourage the students to get some confidence with this programming language too.
+- Notebooks are written by the [markdown language](https://www.markdownguide.org/basic-syntax/), a simple language integrating features of the [HTML](https://en.wikipedia.org/wiki/HTML) and [LaTeX](https://www.latex-project.org/) languages. 
 
-- Notebooks are written by the [markdown language](https://www.markdownguide.org/basic-syntax/), a simple language integrating features of the HTML and latex languages.
+- We use here a specific flavours of notebook known as [`Pluto`](https://plutojl.org/) notebooks. These notebooks offer a high level of interactivity and several more advanced features. 
 
 
- $(LocalResource("Pics/python.png"))  $(LocalResource("Pics/julia.png"))
+ $(LocalResource("Pics/julia.png"))
 
 """
 
 # ╔═╡ 3c960134-e9d9-4b66-891f-6b3522c691c4
 md"""
-- A remarkable introducti0n to the `julia` language for a scientist is available online, e.g. [Julia data science](https://github.com/tirthajyoti/Julia-data-science). 
+- There are plenty of good tutorial about the `julia` language. Among the many goos resources, we can suggest trying this introduction for scientists available online, e.g. [Julia data science](https://github.com/tirthajyoti/Julia-data-science). 
 """
 
 # ╔═╡ 6827c9f6-b98a-4a88-a192-5c61f375f1d5
@@ -218,29 +218,34 @@ md"""
 
 """
 
+# ╔═╡ d80ccaea-c3a4-4e48-a0ad-34a9d51ae699
+md"""
+## Course Website
+
+$(LocalResource("Pics/TDA.jpg", :width => 200))  
+
+- For most of the users, a web site reporting all the material shown during the lectures is probably the preferred and simpler solution. The course is available online at: [website](http://192.167.38.133:8081/Course.html)
+
+> The site enables to run interactively some of the examples and/or exercises discussed during the course!
+
+"""
+
 # ╔═╡ c5257f84-999b-4655-9ade-2bcbc7eb324c
 md"""
-## Gitlab repository
+## Github repository
 
-- Slides, notebooks, papers, etc. are available on [gitlab](https://www.ict.inaf.it/gitlab/stefano.covino/TimeDomainAstrophysics.git)
+- Pluto notebooks, papers, etc. are also available on [github](https://github.com/stefanocovino/Time-Domain-Astrophysics.git)
 - Check the repository frequently since is (rather often) updated  during the course.
 
- $(LocalResource("Pics/gitlab.jpg", :width => 200))  $(LocalResource("Pics/gitlabcourse.png", :width => 200)) 
+ $(LocalResource("Pics/GitHub-Logo.png", :width => 200))  
 
+### How to clone the repository:
 
-### How to use the repository:
-
-- Just surf the site with your preferred web browser.
-    - It is probably enough although you cannot have real interactions (you just read...).
-    - There are also *git* graphical clients, for essentially any OS, that can make the surfing esasier.
-
-<br>
-
-- There is also a "nerdier" solution!
+- It is a rather "nerd" solution!
 - Open a terminal and move to a directory where material will be stored.
 ```
 cd mydir
-git clone https://www.ict.inaf.it/gitlab/stefano.covino/TimeDomainAstrophysics.git
+git clone https://github.com/stefanocovino/Time-Domain-Astrophysics.git
 cd TimeDomainAstrophysics
 git pull
 ```
@@ -248,6 +253,9 @@ git pull
 - This clones the whole tree (i.e. the course material, about 3GB).
 
 > Repeating frequently the last command (`git pull`) you will always have the tree fully updated and you notebooks, data, papers, etc. ready to be used on your computer.
+
+- This is needed and advised if one wants to get and interact with the full notebooks, with code, data, etc.
+
 
 """
 
@@ -641,6 +649,7 @@ version = "17.7.0+0"
 # ╟─3c960134-e9d9-4b66-891f-6b3522c691c4
 # ╟─6827c9f6-b98a-4a88-a192-5c61f375f1d5
 # ╟─d5e83a80-2c3a-48a5-937f-95b50e745bc4
+# ╟─d80ccaea-c3a4-4e48-a0ad-34a9d51ae699
 # ╟─c5257f84-999b-4655-9ade-2bcbc7eb324c
 # ╟─4520ebfa-8d97-4f1c-83d4-27dfc62e54f5
 # ╟─6bce4cd0-67bc-408b-94c0-6c8de26755c0
