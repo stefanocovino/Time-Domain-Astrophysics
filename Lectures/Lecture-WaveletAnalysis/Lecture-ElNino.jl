@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -272,14 +272,23 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis//Lecture-Wavelet-Analysis.jl">Lecture about wavelet analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl">Lecture about time domain analysis</a></td>
   </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lectures/Lecture-WaveletAnalysis//Lecture-Wavelet-Analysis.html">Lecture about wavelet analysis</a></td>
+    <td><a href="../../Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html">Lecture about time domain analysis</a></td>
+  </tr>
  </table>
+
+
 
 
 """

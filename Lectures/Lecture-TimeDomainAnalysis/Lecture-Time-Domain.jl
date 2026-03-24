@@ -1808,13 +1808,21 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
-    <td><a href="./open?path=Lectures/Science Case - Variable Stars/Lecture-VariableStars.jl">Science case about variable stars</a></td>
+	<td>notebook</td>
+    <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl">Science case about climate data</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl">Science case about AGN and blazars</a></td>
   </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
+    <td><a href="../../Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
+  </tr>
+
  </table>
 
 

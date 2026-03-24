@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -839,14 +839,24 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl">Science case about variable stars</a></td>
-    <td><a href="./open?path=Lecture-WaveletAnalysis/Lecture-ElNino.jl">Science case about climate data</a></td>
+    <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl">Science case about climate data</a></td>
+  </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lectures/ScienceCase-VariableStars/Lecture-VariableStars.html">Science case about variable stars</a></td>
+    <td><a href="../../Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
   </tr>
  </table>
+
+
+
 
 
 """

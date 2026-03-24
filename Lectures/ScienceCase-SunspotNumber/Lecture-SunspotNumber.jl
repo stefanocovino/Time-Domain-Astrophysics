@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -332,13 +332,21 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl">Lecture about spectral analysis</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl">Science case about X-ray binaries</a></td>
   </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.html">Lecture about spectral analysis</a></td>
+    <td><a href="../../Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.html">Science case about X-ray binaries</a></td>
+  </tr>
+
  </table>
 
 

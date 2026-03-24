@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 #> [frontmatter]
 #> title = "Time-Domain Astrophysics Course"

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -467,14 +467,21 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl">Science case about Sunspot number</a></td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl">Lecture about irregular sampling</a></td>
   </tr>
+	<td>html</td>
+    <td><a href="../../Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.html">Science case about Sunspot number</a></td>
+    <td><a href="../../Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Lecture about irregular sampling</a></td>
+  </tr>
  </table>
+
 
 
 """
