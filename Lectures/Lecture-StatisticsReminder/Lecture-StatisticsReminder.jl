@@ -772,7 +772,7 @@ md"""
 - One can also say that the convolution of a large number of (positive) functions $f_i(x)$ with variances $\sigma_i^2$ converges to a Gaussian with $\sigma^2 = \sum \sigma_i^2$.
     - The functions do not need to be Gaussian.
 
-> Just pay attention since the CLT is more subtle than it seems! For interested readers a verbose but sufficiently clear proof is discussed [here](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.jl).
+> Just pay attention since the CLT is more subtle than it seems! For interested readers a verbose but sufficiently clear proof is discussed here ([notebook](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.jl), [html](../../Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.html)).
 
 ### Convolution
 ***
