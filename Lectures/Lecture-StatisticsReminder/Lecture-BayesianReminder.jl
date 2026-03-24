@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -785,12 +785,19 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl">Reminder of frequentist statistics</a></td>
     <td><a href="./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl">Lecture about spectral analysis</a></td>
+  </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Reminder of frequentist statistics</a></td>
+    <td><a href="../../Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.html">Lecture about spectral analysis</a></td>
   </tr>
  </table>
 

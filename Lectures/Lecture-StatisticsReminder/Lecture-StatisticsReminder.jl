@@ -1304,15 +1304,22 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
-      <td><a href="./open?path=Lectures/Lecture-Introduction/Lecture-Introduction.jl">Introduction</a></td>
+	<td>notebook</td>
+    <td><a href="./open?path=Lectures/Lecture-Introduction/Lecture-Introduction.jl">Introduction</a></td>
     <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.jl">Reminder of Bayesian statistics</a></td>
   </tr>
- </table>
+  <tr>
+	<td>html</td>
+    <td><a href="../../Lecture-Introduction/Lecture-Introduction.html">Introduction</a></td>
+    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.html">Reminder of Bayesian statistics</a></td>
+  </tr>
 
+ </table>
 
 """
 

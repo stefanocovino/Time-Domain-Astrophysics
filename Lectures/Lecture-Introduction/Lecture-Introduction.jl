@@ -313,7 +313,7 @@ html"""
   <tr>
     <td>html</td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
-    <td><a href="http://Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Statistics Reminder</a></td>
+    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Statistics Reminder</a></td>
   </tr>
 
  </table>
@@ -647,7 +647,7 @@ version = "17.7.0+0"
 # ╟─87f81f95-2f33-496a-a9df-cbc711e51e3c
 # ╟─2b826fbe-9dda-483f-9af6-8b89d7a6837d
 # ╟─c99cc57a-d012-4d11-a3e6-1e2ba35ce92e
-# ╠═59bfe64e-000e-467f-859e-07249d0c9273
+# ╟─59bfe64e-000e-467f-859e-07249d0c9273
 # ╟─0fc5c982-e5e1-4a43-a0d6-86fe706e2601
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
