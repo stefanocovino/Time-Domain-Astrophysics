@@ -2,8 +2,9 @@
 # v0.20.24
 
 #> [frontmatter]
+#> image = "https://github.com/stefanocovino/Time-Domain-Astrophysics/blob/c8bf6ba24d3bb1aa96a29c6f83e065c655bef80d/Lectures/Lecture-Introduction/Pics/TDA.jpg"
 #> title = "Time-Domain Astrophysics Course"
-#> date = "2025-02-25"
+#> date = "2026-03-24"
 #> 
 #>     [[frontmatter.author]]
 #>     name = "Stefano Covino"
