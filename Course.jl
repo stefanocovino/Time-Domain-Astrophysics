@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 #> [frontmatter]
 #> title = "Time-Domain Astrophysics Course"
@@ -53,7 +53,7 @@ md"""
 ### Lecture list:
 ***
 
-1. [Lecture: Introduction](./open?path=Lectures/Lecture-Introduction/Lecture-Introduction.jl)
+1. Lecture: Introduction [notebook](./open?path=Lectures/Lecture-Introduction/Lecture-Introduction.jl) [html](Lectures/Lecture-Introduction/Lecture-Introduction.html)
 2. [Lecture: Statistics Reminder](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl)
 3. [Lecture: Spectral Analysis](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl)
 4. [Science case: Sunspot number](./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl)
@@ -387,7 +387,7 @@ version = "17.7.0+0"
 # ╟─9b05aaa6-d44f-4081-8749-ab5408a492b9
 # ╟─270dc9c6-5eb3-4838-bf4a-62cbf2339a53
 # ╟─aec92f06-df81-4c51-99cb-ac3ebc91c7fc
-# ╟─78f7f381-9d3e-4715-87d4-b4165025aded
+# ╠═78f7f381-9d3e-4715-87d4-b4165025aded
 # ╟─0fb9db7b-6dd2-4aaf-870d-49f36a5e0f00
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
