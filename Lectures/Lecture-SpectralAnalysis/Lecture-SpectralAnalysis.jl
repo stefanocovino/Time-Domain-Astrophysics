@@ -61,7 +61,7 @@ cm"""
 # Time-Series
 ***
 
-- A time-series is any sequene of observation such that the distribution of a given value depends on the previous values.
+- A time-series is any sequence of observation such that the distribution of a given value depends on the previous values.
 - Time is an exogeneous (outside the model) variable that is directional - measurements only depend on the past.
     - This is a statement of causality.
 
@@ -1316,13 +1316,21 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+    <td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.jl">Lecture about Bayesian statistics</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl">Science case about Sunspot number</a></td>
   </tr>
+  <tr>
+    <td>html</td>
+    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.html">Lecture about Bayesian statistics</a></td>
+    <td><a href="../../Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.html">Science case about Sunspot number</a></td>
+  </tr>
+
  </table>
 
 
