@@ -53,16 +53,19 @@ md"""
 ### Lecture list:
 ***
 
-1. Lecture: Introduction [notebook](./open?path=Lectures/Lecture-Introduction/Lecture-Introduction.jl) [html](Lectures/Lecture-Introduction/Lecture-Introduction.html)
-2. [Lecture: Statistics Reminder](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl)
-3. [Lecture: Spectral Analysis](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl)
-4. [Science case: Sunspot number](./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl)
-5. [Science case: X-ray binaries](./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl)
-6. [Lecture: Irregular sampling](./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl)
-7. [Science case: Variable stars](./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl)
-8. [Lecture: Wavelet Analysis](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl)
-9. [Science case: Climate data](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl)
-10. [Lecture: Time Domain analysis](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl)
+|          |          |          |
+|:-------- |:--------:|:--------:|
+| 1. Lecture: Introduction | [notebook](./open?path=Lectures/Lecture-Introduction/Lecture-Introduction.jl) | [html](Lectures/Lecture-Introduction/Lecture-Introduction.html) |
+| 2. Lecture: Statistics Reminder | [notebook](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl) | [html](Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html) |
+| 3. Lecture: Spectral Analysis | [notebook](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl) | [html](Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.html) |
+| 4. Science case: Sunspot number | [notebook](./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl) | [html](Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.html) |
+| 5. Science case: X-ray binaries | [notebook](./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl) | [html](Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.html) |
+| 6. Lecture: Irregular sampling | [notebook](./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl) | [html](Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html) |
+| 7. Science case: Variable stars | [notebook](./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl) | [html](Lectures/ScienceCase-VariableStars/Lecture-VariableStars.html) |
+| 8. Lecture: Wavelet Analysis | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl) | [html](Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html) |
+| 9. Science case: Climate data | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl) | [html](Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html) |
+| 10. Lecture: Time Domain analysis | [notebook](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl) | [html](Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html) |
+
 11. [Science case: AGN and Blazars](./open?path=Lectures/Science Case - AGN and Blazars/Lecture-AGN-and-Blazars.jl)
 12. [Lecture: Time of Arrival](./open?path=Lectures/Lecture - Time of Arrival/Lecture-Time-of-Arrival.jl)
 13. [Science case: FRBs](./open?path=Lectures/Science Case - FRBs/Lecture-FRBs.jl)
@@ -387,7 +390,7 @@ version = "17.7.0+0"
 # ╟─9b05aaa6-d44f-4081-8749-ab5408a492b9
 # ╟─270dc9c6-5eb3-4838-bf4a-62cbf2339a53
 # ╟─aec92f06-df81-4c51-99cb-ac3ebc91c7fc
-# ╠═78f7f381-9d3e-4715-87d4-b4165025aded
+# ╟─78f7f381-9d3e-4715-87d4-b4165025aded
 # ╟─0fb9db7b-6dd2-4aaf-870d-49f36a5e0f00
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
