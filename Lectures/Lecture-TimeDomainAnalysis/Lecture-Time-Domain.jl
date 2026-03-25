@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ 508fcfab-51c1-4dc5-992d-d5961517b9bf
 begin
 	using ARFIMA
@@ -932,31 +944,35 @@ md"""
 """
 
 # ╔═╡ b0ae3114-1aca-4109-922a-02c25989e407
-md"""
+cm"""
 ### Autoregressive (of the first order)
 ***
 
 - An autoregressiv process of the first order, or AR(1), is defined as:
 
 
-$$x_t = \alpha_1 x_{t-1} + w_t$$
+```math
+x_t = \alpha_1 x_{t-1} + w_t
+```
 
-- and again $w_t$ is a white noise process.
+- and again ``w_t`` is a white noise process.
 
-- The process can be rewritten as follows: $ x_t = \alpha_1 x_{t-1} + w_t = \alpha_1 (\alpha_1 x_{t-2} + w_{t-1}) + w_t = \alpha_1^t x_0 + \sum_{i=o}^{t-1} \alpha_1^i w_{t-i}$
+- The process can be rewritten as follows: `` x_t = \alpha_1 x_{t-1} + w_t = \alpha_1 (\alpha_1 x_{t-2} + w_{t-1}) + w_t = \alpha_1^t x_0 + \sum_{i=o}^{t-1} \alpha_1^i w_{t-i}``
 
-- The expectation value is: $\mathbb{E}[x_t] = \mathbb{E}[\alpha_1^t x_0 + \sum_{i=o}^{t-1} \alpha_1^i w_{t-i}] = \alpha_1^t \mathbb{E}[x_0]$. This is zero only if the starting position is zero.
+- The expectation value is: ``\mathbb{E}[x_t] = \mathbb{E}[\alpha_1^t x_0 + \sum_{i=o}^{t-1} \alpha_1^i w_{t-i}] = \alpha_1^t \mathbb{E}[x_0]``. This is zero only if the starting position is zero.
 
-- The variance is: ${\rm Var}[x_t] = {\rm Var}[\alpha_1 x_{t-1} + w_t] = \alpha_1^2 {\rm Var}[x_{t-1}] + {\rm Var}[w_t] \Rightarrow  {\rm Var}[x_t] = \frac{\sigma^2}{1-\alpha_1^2}$. This relation gives a valid variance only if $|\alpha_1| < 1$. 
+- The variance is: ``{\rm Var}[x_t] = {\rm Var}[\alpha_1 x_{t-1} + w_t] = \alpha_1^2 {\rm Var}[x_{t-1}] + {\rm Var}[w_t] \Rightarrow  {\rm Var}[x_t] = \frac{\sigma^2}{1-\alpha_1^2}``. This relation gives a valid variance only if ``|\alpha_1| < 1``. 
 
-- The covariance is: ${\rm Cov}[x_t,x_{t+h}] = {\rm Cov}[x_t,\alpha_1^{t+h} x_0 + \sum_{i=o}^{t+h-1} \alpha_1^i w_{t+h-i}] = {\rm Cov}[x_t,\alpha_1^h x_t + \sum_{i=o}^{h-1} \alpha_1^i w_{t+h-i}] = {\rm Cov}[x_t,\alpha_1^h x_t] = \alpha_1^{2h} {\rm Var}[x_t] = \frac{\alpha_1^{2h} \sigma^2}{1-\alpha_1^2}$, again valid if $|\alpha_1| < 1$.
+- The covariance is: ``{\rm Cov}[x_t,x_{t+h}] = {\rm Cov}[x_t,\alpha_1^{t+h} x_0 + \sum_{i=o}^{t+h-1} \alpha_1^i w_{t+h-i}] = {\rm Cov}[x_t,\alpha_1^h x_t + \sum_{i=o}^{h-1} \alpha_1^i w_{t+h-i}] = {\rm Cov}[x_t,\alpha_1^h x_t] = \alpha_1^{2h} {\rm Var}[x_t] = \frac{\alpha_1^{2h} \sigma^2}{1-\alpha_1^2}``, again valid if ``|\alpha_1| < 1``.
 
-- And, therefore, the correlation turns out to be: ${\rm Corr}[x_t,x_{t+h}] = \frac{{\rm Cov}[x_t,x_{t+h}]}{{\rm Std}[x_t] {\rm Std}[x_{t+h}]} = \alpha_1^{2h}$.
+- And, therefore, the correlation turns out to be: ``{\rm Corr}[x_t,x_{t+h}] = \frac{{\rm Cov}[x_t,x_{t+h}]}{{\rm Std}[x_t] {\rm Std}[x_{t+h}]} = \alpha_1^{2h}``.
 
-- In AR(1) process, the value of $\alpha_1$ determines whether the AR(1) process is stationary. 
+- In AR(1) process, the value of ``\alpha_1`` determines whether the AR(1) process is stationary. 
 
-- Let's see a AR(1) with $\alpha_1 = 0.9$.
 """
+
+# ╔═╡ 95f3a029-6b56-4ac9-bf1c-1135094958d8
+cm"- Let's see a AR(1) with ``\alpha_1 = 0.9``."
 
 # ╔═╡ 924e216e-9ba7-4906-9d70-94f1813911e7
 begin
@@ -1184,14 +1200,20 @@ md"""
 md"""
 #### Exercize: the ACF of MA(p) and AR(q) processes
 ***
+"""
 
-- MA(1), $\beta_1 = 0.5$.
+# ╔═╡ f4b49a58-1dde-47cd-8c24-2e95b629ce41
+@bindname β₁ PlutoUI.Slider(0.1:0.1:1.5,default=0.5)
+
+# ╔═╡ ec6f3ccc-422a-494f-9b72-40ba80d33fc4
+md"""
+- MA(1), β₁ = $β₁.
 """
 
 # ╔═╡ 7ad279de-35ed-4d38-bb78-9a097f5847d9
 begin
 	N16 = 10000
-	beta116 = 0.5
+	beta116 = β₁
 	
 	
 	d16 = Normal()
@@ -1202,11 +1224,29 @@ begin
 	    x16[i] = sigma16[i]+beta116*sigma16[i-1]
 	end
 	
-	rs16 = GetACF(x16,40)
+	lags16 = 40
+	rs16 = GetACF(x16,lags16)
+	rsp16 = GetPACF(x16,lags16)
+	
 	fg16 = Figure()
-	axfg16 = Axis(fg16[1, 1],)
-	stem!(rs16[1])
+
+	ax1fg16 = Axis(fg16[1, 1],
+    	title = "Time-Series")
+
+	lines!(x16)
+	
+	ax2fg16 = Axis(fg16[2, 1],
+		title = "ACF")
+	
+	stem!(0:lags16,rs16[1])
 	hlines!([rs16[2],rs16[3]],linestyle=:dash)
+
+	ax3fg16 = Axis(fg16[3, 1],
+		title = "PACF")
+
+	stem!(0:lags16,rsp16[1])
+	hlines!([rsp16[2],rsp16[3]],linestyle=:dash)
+	
 	fg16
 end
 
@@ -4379,7 +4419,8 @@ version = "1.13.0+0"
 # ╟─d4d93ec8-e268-4fc9-b5ee-cdd194636659
 # ╠═9512aa2e-afaa-4ddd-aac4-826abae447ff
 # ╟─d0dc8d40-75d7-4611-aab6-d8542f82947e
-# ╠═b0ae3114-1aca-4109-922a-02c25989e407
+# ╟─b0ae3114-1aca-4109-922a-02c25989e407
+# ╟─95f3a029-6b56-4ac9-bf1c-1135094958d8
 # ╠═924e216e-9ba7-4906-9d70-94f1813911e7
 # ╠═30ece656-c5ba-42a6-8de2-e9827d72eabf
 # ╟─b86d10a0-f3a0-4489-b595-64c3eafcfef2
@@ -4393,6 +4434,8 @@ version = "1.13.0+0"
 # ╟─a262674e-d56a-4252-8929-3d548150955c
 # ╟─c0ca31e3-8026-46b6-aa90-ffe53b7c2305
 # ╟─44ab551f-b0cc-45cb-977e-3a4b77f15c9d
+# ╟─ec6f3ccc-422a-494f-9b72-40ba80d33fc4
+# ╟─f4b49a58-1dde-47cd-8c24-2e95b629ce41
 # ╠═7ad279de-35ed-4d38-bb78-9a097f5847d9
 # ╟─a7b6b298-49de-4a5f-a095-8306d96661a8
 # ╠═973b9499-23be-4f59-a4a3-69bb3e1b2871

@@ -306,7 +306,7 @@ P(f) = \frac{1}{N}\left|\sum_{n=1}^N g_n e^{-2\pi i f t_n} \right|^2 = \frac{1}{
 ```math
 P(f) = \frac{A^2}{2}\left(\sum_n g_n \cos(2\pi f [t_n-\tau])\right)^2
        + \frac{B^2}{2} \left(\sum_n g_n \sin(2\pi f [t_n-\tau])\right)^2
-``
+```
 
 - where ``A``, ``B``, and ``\tau`` are arbitrary functions of the frequency ``f`` and observing times ``\{t_i\}`` (but not the values ``\{g_n\}``).
 
@@ -315,7 +315,7 @@ P(f) = \frac{A^2}{2}\left(\sum_n g_n \cos(2\pi f [t_n-\tau])\right)^2
     - the periodogram distribution is analytically computable;
     - the periodogram is insensitive to global time shifts in the data.
 
-- The values of $A$ and $B$ leading to these properties result in the following
+- The values of ``A`` and ``B`` leading to these properties result in the following
 form of the generalized periodogram:
 
 ```math
@@ -1056,7 +1056,7 @@ md"""
 #### Exercize about peak periodogram significance evaluation
 ***
 
-- Let's generate a short time-series with the function defined above and compute the sigificance level by means of a boostrap analysis.
+- Let's generate a short time-series with the function defined above and compute the significance level by means of a boostrap analysis.
 """
 
 # ╔═╡ 2ef299bf-e198-4bde-83cd-ecd86e566683

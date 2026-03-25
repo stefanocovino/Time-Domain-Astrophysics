@@ -1,8 +1,20 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
+
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
 
 # ╔═╡ d5a4a4fc-c52b-42c7-ac4e-387ac95f848b
 begin
@@ -169,7 +181,7 @@ md"""
 - Large mass stars that pass through the unstable region are known as *Cepheid variables*. 
     - They have From $5 M_\odot$ to $20 M_\odot$ with period of 1 to 100 days.
     - Cepheids are important to measure distances to other galaxies.
-- The pulsanting mwchanism in star’s interior is due to He$^+$ loosing e$^-$ producing He2$^+$. As soon the star expands, it becomes brighter and cooler, and He$_2^+$ + e^$-$ to give He$^+$. And the cycle repeats.
+- The pulsanting mwchanism in star’s interior is due to He$^+$ loosing e$^-$ producing He2$^+$. As soon the star expands, it becomes brighter and cooler, and He$_2^+$ + e$^-$ to give He$^+$. And the cycle repeats.
 
 
 $(LocalResource("Pics/rrhst.png")) $(LocalResource("Pics/cepheidshst.png"))
@@ -260,7 +272,7 @@ begin
 	
 	best_period = findmaxperiod(lslnr)
 		
-	phase = (lnr[!,:t] ./ best_period) .% 1
+	#phase = (lnr[!,:t] ./ best_period) .% 1
 end;
 
 # ╔═╡ 952d0ce6-f827-401a-a278-3a4445723119
@@ -273,8 +285,25 @@ Best period: $(latexify(best_period[1] * 24,fmt="%.2f")) hours
 			   
 """)
 
+# ╔═╡ 6972d8c7-afd2-4811-956a-4eec38efe07c
+md"""
+
+- Once identified a period, $P$, computing the phase, $\phi$, for each input observation time index is simple: $\phi_j = t_j / P - {\rm int} (t_j / P)$.
+"""
+
+# ╔═╡ c8a7e3fe-ede0-41df-a21f-97b44aa86197
+tpr = @bind wrong_period CheckBox(default=false);
+
 # ╔═╡ ed624515-a93b-45b7-bcab-ae33144281c2
 begin
+
+	if wrong_period
+		phase = (lnr[!,:t] ./ best_period/1.5) .% 1
+	else		
+		phase = (lnr[!,:t] ./ best_period) .% 1
+	end
+
+	
 	fg2 = Figure(size=(1000,400))
 	
 	ax1fg2 = Axis(fg2[1,1],
@@ -312,6 +341,13 @@ begin
 	
 	fg2
 end
+
+# ╔═╡ c2481fd9-276e-483b-891c-d2620b0db3ff
+cm"""
+
+Try to phase with a wrong period (30% longer)? $tpr
+
+"""
 
 # ╔═╡ f1a6ff9a-d114-4e38-8581-5ed48e78af82
 md"""
@@ -562,12 +598,19 @@ cm"""
 
 <table>
   <tr>
+	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
   </tr>
   <tr>
+	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl">Lecture about irregular sampling</a></td>
     <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl">Lecture about wavelet analysis</a></td>
+  </tr>
+  <tr>
+	<td>html</td>
+    <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Lecture about irregular sampling</a></td>
+    <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html">Lecture about wavelet analysis</a></td>
   </tr>
  </table>
 
@@ -2445,7 +2488,10 @@ version = "4.1.0+0"
 # ╟─f73d6e54-031d-4a89-a7a3-3a4c989fc6c6
 # ╟─f659d524-8f09-4c82-b87e-bf0cabf19e62
 # ╟─952d0ce6-f827-401a-a278-3a4445723119
+# ╟─6972d8c7-afd2-4811-956a-4eec38efe07c
+# ╟─c8a7e3fe-ede0-41df-a21f-97b44aa86197
 # ╟─ed624515-a93b-45b7-bcab-ae33144281c2
+# ╟─c2481fd9-276e-483b-891c-d2620b0db3ff
 # ╟─f1a6ff9a-d114-4e38-8581-5ed48e78af82
 # ╟─d820d95f-d627-4ead-8359-60a3c97ed569
 # ╟─1029bc93-7403-4081-b802-5a5664a494c5
