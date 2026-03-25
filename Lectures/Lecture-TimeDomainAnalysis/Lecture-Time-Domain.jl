@@ -938,8 +938,8 @@ md"""
 
 - An autoregressiv process of the first order, or AR(1), is defined as:
 
-```math
-x_t = \alpha_1 x_{t-1} + w_t
+
+$$x_t = \alpha_1 x_{t-1} + w_t$$
 
 - and again $w_t$ is a white noise process.
 
@@ -4379,7 +4379,7 @@ version = "1.13.0+0"
 # ╟─d4d93ec8-e268-4fc9-b5ee-cdd194636659
 # ╠═9512aa2e-afaa-4ddd-aac4-826abae447ff
 # ╟─d0dc8d40-75d7-4611-aab6-d8542f82947e
-# ╟─b0ae3114-1aca-4109-922a-02c25989e407
+# ╠═b0ae3114-1aca-4109-922a-02c25989e407
 # ╠═924e216e-9ba7-4906-9d70-94f1813911e7
 # ╠═30ece656-c5ba-42a6-8de2-e9827d72eabf
 # ╟─b86d10a0-f3a0-4489-b595-64c3eafcfef2

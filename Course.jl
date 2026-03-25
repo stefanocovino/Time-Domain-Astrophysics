@@ -65,7 +65,7 @@ md"""
 | 7. Science case: Variable stars | [notebook](./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl) | [html](Lectures/ScienceCase-VariableStars/Lecture-VariableStars.html) |
 | 8. Lecture: Wavelet Analysis | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl) | [html](Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html) |
 | 9. Science case: Climate data | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl) | [html](Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html) |
-| 10. Lecture: Time Domain analysis | [notebook](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl) | [html](Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html) |
+| 10. Lecture: Time Domain analysis | [notebook](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl) | [html](Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html) |
 
 11. [Science case: AGN and Blazars](./open?path=Lectures/Science Case - AGN and Blazars/Lecture-AGN-and-Blazars.jl)
 12. [Lecture: Time of Arrival](./open?path=Lectures/Lecture - Time of Arrival/Lecture-Time-of-Arrival.jl)
