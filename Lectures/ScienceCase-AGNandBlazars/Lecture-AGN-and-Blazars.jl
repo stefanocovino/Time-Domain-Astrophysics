@@ -18,7 +18,6 @@ begin
 	using Latexify
 	using Optim
 	using PairPlots
-	import Plots
 	using PlutoUI
 	using Statistics
 	using StateSpaceModels
@@ -365,10 +364,67 @@ begin
 end;
 
 # ╔═╡ 3fdda80e-3360-481c-af16-0bcdd5d3e470
+kf = kalman_filter(model_ARIMA);
+
+# ╔═╡ e4f15270-d453-4fa8-a44a-25ad69898896
 begin
-	kf = kalman_filter(model_ARIMA)
+	# --- Estrai i residui standardizzati ---
+	residuals = [kf.v[t][1] / sqrt(kf.F[t][1,1]) for t in 1:length(kf.v)]
+	n = length(residuals)
+	t = 1:n
 	
-	plotdiagnostics(kf)
+	# --- Calcola ACF dei residui ---
+	max_lag = min(20, n ÷ 4)
+	acf_vals = autocor(residuals, 0:max_lag)
+	conf_bound = 1.96 / sqrt(n)  # banda di confidenza 95%
+end;
+
+# ╔═╡ 2e85e5c4-796e-47ad-8d03-6823889e6403
+begin
+	# --- Plot diagnostici con CairoMakie ---
+	figkf = Figure(size = (900, 700))
+	
+	# 1. Residui nel tempo
+	ax1 = Axis(figkf[1, 1],
+	    title = "Standardized Residuals",
+	    xlabel = "Time",
+	    ylabel = "Residual")
+	lines!(ax1, t, residuals, color = :steelblue, linewidth = 1)
+	hlines!(ax1, [0.0], color = :black, linewidth = 0.8, linestyle = :dash)
+
+	# 2. Istogramma dei residui
+	ax2 = Axis(figkf[1, 2],
+	    title = "Residuals Histogram",
+	    xlabel = "Residual",
+	    ylabel = "Density")
+	hist!(ax2, residuals, normalization = :pdf, color = (:steelblue, 0.6), bins = 20)
+	# Sovrapponi curva normale teorica
+	xs = range(minimum(residuals), maximum(residuals), length = 200)
+	lines!(ax2, xs, x -> exp(-0.5 * x^2) / sqrt(2π), color = :red, linewidth = 2)
+	
+	# 3. QQ-plot (Normal)
+	ax3 = Axis(figkf[2, 1],
+	    title = "Normal Q-Q Plot",
+	    xlabel = "Theoretical Quantiles",
+	    ylabel = "Sample Quantiles")
+	sorted_res = sort(residuals)
+	theoretical_q = quantile.(Ref(Normal()), (1:n) ./ (n + 1))
+	CairoMakie.scatter!(ax3, theoretical_q, sorted_res, color = :steelblue, markersize = 5)
+	# Linea di riferimento
+	lims = extrema([theoretical_q; sorted_res])
+	lines!(ax3, collect(lims), collect(lims), color = :red, linewidth = 1.5)
+	
+	# 4. ACF dei residui
+	ax4 = Axis(figkf[2, 2],
+	    title = "ACF of Residuals",
+	    xlabel = "Lag",
+	    ylabel = "Autocorrelation")
+	lags = 0:max_lag
+	barplot!(ax4, collect(lags), acf_vals, color = :steelblue, gap = 0.2)
+	hlines!(ax4, [conf_bound, -conf_bound], color = :red, linewidth = 1.2, linestyle = :dash)
+	hlines!(ax4, [0.0], color = :black, linewidth = 0.8)
+	
+	figkf
 end
 
 # ╔═╡ 29e38a84-e43f-434a-83cf-3003a33b1079
@@ -699,7 +755,6 @@ HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 PairPlots = "43a3c2be-4208-490b-832a-a21dcd55d7da"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StateSpaceModels = "99342f36-827c-5390-97c9-d7f9ee765c78"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -720,7 +775,6 @@ HypothesisTests = "~0.11.6"
 Latexify = "~0.16.10"
 Optim = "~1.13.3"
 PairPlots = "~3.0.3"
-Plots = "~1.41.6"
 PlutoUI = "~0.7.80"
 StateSpaceModels = "~0.7.2"
 StatsBase = "~0.34.10"
@@ -734,7 +788,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "d5874a96fb7bf5c8eef3f556b5e8f2407be4a2a7"
+project_hash = "ec1f72c121e0bf9960f95033d2b6ed67a058fb18"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -3939,6 +3993,8 @@ version = "1.13.0+0"
 # ╟─ef6c457b-9f04-45b7-bf31-281a39111fb6
 # ╠═b8849f80-f454-464e-881b-4b5a9f2dcbdd
 # ╠═3fdda80e-3360-481c-af16-0bcdd5d3e470
+# ╠═e4f15270-d453-4fa8-a44a-25ad69898896
+# ╠═2e85e5c4-796e-47ad-8d03-6823889e6403
 # ╟─29e38a84-e43f-434a-83cf-3003a33b1079
 # ╠═7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
 # ╟─604dab44-6d5f-49e3-a2c1-669a947ac5ea
