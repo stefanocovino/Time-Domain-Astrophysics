@@ -63,12 +63,12 @@ md"""
 | 5. Science case: X-ray binaries | [notebook](./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl) | [html](Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.html) |
 | 6. Lecture: Irregular sampling | [notebook](./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl) | [html](Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html) |
 | 7. Science case: Variable stars | [notebook](./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl) | [html](Lectures/ScienceCase-VariableStars/Lecture-VariableStars.html) |
-| 8. Lecture: Wavelet Analysis | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl) | [html](Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html) |
+| 8. Lecture: Wavelet Analysis | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl) | [html](Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html) |
 | 9. Science case: Climate data | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl) | [html](Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html) |
 | 10. Lecture: Time Domain analysis | [notebook](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl) | [html](Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html) |
 | 11. Science case: AGN and Blazars | [notebook](./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl) | [html](Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html) |
+| 12. Lecture: Time of Arrival | [notebook](./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl) | [html](Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html) |
 
-12. [Lecture: Time of Arrival](./open?path=Lectures/Lecture - Time of Arrival/Lecture-Time-of-Arrival.jl)
 13. [Science case: FRBs](./open?path=Lectures/Science Case - FRBs/Lecture-FRBs.jl)
 14. [Lecture: Non Parametric Analysis](Lectures/Lecture - Non Parametric Analysis/Lecture-NonParametricAnalysis.ipynb)
 15. [Lecture: Singular Spectrum Analysis](Lectures/Lecture - Singular Spectrum Analysis/Lecture-SSA.jl)

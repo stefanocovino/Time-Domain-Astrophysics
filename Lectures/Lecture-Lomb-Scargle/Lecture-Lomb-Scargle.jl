@@ -1067,9 +1067,9 @@ begin
 	
 	lsboot7 = LombScargle.bootstrap(1000, t7, y7, dy7, maximum_frequency=4, samples_per_peak=10)
 	
-	p85 = LombScargle.fapinv(lsboot7,0.85)
-	p95 = LombScargle.fapinv(lsboot7,0.95)
-	p99 = LombScargle.fapinv(lsboot7,0.99)
+	p85 = LombScargle.fapinv(lsboot7,0.15)
+	p95 = LombScargle.fapinv(lsboot7,0.05)
+	p99 = LombScargle.fapinv(lsboot7,0.01)
 	
 	
 	fg7 = Figure(size=(700,350))

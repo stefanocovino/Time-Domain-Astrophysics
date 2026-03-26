@@ -410,7 +410,7 @@ md"""
 
 # ╔═╡ bad3dda4-e865-454d-8ffb-a6f34a17addf
 begin
-	fg3 = Figure()
+	fg3 = Figure(size=(640,480))
 	
 	ax1fg3 = Axis(fg3[1,1],
 	    ylabel=L"SAP flux ($10^6 e^-/s$)",
@@ -538,7 +538,7 @@ end
 
 # ╔═╡ 9d1c4f33-5017-461f-855c-97f6625b9612
 md"""
-- There is a well defined maximu and, due to the "quasi-regular" sampling even an aliased region.
+- There is a well defined maximum and, due to the "quasi-regular" sampling even an aliased region.
 
 - Finaly, let's check whether te phased curve is reasonable.
 """
@@ -563,7 +563,7 @@ end
 
 # ╔═╡ b8d539e3-35fb-4a0b-a24f-ba09e8083944
 md"""
-- The obtained light curve confirms the clsassification of this object as a RR-Lyrae variable.
+- The obtained light curve confirms the classification of this object as a RR-Lyrae variable.
 """
 
 # ╔═╡ 62819b47-de68-4006-8589-0752ebc4c690

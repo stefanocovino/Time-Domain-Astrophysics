@@ -338,11 +338,11 @@ end;
 let
     fig = Figure(size=(640, 480), backgroundcolor=:white)
  
-    Label(fig[0, 1],
-        "τ = $(round(τ_current, digits=3)) s  |  " *
-        "f₀ = $(f0) Hz  |  σ = $(round(σ, digits=3)) s  |  " *
-        "W(τ) = $(round(c_current, digits=5))",
-        fontsize=13, color=:gray40)
+   # Label(fig[0, 1],
+   #     "τ = $(round(τ_current, digits=3)) s  |  " *
+   #     "f₀ = $(f0) Hz  |  σ = $(round(σ, digits=3)) s  |  " *
+   #     "W(τ) = $(round(c_current, digits=5))",
+   #     fontsize=13, color=:gray40)
  
     ax1 = Axis(fig[1,1]; title="s(t) — original signal",
                ylabel="amplitude", xticklabelsvisible=false,
@@ -395,7 +395,7 @@ let
              strokewidth=1, strokecolor=:white)
     hlines!(ax4, [0.0], color=(:black, 0.25), linewidth=0.7)
     xlims!(ax4, 0.0, 1.0)
-    ylims!(ax4, -0.15, 0.15)
+    ylims!(ax4, -0.05, 0.05)
  
     fig
 end
@@ -636,6 +636,13 @@ begin
 	figex
 end
 
+# ╔═╡ 9d094cc4-60f4-49c0-af51-e5b4a666d41b
+md"""
+
+- The "scaleogram" clearly shows the twon signal, and that they are present for the whole observation".
+
+"""
+
 # ╔═╡ 2861b272-16b1-4176-bc77-494b809908e1
 begin
 	dtex = mean(diff(time))          # assume quasi-regular sampling
@@ -702,7 +709,7 @@ end
 md"""
 - The two periodic signals do appear as continuous stripes along the time axis (X). The wavelet captures the signal at its frequency of sensitivity.  
     
-- The visible height of the two signals expands with the scale value. This happens becausethe wavelet signal is scaled by a factor $s$.
+- The visible height of the two signals expands with the scale value. This happens because the wavelet signal is scaled by a factor $s$.
 
 - The solid black lines identify the Cone Of Influence (COI), they represent the locations where the data is strongly affected by border effects due to the extent in time of the child wavelet.
 """
@@ -799,7 +806,7 @@ end
 
 # ╔═╡ cf2a10d9-12c8-46ca-8493-0d902f153932
 md"""
-- As you can see, the scale influence not only the sensitivity on the Y axis but has also a smoothing effect on the X axis: the second cos() line at period does not "see" the first hole in the data, but the signal amplitude has diminished.
+- As you can see, the scale influences not only the sensitivity on the Y axis but has also a smoothing effect on the X axis: the second cos() line at period does not "see" the first hole in the data, but the signal amplitude has diminished.
 
 - The second observation is the apparition on a weak spurious line at period~30. This is due to the sharp cut applied on the data between 50 and 100. This effect is another example of aliasing in frequency.
 """
@@ -2705,7 +2712,7 @@ version = "4.1.0+0"
 # ╟─7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
 # ╟─738b344d-e2ae-4f99-b755-38c0dcdc3da3
 # ╟─576eb9f0-40c6-4a9a-9504-d562452541e6
-# ╠═6e81c233-8aa5-4ab4-a011-c56ad0026ea9
+# ╟─6e81c233-8aa5-4ab4-a011-c56ad0026ea9
 # ╟─6a71ccd0-8ee7-4c39-b8c7-88b398e98d1a
 # ╟─f153fdfa-57d5-4112-8d59-847ee1ec06ca
 # ╟─138dc591-5a42-4ae7-8b34-863c947b59e3
@@ -2713,16 +2720,17 @@ version = "4.1.0+0"
 # ╟─bf197511-19c5-443b-a541-7608b61518c4
 # ╟─03a06450-8121-48fc-bd7f-d129c52d3f64
 # ╟─9d0b25ab-b8bc-455c-bf42-40f0d085be08
-# ╠═1c4ceb56-af5c-4f12-860d-d64380e7a0ca
+# ╟─1c4ceb56-af5c-4f12-860d-d64380e7a0ca
 # ╟─46e6b3f3-0376-4a30-9b70-16d0f35a2f86
-# ╠═2861b272-16b1-4176-bc77-494b809908e1
-# ╠═83c25944-1fae-4207-a423-78aa974314f5
+# ╟─9d094cc4-60f4-49c0-af51-e5b4a666d41b
+# ╟─2861b272-16b1-4176-bc77-494b809908e1
+# ╟─83c25944-1fae-4207-a423-78aa974314f5
 # ╟─b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
 # ╟─517ff59c-aee6-4e66-b87c-e1e16921a758
-# ╠═c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
-# ╠═579ec13a-188a-4d38-957e-666c62e6231d
-# ╠═7433ebb9-bdb5-4478-bf81-5246f2603a88
-# ╠═254d346e-8861-4bbf-ac15-f49d0d8c52d3
+# ╟─c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
+# ╟─579ec13a-188a-4d38-957e-666c62e6231d
+# ╟─7433ebb9-bdb5-4478-bf81-5246f2603a88
+# ╟─254d346e-8861-4bbf-ac15-f49d0d8c52d3
 # ╟─cf2a10d9-12c8-46ca-8493-0d902f153932
 # ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
 # ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b

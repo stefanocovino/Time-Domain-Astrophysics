@@ -131,6 +131,13 @@ begin
 	yticks_lbl = string.(Int.(2 .^ yticks_pos))
 end;
 
+# ╔═╡ 911b7cde-882d-407e-9f97-13159c131fa1
+md"""
+
+- And let's compute a wavelet analysis of this dataset, by a Morlet wavelet"
+
+"""
+
 # ╔═╡ 90ec63d7-5694-4e2f-8420-11923054541b
 begin
 	fig_wave = Figure(size = (1000, 650))
@@ -2080,17 +2087,18 @@ version = "4.1.0+0"
 # ╟─c0c5e6e6-de5f-4973-8dfa-6bed30c474a4
 # ╟─f40ad72a-b6fd-4024-ab09-de1b6e31501b
 # ╟─090ffe2f-b381-49ec-bc08-53219c690e77
-# ╠═6721746e-71e6-4d3d-a32a-6c0385986351
-# ╠═cf2a10d9-12c8-46ca-8493-0d902f153932
-# ╠═ea016e4b-21c6-4e84-a646-444d6fb9a1b5
-# ╠═d87f7818-4dd9-457b-b15b-6056df5e4683
-# ╠═00d6567b-5706-4cd8-9e01-567a8d36e150
-# ╠═2b63c7ed-51da-4415-a380-000db490a137
-# ╠═90ec63d7-5694-4e2f-8420-11923054541b
+# ╟─6721746e-71e6-4d3d-a32a-6c0385986351
+# ╟─cf2a10d9-12c8-46ca-8493-0d902f153932
+# ╟─ea016e4b-21c6-4e84-a646-444d6fb9a1b5
+# ╟─d87f7818-4dd9-457b-b15b-6056df5e4683
+# ╟─00d6567b-5706-4cd8-9e01-567a8d36e150
+# ╟─2b63c7ed-51da-4415-a380-000db490a137
+# ╟─911b7cde-882d-407e-9f97-13159c131fa1
+# ╟─90ec63d7-5694-4e2f-8420-11923054541b
 # ╟─4764ec57-550b-4afb-855e-6838e444b622
 # ╟─fc09bcf9-6512-4881-babb-52a0e7f8ccdf
 # ╟─83785073-c8da-4ceb-a7f2-685cd6e920f1
-# ╠═dd8bfd81-5e0d-4cb7-887a-dfacf1ede27c
+# ╟─dd8bfd81-5e0d-4cb7-887a-dfacf1ede27c
 # ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
 # ╟─af38d725-6e0f-4958-85bb-1be029ba3fb5
 # ╟─241907cb-1fb0-4963-8bb9-7894136e43de
