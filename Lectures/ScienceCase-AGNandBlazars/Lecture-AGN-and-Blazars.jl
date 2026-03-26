@@ -4,24 +4,30 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 508fcfab-51c1-4dc5-992d-d5961517b9bf
+# ╔═╡ 6567291b-91ba-45b4-b625-34e2a2b4caf6
 begin
-	using ARFIMA
+	using AbstractFFTs
 	using CairoMakie
 	using CommonMark
 	using CSV
 	using DataFrames
-	using Distributions
+	using DensityInterface
+	using DSP
+	using Format
 	using HypothesisTests
-	using LombScargle
+	using Latexify
+	using Optim
+	using PairPlots
 	import Plots
 	using PlutoUI
-	using ShiftedArrays
+	using Statistics
 	using StateSpaceModels
 	using StatsBase
+	using StatsPlots
+	using Turing
 end
 
-# ╔═╡ 14a0c11f-827d-46c8-bd5f-469a029f9afe
+# ╔═╡ 2e053d2a-7cc0-4df7-bda1-f43b7d397518
 md"""
 **What is this?**
 
@@ -29,1829 +35,307 @@ md"""
 *This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
-# ╔═╡ 2aeb4208-bc0c-4907-ab6d-da3f48210aa5
+# ╔═╡ b1ea7402-3509-46f1-aefb-c2d51215062c
 md"""
-**This is a `Julia` notebook**
+**This is a `Pluto` notebook**
 """
 
-# ╔═╡ fce942fc-7126-4e92-b758-30d36609117f
+# ╔═╡ 2ceeb12e-e068-4401-a921-bb45a2396424
 # ╠═╡ show_logs = false
 md"""
 $(LocalResource("Pics/TimeDomainBanner.jpg"))
 """
 
-# ╔═╡ 97bebdb5-df0d-4eb2-b214-1a38dd9ffa85
+# ╔═╡ cb93de12-47c8-40e8-a056-4a4f08d42d66
 # ╠═╡ show_logs = false
 md"""
-# Time-Domain analysis
+# Science Case: AGN and Blazars
 
 ***
 
-- One can derive inferences about the spectral content of a time series by a spectral analysis.
+- Why are they special?
+- What is the power source?
+- What is the sources of continuum emission?
+- What is producing emission and absorption features?
+- How do jets form?
+- AGN classification schema and unification.
+- The co-evolution of black holes and galaxies.
 
-- An analogous (i.e. complementary) analysis can be carried out in the time domain.
 
-- Traditionally, analyses in the temporal domain are often aimed at deriving predictions, while in the spectral domain one often looks for periodicity, etc.
 
-- There are indeed no fundamental technical reasons for that. 
+- More specifically:
+    - Very large luminosities are possible, up to 10,000 times a typical galaxy.
+    - The emission spans a huge range of photon energy, i.e. from radio to gamma-rays.
+    - The source of energy generation is very compact, typically lower than the size of the solar system.
+    - In some cases, there is significant energy transported in relativistic jets.
 
-$(LocalResource("Pics/timevsspectral.png"))
+
+
+- This AGN, [3C273](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=3C+273), is several hundred times brighter than its host galaxy, just in visible light alone:
+
+$(LocalResource("Pics/3c273.jpg"))
 
 """
 
-# ╔═╡ 36377f43-7624-4113-9ea9-409fbd3ef079
+# ╔═╡ 3f25cd6c-9b2d-4459-9651-7c1df7be5f2c
+# ╠═╡ show_logs = false
+md"""
+### AGN: Observational data
+***
+
+- Highly luminous: $L_{\rm bol} \sim 10^{42}–10^{48}$ erg s$^{-1}$ ($10^9-10^{15} L_\odot$).
+
+- Compact: size << 1pc.
+
+- Broad-band continuum emission:  
+    - dL/dlog f = const.  From IR to X-rays and γ-rays
+
+- Variable: on different times scales. Rapid variability in the X-ray indicate that emission comes from the innermost region.
+
+- Strong Radio emitters: in some sources extended, jets are present.
+
+- Polarized emission.
+
+
+
+- [Markarian 421](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=Mrk++421) shows comparable power emitted across abouit seven orders of magnitude in photon energy:
+
+$(LocalResource("Pics/mrk421.png"))
+
+"""
+
+# ╔═╡ 345f1ef8-e930-453a-aac0-c44cffb76d44
+# ╠═╡ show_logs = false
+md"""
+- [Markarian 421](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=Mrk++421) is also bright at TeV energies, nowdays accessible, e.g., by [Cherenkov telescopes](https://en.wikipedia.org/wiki/IACT):
+
+$(LocalResource("Pics/mrk421tev.png"))
+"""
+
+# ╔═╡ a8f9e126-1730-4f30-8d70-9b454f56ff39
+# ╠═╡ show_logs = false
+md"""
+- Light travel time argument: a source that varies significantly in time t must have size  $R < ct$, where $c$ is the speed of light.
+
+$(LocalResource("Pics/compactsource.png"))
+"""
+
+# ╔═╡ 7e8db3bd-fac0-44a3-b4f3-5246cc2eda89
+md"""
+#### Exercize: compute the upper limit to the source size for [Mrk 421](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=Mrk++421):
+***
+
+- At $\sim 100$ keV the shortest observed variability is $\sim 2.9$ hours.
+
+- The size of the emitting region turns out to be:
+
+```math
+l \le \frac{c \Delta t \delta}{1+z}
+```
+
+- where $c$ is the speed of light, $\Delta t$ the variability time, $\delta$ the Doppler factor and $z$ the source redshift. 
+
+- The Doppler factor is $\delta = \frac{1}{\Gamma (1-\beta \cos \theta)} = \frac{\sqrt{1-\beta2}}{1-\beta \cos \theta}$, where $\Gamma$ is the Loremtz factor, $\beta$ the source speed in units of the speed of light, and $\theta$ the angle of motion wrt the line of sight.
+    - For this source $z = 0.030$, $\theta \approx 0^\circ$ and $\beta > 0.98$ so that $\delta \sim 10$ and, finally, $l \le 3 \times 10^{15}$ cm = 203 AU.
+"""
+
+# ╔═╡ 3586aabc-e618-4247-827b-777224115314
 # ╠═╡ show_logs = false
 cm"""
-## Time-Domain vs Spectral analysis: main tools
+## The AGN unified model
 ***
 
+- Many of the various phenomenologies shown by AGN can be explained by a unique simple scenario and dfferent viewing angles:
 
-|  | **Time Domain**                  | **Frequency Domain**                            |
-|:--:|:----------------------------------:|:-------------------------------------------------:|
-|  | ``x_t`` linear combination of past | ``x_t`` linear combination of periodic components |
-| Object of interest | population ACF | Spectral density |
-| Data analysis tool | sample ACF | Periodogram |
-| | | Identify dominant frequency(ies) |
+$(LocalResource("Pics/unifiedmodel.png"))
 
 
 
+- The power source is accretion onto a supermassive black-hole. 
+    - Efficient, compact, and capable of producing high-energy emission and jets.
+
+
+
+- It is occasionally possible to measure directly the mass of the central black-hole, e.g., by Newtonian dynamics (``M = v^2 R/G``):
+    - Water masers have been mapped in [NGC 4258](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=NGC+4258):  ``M \sim 40 \times 10^6 M_\odot``. 
+    - Orbits of stars in the [Galactic Center](https://en.wikipedia.org/wiki/Galactic_Center): ``M \sim 3 \times 10^6 M_\odot``.
+
+| $(LocalResource("Pics/rotcurve.jpg")) | $(LocalResource("Pics/galcenter.jpg")) |
+| ------------------------------------ | -------------------------------------- |
+
+
+
+- And now we also have direct imaging of the [M87](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=M87) central black holes:
+
+$(LocalResource("Pics/m87.png"))
 """
 
-# ╔═╡ 91f7ef29-6570-44d1-a5e2-79658576d488
-cm"""
-### The Correlation Function
-***
-
-- One of the main statistical tools for the analysis of stochastic variability is the autocorrelation function. It represents a specialized case of the correlation function of two functions, ``f(t)`` and ``g(t)``, scaled by their standard deviations, and defined at time lag  as: 
-
-```math
-CF(\Delta t) = \frac{\lim_{T\to\infty} \int_{(T)} f(t) g(t+\Delta t)dt}{\sigma_f \sigma_g}
-```
-
-- where ``σ_f`` and ``σ_g`` are standard deviations of ``f(t)`` and ``g(t)``, respectively. 
-
-- With this normalization, the correlation function is unity for ``Δt = 0``, without normalization by standard deviation, the above expression is equal to the covariance function.
-"""
-
-# ╔═╡ 2d403a10-ede5-4d72-a732-59d4715273bc
-cm"""
-### The Auto-Correlation Function
-***
-
-- It is assumed that both ``f`` and ``g`` are statistically weakly stationary functions (more on this topic later).
-
-- With ``f(t)=g(t)=y(t)``, the autocorrelation of ``y(t)`` defined at time lag  is:
-
-```math
-ACF(\Delta t) = \frac{\lim_{T\to\infty} \int_{(T)} y(t) y(t+\Delta t)dt}{\sigma^2_y}
-```
-
-- The autocorrelation function and the PSD of function ``y(t)`` are Fourier pairs; this fact is known as the Wiener–Khinchin theorem and applies to stationary random processes.
-
-- The sample auto-correlation function is defined as:
-
-```math
-ACF(k) = \frac{\sum_{t=1}^{n-k}(X_t - \bar{X})(X_{t+k} - \bar{X})}{\sum_{t=1}^k (X_t - \bar{X})^2}
-```
-
-- where the numerator is just the sample auto-covariance function and the denominator the sample variance. 
-
-- ACF(k) is often called a correlogram.
-
-- The ACF is fundamental measure of the serial correlation in a time series.
-
-- It is defined for evenly spaced time-series, yet there are generalization to irregularly sampled data.
-
-- Under the null hypothesis that the time series has no correlated structure and the population ACF is zero for all lags except for ACF(0) which is always unity.
-
-- The distribution of the sample is asymptotically normal with mean ``−1/n`` and variance ``1/n``, i.e. the distribution of the null case ACF is ``ACF(k) = \mathcal{N}(−1/n,1/n)``. 
-
-- However, this holds under the assumtpion one is testing whether a time-series is white noise, i.e. the residuals of a fit. Else, a different formula, based on the assumption that a time-series can be described as a moving average process (see later), is known as Bartlett's formula: `` \sigma_{\rm ACF(k)} ≈ (1 / \sqrt{N})  \sqrt{1 + 2\sum_{i=1}^{k-1} {\rm ACF(i)}^2}``.
-
-
-    - Essentially, Bartlett's formula refines the confidence interval calculation for ACF by accounting for the potential dependence between ACF values in non-white noise processes, particularly those following a moving average structure.
-
-
-
-
-- Simple quantities like the sample mean are valid estimates of the population mean for stationary processes, but its uncertainty is not the standard value when autocorrelation is present:
-
-```math
-\widehat{Var}(\bar{X}_n) = \frac{\sigma^2}{n} \left[1 + 2\sum_{k=1}^{n-1}(1-k/n){\rm ACF}(k) \right]
-```
-
-- Qualitatively, this can be understood as due to the decrease of independent measurements.
-
-- This is indeed one very important result, although often (wrongly) ignored.
-
-- Knowing the ACF one can compute the so-called integrated auto-correlation time ``\tau_{X,{\rm int}}``:
-
-```math
-\tau_{X,{\rm int}} = \int_0^\infty ACF (\tau) d\tau
-```
-
-- This allows one to define the *effective* number of samples in our dataset `` N_{\rm eff} = N / 2 \tau_{X,{\rm int}}`` so that the variance can be written as ``\widehat{Var}(\bar{X}_n) = \sigma^2 / N_{\rm eff} ``.
-
-- The ACF is *non-negative definite*, i.e.: ``\sum_{i=1}^n \sum_{j=1}^n \alpha_j ACF(i-j) \alpha_j \ge 0`` for all positive integers ``n`` and vectors ``\alpha = (\alpha_1,\alpha_2,...,\alpha_n)' \in \mathbb{R}^n``. In fact, ``\sum_{i=1}^n \sum_{j=1}^n \alpha_j ACF(i-j) \alpha_j = Var \left( \sum_{i=1}^n \alpha_j x_j \right)``.
-"""
-
-
-
-# ╔═╡ 90b6cf29-44c0-425d-a814-910fb08009d2
-cm"""
-### The partial ACF (PACF)
-***
-
-- The PACF at lag k gives the autocorrelation at value k removing the effects of correlations at shorter lags.
-
-- The value of the p-th coefficient PACF(p) is found by successively fitting autoregressive models (more on this topic later) with order ``1,2,...,p`` and setting the last coefficient of each model to the PACF parameter (this again will be clearer later).
-
-- For instance, for a stationary AR(2) process:
-
-```math
-PACF(2) = \frac{ACF(2)-ACF(1)^2}{1-ACF(1)^2}
-```
-
-- The partial autocorrelation function of a stationary time series can be calculated by using the Durbin–Levinson Algorithm:
-
-```math
-\phi_{n,n} = \frac{\rho(n)-\sum_{k=1}^{n-1} \phi_{n-1,k}\rho(n-k)}{1-\sum_{k=1}^{n-1} \phi_{n-1,k}\rho(n-k)}
-```
-
-- where ``\phi_{n,k} = \phi_{n-1,k} - \phi_{n,n}\phi_{n-1,n-k}`` for ``1\le k\le n-1`` and ``\rho(n)`` is the ACF.
-"""
-
-
-
-# ╔═╡ 91c6247b-af12-47cf-811a-1440b6919576
-cm"""
-### Discrete Correlation Function
-***
-
-- The discrete correlation function is a procedure for computing the autocorrelation function that avoids interpolating an unevenly spaced dataset onto a regular grid.
-
-- The method can treat both autocorrelation within one time series or cross-correlation between two unevenly spaced time series.
-
-- Consider two datasets ``(x_i,t_{x_i})`` and ``(z_j,t_{z_j})`` with ``i = 1,2,...,n`` and ``j = 1,2,...,m`` points, respectively. For autocorrelation within a single dataset, let ``z = x``. 
-
-- Construct two matrices, the **unbinned discrete correlation function** (UDCF) and its associated time lags:
-
-```math
-{\rm UDCF}_{i,j} = \frac{(x_i-\bar{x})(z_j-\bar{z})}{\sigma_x \sigma_z} \qquad \Delta_{ij}=t_j-t_i
-```
-
-- The UDCF is then grouped into a univariate function of lag-time ``τ`` by collecting the ``M(τ)`` data pairs with lags falling within the interval ``τ − Δτ /2 ≤ Δt_{ij} < τ + Δτ /2``. 
-
-- The resulting discrete correlation function (DCF) and its variance are:
-
-```math
-{\rm DCF}(\tau) = \frac{1}{M(\tau)}\sum_{k=1}^{M(\tau)} {\rm UDCF}_{ij} \quad 
-{\rm Var}(\tau) = \frac{1}{(M(\tau)-1)^2} \sum_{k=1}^{M(\tau)} [{\rm UDCF}_{ij} - {\rm DCF}(\tau) ]^2
-```
-
-"""
-
-# ╔═╡ f1c10261-a2c7-473c-879b-005714127aee
-cm"""
-### Z-transformed DCF
-***
-
-- The drawback of the DFC is that its sample distribution of is known to be very skewed and far from normal. 
-
-- If bins have an equal number of points (i.e. bins can have different length), The bin distribution becomes approximately binomial and, if a [Fisher z-transform](https://en.wikipedia.org/wiki/Fisher%27s_z-distribution) is applied:
-
-```math
-z(t) = \frac{1}{2} \ln \left( \frac{1+{\rm DCF}(\tau)}{1-{\rm DCF}(\tau)} \right)
-```
-
-- The ``z(τ)`` values are now normally distributed with known mean and variance (see [Alexander 1997](https://ui.adsabs.harvard.edu/abs/1997ASSL..218..163A/abstract)).
-"""
-
-
-
-# ╔═╡ b40d3fb9-f423-44d5-8a3e-32e15a6cc564
-cm"""
-### The Structure Function
-***
-
-- The structure function (sometimes called the Kolmogorov structure function) is again a measure of autocorrelation.
-
-- The q-th order structure function is:
-
-```math
-D^q(\tau) = \langle|x(t)-x(t+\tau)|^q \rangle
-```
-
-- where the angular brackets ⟨ ⟩ indicate an average over the time series and q is the order of the structure function (not necessarily integer).
-
-- The q = 2 structure function is also called the variogram. 
-
-- When a dataset has a characteristic time-scale of variation ``τ_c``, the structure function is small at τ shorter than ``τ_c``, rises rapidly to a high level around ``τ_c``, and stays at this plateau for longer τ.
-
-- If a structure function exhibits a power-law dependence on lag, ``D_q(\tau) \propto \tau^\alpha``, the time series has a multi-fractal behavior. In this case, the Wiener–Khinchin theorem links the power-law dependence of the q = 2 structure function to the power-law dependence of the Fourier power spectrum. 
-
-- The structure function with q = 2 can also be seen as:
-
-```math
-SF(\Delta t) = SF_\infty[1-{\rm ACF}(\Delta t)]^{1/2}
-```
-
-- where ``SF_\infty`` is the standard deviation of the time series evaluated over an infinitely large time interval (or at least much longer than any characteristic timescale τ). 
-
-- The structure function with q=2 is equal to the standard deviation of the distribution of the difference of ``y(t_2)-y(t_1)`` evaluated at many different ``t_1`` and ``t_2``. 
-
-- As mentioned before, when the structure function ``SF \propto t^α``, then the ``{\rm PSD} \propto 1/f^{1+2α}``.
-
-- The slope of the PSD directly affects the shape of the related time-series:
-
-$(LocalResource("Pics/longmemory.png"))
-"""
-
-# ╔═╡ 40e140c2-a8fb-4e31-9636-a36104f60460
+# ╔═╡ edfcfc7f-e288-4c9f-b11b-b4cda0553a78
+# ╠═╡ show_logs = false
 md"""
-### Different stochastic processes can be categorized based on their ACF/PSD
+### A few more thoughts
 ***
 
-- A stochastic process with $1/f^2$ spectrum is known as random walk (if discrete) or Brownian motion (or, more accurately, Wiener process) if continuous. These physically occur when the value being observed is subjected to a series of independent changes of similar size. It's also sometimes called as "red noise". Quasar variability (for instance) exhibits $1/f^2$ properties at high frequencies (that is, short time scales, below a year or so).
+- AGN are important for several more reasons:
+    - They have produced ~10% of all the luminous energy since the Big Bang.
+    - They are unique laboratories for studying physics under extreme conditions.
+    - They played a major role in the evolution of the baryonic component of the universe (galaxies and the inter-galactic medium).
 
-- A stochastic process with $1/f$ spectrum are sometimes called "long-term memory processes" (also sometimes know as "pink noise"). They have equal energy at all octaves (or over any other logarithmic frequency interval). This type of process has infinite variance and an undefined mean (similar to a Lorentzian distribution).
 
-- A process with a constant PSD is frequently referred to as "white noise", i.e., it has equal intensity at all frequencies. This is a process with no memory, each measurement is independent of all others. White noise is identically and indepndently distributed (I.I.D.).
+
+- Among the variuous AGN phenomenologies, jets play a fundamental role:
+
+    -  If one of the two opposite jets is pointing to the observer (i.e. Earth) we call these sources “blazars”.
+    - There are, as usual, subtypes, but in general the jet emission outshines the whole galaxy by a large factor. 
+    - Plenty of relativistic phenomena to take into account. Blazars dominate the high-energy sky.
+
+
+
+- These sorces are often monitored since decades with with multi-band light curves.
+    - This is, for instance, the dataset obtained by the [INAF](http://www.inaf.it/en?set_language=en) [REM telescope](https://en.wikipedia.org/wiki/Rapid_Eye_Mount_telescope) for [PKS2155-304](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=PKS+2155-304&submit=SIMBAD+search):
+   
+$(LocalResource("Pics/pks2155-304-rem.jpg"))
 """
 
-# ╔═╡ 2f7623f2-359c-4c93-b6b2-ab48f606ec56
-begin
-	function GetACF(data, lags; sigma=1.96)
-	    cc = StatsBase.autocor(data,0:lags)
-	    return cc, -1/length(data)-sigma*sqrt(1/length(data)),-1/length(data)+sigma*sqrt(1/length(data))
-	end
-	
-	function GetPACF(data, lags; sigma=1.96)
-	    cc = StatsBase.pacf(data,0:lags)
-	    return cc, -1/length(data)-sigma*sqrt(1/length(data)),-1/length(data)+sigma*sqrt(1/length(data))
-	end
+# ╔═╡ 1c3ac56a-d566-44e6-bf16-be9934724a77
+# ╠═╡ show_logs = false
+md"""
+### AGN/Blazar with binary central black-holes?
+***
 
-	function GetCrossCorr(x,y,lags)
-		cc = StatsBase.crosscor(x, y, -lags:lags; demean=true)
-		return cc
-	end
+- There is strong interest in (possible) blazar periodicities.
+- It is a highly debated topic, a general agreement in the community is still missing for a series of reasons we are now able to realize:
+    - Often, we refer to year-long (quasi-)periodicities, with light-curve at most a couple of decades long. Usual statistical tests are almost ineffecitve. 
+    - Time-series are affected by red-noise, making evaluation of the significance of identified features difficult.
+    - For data from ground-based facilities sampling is irregular with long (seasonal) gaps.
+    
+$(LocalResource("Pics/binary.jpg"))
+"""
+
+# ╔═╡ c83c4c6c-b3c3-48a5-973f-ae68427c0972
+md"""
+#### Exercise: [PG1553+113](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=PG+1553%2B113) claimed periodicity
+***
+
+- We analyse data obtained by the [Fermi satellite](https://fermi.gsfc.nasa.gov/) with the [LAT](https://fermi.gsfc.nasa.gov/science/instruments/lat.html) instrument. Data can be downloaded [here](https://fermi.gsfc.nasa.gov/ssc/data/access/).
+
+- Let's see the light-curve:
+"""
+
+# ╔═╡ f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+begin
+	dt = DataFrame(CSV.File("4FGLJ1555 7p1111.txt",select=[1,2,3],comment="#"))
+	rename!(dt,["MJD","Rate","eRate"])
+	dt[!,:Rate] =  dt[!,:Rate] * 1e7
+	dt[!,:eRate] =  dt[!,:eRate] * 1e7
 end;
 
-# ╔═╡ f3ed1ba4-849b-4713-8e48-4a537ee894d7
-md"""
-#### Exercize: cross-correlation of data from the Covid19 outbreak in Italy
-***
-
-- Italian data downloaded from: [https://github.com/pcm-dpc/COVID-19](https://github.com/pcm-dpc/COVID-19) and updated till April 07, 2022.
-"""
-
-# ╔═╡ f0e73dd6-2f4f-4dd6-9426-f0a739956602
-begin
-	nep = DataFrame(CSV.File("Data_Italy.csv"))
-	first(nep,5)
-end
-
-# ╔═╡ dcb69463-c144-4726-8336-5f3851873d8a
-md"""
-- We need to slighly rearrange the data in order to compute the number of deaths per day.
-"""
-
-# ╔═╡ f8b03f2b-a241-4d77-8fc9-4c24a4c8ef90
-begin
-	dDead = diff(nep[!,"Dead"])
-	nep[!,"dDead"] = pushfirst!(dDead,0)
-end;
-
-# ╔═╡ 577fa116-fa14-4077-8fc8-4d3ea544f410
-md"""
-- We need to slighly rearrange the data in order to compute the number of deaths per day.
-"""
-
-# ╔═╡ 20d1925b-ddb8-49ec-86a2-98f2efac3532
+# ╔═╡ 2cdbd150-ccd5-4f2a-9e49-5321070a2208
 begin
 	fg1 = Figure()
 	
-	ax1fg1 = Axis(fg1[1, 1],
-	    xlabel="Time (days)",
-	    ylabel="Log N",
-	    yscale=log10,
-	    title="Infected and deaths per day - Italy"
+	axfg1 =  Axis(fg1[1,1],
+	    xlabel="Time (MJD)",
+	    ylabel="Flux (arbitrary units)",
 	    )
 	
-	flt = nep[!,"dDead"] .> 0
+	CairoMakie.scatter!(dt[!,:MJD],dt[!,:Rate],label="Fermi data for PG1553+113")
+	CairoMakie.errorbars!(dt[!,:MJD],dt[!,:Rate],dt[!,:eRate])
 	
-	lines!(nep[!,"Date"][flt],nep[!,"New Infected"][flt],label="Infected/day")
-	lines!(nep[!,"Date"][flt],nep[!,"dDead"][flt],label="Deaths/day")
-	
-	
-	axislegend(position=:lt)
+	axislegend()
 	
 	fg1
 end
 
-# ╔═╡ 12225d55-9c0a-482c-890b-8ca5f8139c5a
+# ╔═╡ 21f1efc6-2e79-4c06-862d-55b5d20966d5
 md"""
-- There is a clear correlation between the number of infected people and deaths per day. Superposed to a seasonal, and shorter, variability together with "spikes" likely due to irregularities in recording the data.
+- The light-curve shows a possible cyclic behavior. This is indeed one of the sources of this category with the strongest claims for a possible periodicity.
 
-- Lets compute a cross-correlation between these two datasets in order to try to quantify a delay.
-
-> Disclaimer. This is just an exercize. Please, do not underestimate the complexity of a proper epidemiological study.
+- We first try to model this time-series with an ARIMA model. Data are (approximately) evenly sampled with a point in 30 days.
 """
 
-# ╔═╡ db5d7b3e-66da-4498-a924-2f9b999fda56
+# ╔═╡ 94e01a40-8bd6-469a-b348-7aba8a6280d4
 begin
-	fg2 = Figure()
-	
-	ax1fg2 = Axis(fg2[1, 1],
-	    xlabel="Lags (days)",
-	    ylabel="Cross-Correlation",
-	    #yscale=log10,
-	    #title="Infected and deaths per day - Italy"
-	    )
+	meandelta = mean(diff(dt[!,:MJD]))
+	meandeltabin = std(diff(dt[!,:MJD]))
+	#printfmtln("Mean sample rate: {:.2f} days, with standard deviation: {:.2f} days",meandelta, meandeltabin)
+end;
 
-	ccr = GetCrossCorr(nep[!,"dDead"],nep[!,"New Infected"],50)
+# ╔═╡ 5a1bc2de-a335-4024-a249-fec980636cdc
+Markdown.parse("""
+Mean sample rate: $(latexify(meandelta,fmt="%.2f")) days, with standard deviation: $(latexify(meandeltabin,fmt="%.2f")) days.
+""")
+
+# ╔═╡ 8af78ef0-28f1-4222-bd62-1df8dfe4b931
+md"""
+- Let's first check data stationarity.
+"""
+
+# ╔═╡ dc922b83-b899-41df-ba15-32c85ad65b2b
+ADFTest(dt[!,"Rate"],:constant,1)
+
+# ╔═╡ 70b1d915-2425-4741-9dd9-b7d60496b4ba
+md"""
+- The light-curve can be considered, at least during this exercise, as stationary and therefore we go on modeling it with an ARMA model.
+
+- First, let's look at the ACF and PACF diagnostic plots.
+"""
+
+# ╔═╡ abe20ea3-6da8-433a-b58d-77ce6b9dc1fb
+begin
+	function GetACF(data, lags; sigma=1.96, bartlett=false)
+	  cc = StatsBase.autocor(data,0:lags)
+	  #
+	  varcc = ones(Float64,length(cc)) ./ length(cc)
+	  if bartlett
+	    varcc[1] = 0
+	    varcc[2] = 1.0 / length(cc)
+	    varcc[3:end] .*= 1 .+ 2*cumsum(cc[2:end-1].^2)
+	  end
+	  return Dict("ACF" => cc, "errACFmin" => -1/length(data).-sigma*sqrt.(varcc), "errACFmax" => -1/length(data).+sigma*sqrt.(varcc))
+	end
 	
-	lines!(-50:50,ccr)
+	function GetPACF(data::Vector{Float64}, lags::Integer; sigma=1.96)
+	  cc = StatsBase.pacf(data,0:lags)
+	  return Dict("PACF" => cc, "errPACFmin" => -1/length(data)-sigma*sqrt(1/length(data)), "errPACFmax" => -1/length(data)+sigma*sqrt(1/length(data)))
+	end
+end;
+
+# ╔═╡ 31f409e8-9c25-4b30-b768-89a4aab4546e
+begin
+	tracf = GetACF(dt[!,:Rate],50)
+	trpacf = GetPACF(dt[!,:Rate],50)
 	
+	fg2 = Figure()
+	ax1fg2 = Axis(fg2[1, 1],
+	    title = "ACF")
 	
-	#axislegend(position=:lt)
+	stem!(tracf["ACF"])
+	hlines!([tracf["errACFmin"][1],tracf["errACFmax"][1]],linestyle=:dash)
+	
+	ax2fg2 = Axis(fg2[2, 1],
+	    title = "PACF")
+	
+	stem!(trpacf["PACF"])
+	hlines!([trpacf["errPACFmin"],trpacf["errPACFmax"]],linestyle=:dash)
 	
 	fg2
 end
 
-# ╔═╡ 06a37524-c82e-4f68-8529-89759cdda2bd
+# ╔═╡ d9f29b49-fcdf-4762-b1ca-795d2ad62d67
 md"""
-- A $\sim$15-20 day delay appears, that is quite reasonable. 
+- The ACF is zero after the first 7 lags, but it also shows the typical cyclic behavior of periodic phenomena, with a period of about 25 lags $\sim 2$ years that is close to the proposed (quasi-)periodicity of 2.2 years ([Achermann et al. 2015](https://ui.adsabs.harvard.edu/abs/2015ApJ...813L..41A/abstract)).
 
-- Of course, a much more meaningful analysis would have required to separate the infected peole basing upon age, sex, etc.
+- The PACF is zero after 3 lags. This might suggest 3 as AR order and 7 as MA order, altgough we prefer to look for the best solution by a grid search.
 """
 
-# ╔═╡ 06f77be0-51c6-4ca2-82b1-eaa69d9481b7
-md"""
-##### Epidemic periodicity?
-***
-
-- The former plot might suggest some sort of quasi-periodicity of the outbreak. 
-
-- Let's see whether a Lomb-Scargle analysis produce interestibg results:
-"""
-
-# ╔═╡ b1f35602-c627-41a7-8754-6634d5eff5a7
-begin
-	t = Float64.(collect(1:nrow(nep)))
-	y = Float64.(nep[!,"New Infected"])
-	lsres = lombscargle(t,y;samples_per_peak=10,minimum_frequency=1/700,maximum_frequency=1/2)
-	
-	fg3 = Figure()
-	
-	ax1fg3 = Axis(fg3[1, 1],
-	    xlabel="Period (days)",
-	    ylabel="Power",
-	    #yscale=log10,
-	    )
-	
-	
-	lines!(1 ./lsres.freq,lsres.power,label="LS periodogram")
-	vlines!(365.,linestyle=:dash)
-	
-	axislegend(position=:lt)
-	
-	fg3
-end
-
-# ╔═╡ c097e9b3-f9dc-473e-902a-cc5b03c15da3
-md"""
-- The LS periodogram shows a considerable power at long periods, with a large peak at about 400 days. This is likely the summer/winter cycle that did not reproduce exactly.
-
-- The time-series shows features at shorter periods too.
-"""
-
-# ╔═╡ 08a6a975-b496-4d19-8e8b-5df7aae43ad9
-begin
-	t2 = Float64.(collect(1:nrow(nep)))
-	y2 = Float64.(nep[!,"New Infected"])
-	lsres2 = lombscargle(t2,y2;samples_per_peak=10,minimum_frequency=1/30,maximum_frequency=1/2)
-	
-	fg4 = Figure()
-	
-	ax1fg4 = Axis(fg4[1, 1],
-	    xlabel="Period (days)",
-	    ylabel="Power",
-	    #yscale=log10,
-	    )
-	
-	
-	lines!(1 ./lsres2.freq,lsres2.power,label="LS periodogram")
-	
-	xlims!(1,10)
-	
-	axislegend(position=:lt)
-	
-	fg4
-end
-
-# ╔═╡ 2acb3d30-1b38-4255-b955-a0db9f77be72
-md"""
-- A distinct peat at a week is clearly visible, indicating the "periodicity" in the collection of data. 
-"""
-
-# ╔═╡ f34215b4-91fd-4175-96f1-524097ec7160
-# ╠═╡ show_logs = false
-md"""
-## Stationarity
-***
-
-- This is a fundamental concept. A stationary time-series is a dataset where it is “meaningful” to draw predictions.
-
--  A stationary series is one in which the properties – mean, variance and covariance, do not vary with time.
-    - Let us understand this using an intuitive example. Consider the three plots shown below:
-    
-$(LocalResource("Pics/threestationary.png"))
-
-- In the first plot, we can clearly see that the mean varies (increases) with time which results in an upward trend. Thus, this is a non-stationary series. For a series to be classified as stationary, it should not exhibit a trend.
-- Moving on to the second plot, there certainly isn't a trend in the series, but the variance of the series is a function of time. As mentioned previously, a stationary series must have a constant variance.
-- The the third plot. The spread becomes closer as the time increases, which implies that the covariance is a function of time.
-
-- The three examples shown above represent non-stationary time series.
-    
-$(LocalResource("Pics/truestationary.png"))
-
-- In this case, the mean, variance and covariance are constant with time. This is what a stationary time series looks like.
-
-- Most statistical models require the series to be stationary to make effective and precise predictions.
-"""
-
-# ╔═╡ 45f962f9-79be-492a-8add-737fc73925c2
-cm"""
-- Let's now try to define "stationarity" in a more formal way.
-
-- A stochastic process ``X_t; t = 0, ±1,...`` is stationary if a joint distribution of ``X_t,..., X_{t+k}`` is same as a joint distribution of ``X_0,...,X_k`` for all t and all k. 
-
-    - This is typically called strict stationarity. 
-
-- A stochastic process ``X_t; t = 0, ±1,...`` is weakly (or second order) stationary if, for all t:
-
-```math
-\mathbb{E}(X_t) = \mu
-```
-
-- and ``{\rm Cov}(X_t, X_{t+h}) = {\rm Cov}(X_0, X_h) = C_X(h)`` is a function of h only, i.e. it does not depend on t. 
-    - ``C_X`` is also known as autocovariance of X. ``C_X(h)/C_x(0)`` is known as autocorrelation.
-
-- Let’s recall that: ``{\rm Cov}(X, Y) \equiv \mathbb{E}[(X − \mathbb{E}[X])(Y − \mathbb{E}[Y])]``
-
-- It can be shown that:
-    - If ``X_t`` has finite variance, strictly stationary implies ``X_t`` is weakly stationary.
-    - If ``X_t`` is second order stationary and Gaussian it implies ``X_t`` is also strictly stationary.
-
-- ``X_t`` is Gaussian if for each ``t_1,...,t_k`` the vector ``(X_{t_1},...,X_{t_k})^T`` has a Multivariate Normal Distribution.
-
-- The process ``X_t`` is said to have a stationary covariance if: ``{\rm Cov}(X_t, X_s) = {\rm Cov}(X_{t+1}, X_{s+1}) = {\rm Cov}(X_{t+2}, X_{s+2})...``, etc.
-"""
-
-# ╔═╡ 5c1eff4e-8079-4568-a792-7528465db277
-md"""
-#### Exercize about time-series stationarity tests
-***
-
-- First read and pre-process a dataset reporting the [number of passengers on airplanes](https://www.analyticsvidhya.com/wp-content/uploads/2018/09/AirPassengers.csv) in the USA for several years. 
-
-    - This is a simple yet interesting dataset for this kind of exercise. 
-"""
-
-# ╔═╡ 9057a011-76b9-475a-906c-81afd18e99ce
-begin
-	train = DataFrame(CSV.File("AirPassengers.csv"))
-	first(train,5)
-end
-
-# ╔═╡ 3da138ae-cd0b-4f7b-ab5a-319d4f65dee2
-md"""
-- We want to determine whether a given series is stationary or not and deal with it accordingly. 
-
-- Let's first try with a simple, yet always useful, visual test.
-"""
-
-# ╔═╡ 25a8201f-402b-4868-9cd6-262a03b980fb
-begin
-	fg5 = Figure()
-	
-	ax1fg5 = Axis(fg5[1, 1],
-	    xlabel="Time",
-	    ylabel="N",
-	    )
-	
-	
-	lines!(train[!,:Month],train[!,"#Passengers"])
-	
-	#xlims!(1,10)
-	
-	#axislegend(position=:lt)
-	
-	fg5
-end
-
-# ╔═╡ 698e9cc6-9de5-4ca6-b425-5bb038b08b2b
-cm"""
-- We see that there a clear trend, i.e. the mean is varying.
-
-- It is anyway useulf to look for more formal tests.
-
-
-##### Statistical tests
-***
-
-- We can use statistical tests like the unit root stationary tests. 
-    - Unit root indicates that the statistical properties of a given series are not constant with time, which is the condition for stationary time series. 
-    
-- Suppose we have a time series:
-
-```math
-y_t = a*y_{t-1} + ε_t 
-```
-
-- where y``_t`` is the value at the time instant t and ε``_t`` is the error term. In order to calculate y``_t`` we need the value of y``_{t-1}``, which is:
-
-```math
-y_{t-1} = a*y_{t-2} + ε_{t-1} 
-```
-
-- If we do that for all observations, the value of ``y_t`` will come out to be:
-
-```math
-y_t = a^n*y_{t-n} + \sum ε_{t-i}*a^i 
-```
-
-- If the value of ``a`` is 1 (unit) in the above equation, then the predictions will be equal to the y``_{t-n}`` and sum of all errors from t-n to t, which means that the variance will increase with time. 
-
-- This is knows as unit root in a time series. The unit root tests check the presence of unit root in the series by checking if value of a=1. 
-
-- The ADF ([Augmented Dickey-Fuller](https://en.wikipedia.org/wiki/Augmented_Dickey%E2%80%93Fuller_test)) is one of the most commonly used unit root stationary tests:
-  - It can be used to determine the presence of unit root in the series, and hence help us understand if the series is stationary or not. The null and alternate hypothesis of this test are:
-    - Null Hypothesis: The series has a unit root (value of a=1). Alternate Hypothesis: The series has no unit root.
-    - If we fail to reject the null hypothesis, we can say that the series is non-stationary. 
-"""
-
-# ╔═╡ f0996cba-03af-4247-99f7-d148c6e737a0
-ADFTest(train[!,"#Passengers"],:none,1)
-
-# ╔═╡ 0f220d9a-ffe5-4d84-ba4b-a65c5dbf4404
-md"""
-- The ADF tests gives the following results – test statistic, p value and the critical value at 1%, 5% , and 10% confidence intervals. 
-
-- If the test statistic is less than the critical value, we can reject the null hypothesis and the series can be stationary. When the test statistic is greater than the critical value, we fail to reject the null hypothesis, which means the series is not stationary.
-
-    - In our above example, the test statistic >> critical value, which implies that the series is not stationary, as expected.
-"""
-
-# ╔═╡ 59175381-65a4-45e7-ae85-a00467c4d181
-md"""
-### Types of Stationarity
-***
-
-- Strict Stationary: A strict stationary series satisfies the mathematical definition of a stationary process. For a strict stationary series, the mean, variance and covariance are not the function of time. The aim is to convert a non-stationary series into a strict stationary series for making predictions.
-- Trend Stationary: A series that has no unit root but exhibits a trend is referred to as a trend stationary series. Once the trend is removed, the resulting series will be strict stationary. The KPSS test classifies a series as stationary on the absence of unit root. This means that the series can be strict stationary or trend stationary.
-- Difference Stationary: A time series that can be made strict stationary by differencing falls under difference stationary. ADF test is also known as a difference stationarity test.
-"""
-
-# ╔═╡ 9a8ac940-8a2c-4d5a-809f-bbdb1dba12dc
-md"""
-#### Exercize about making a time-series stationary
-***
-
-- Is it possible to "stationarize" a time-series? 
-    - In several cases it is. For instance if the non-stationarity is due to a trend, etc.
-    
-- Trends can be removed by differencation, i.e. we compute the difference of consecutive terms in the series. Differencing is typically performed to get rid of the varying mean: $ y_t‘ = y_t – y_{(t-1)}$, where y$_t$ is the value at a time t.
-
-- Let's apply a differentiation on our series and plotting the results:
-"""
-
-# ╔═╡ 76917ce4-5249-4cbb-bdb7-da654ce2c75d
-#transform!(train, "#Passengers" => ShiftedArrays.lag => "#Passengers_shift")
-train[!,"#Passengers_diff"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"]);
-
-# ╔═╡ a7c1c07b-23d7-4721-ac7d-70012483b056
-begin
-	fg6 = Figure()
-	
-	ax1fg6 = Axis(fg6[1, 1],
-	    xlabel="Time",
-	    ylabel="N",
-	    )
-	
-	
-	lines!(train[!,:Month],train[!,"#Passengers_diff"])
-	
-	fg6
-end
-
-# ╔═╡ cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
-md"""
-- The average now seems to be fairly constant, but variance and probably covariance are not.
-
-- It is possiboe to compute te differece with longer lags than 1. This is often called *seasonal differencing*.
-
-- In seasonal differencing, instead of calculating the difference between consecutive values, we calculate the difference between an observation and a previous observation from the same "season": y$_t$‘ = y$_t$ – y$_{(t-n)}$.
-
-"""
-
-# ╔═╡ 7ecf612d-04ea-4e3b-b176-98476b443688
-train[!,"#Passengers_diff"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"],6);
-
-# ╔═╡ 7da9155f-27d8-48c0-93a6-13a3297fd302
-begin
-	fg7 = Figure()
-	
-	ax1fg7 = Axis(fg7[1, 1],
-	    xlabel="Time",
-	    ylabel="N",
-	    )
-	
-	
-	lines!(train[!,:Month],train[!,"#Passengers_diff"])
-	
-	fg7
-end
-
-# ╔═╡ 72700334-0d07-4486-ba3f-46fe0cfacb4f
-md"""
-- The curve is now cleaner, yet still far from being, even visually, stationary.
-
-- Together in alternatve to differencing it is also possible to transform the data. 
-
-- Transformations are used to stabilize the non-constant variance of a series. Common transformation methods include power transform, square root, and log transform. 
-"""
-
-# ╔═╡ 6021c695-2cd9-499c-bbbf-7d86b5a6b347
-begin
-	train[!,"#Passengers_log"] = log.(train[!,"#Passengers"])
-	train[!,"#Passengers_log_diff"] = train[!,"#Passengers_log"] - ShiftedArrays.lag(train[!,"#Passengers_log"],6)
-end;
-
-# ╔═╡ 3d013635-b4ac-49ec-85f6-93c26cf7539c
-begin
-	fg8 = Figure()
-	
-	ax1fg8 = Axis(fg8[1, 1],
-	    xlabel="Time",
-	    ylabel="N",
-	    )
-	
-	
-	lines!(train[!,:Month],train[!,"#Passengers_log_diff"])
-	
-	fg8
-end
-
-# ╔═╡ c81ad1a5-b4ed-4056-a161-eab4f9e981d9
-md"""
-- The improvement seems to be significan over the previous plots. Let's apply the ADF stationarity test.
-
-- In principle, a seasonality with one year (12 months) period could be preferred here. But we see that even a 6 month period does a good job in making the time-series stationary.
-"""
-
-# ╔═╡ f1bc344e-ac85-4815-928f-61f5f48c18a9
-ADFTest(dropmissing(train)[!,"#Passengers_log_diff"],:none,1)
-
-# ╔═╡ 381bc481-5c7e-4d9a-80c9-8f245718718d
-md"""
-- Now the criterion is reasonably satisfied. The difference of the log-transformed original time-series is stationary.
-"""
-
-# ╔═╡ ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
-md"""
-### Covariance matrix
-***
-
-- Let's take the opportunity to formally define the covariance matrix $\Sigma$, whose components are $\sigma_{i,j} = {\rm Cov}(X_i,X_j)$:
-
-```math
-\Sigma=\left[
-\begin{array}{ccc}
-   \sigma_{11} & \cdots & \sigma_{1n} \\
-   \vdots & \ddots & \vdots \\
-   \sigma_{n1} & \cdots & \sigma_{nn}
-\end{array}
-\right]
-```
-
-- This kind of matrix is also a “Toeplitz” matrix (it has useful properties for massive computations).
-"""
-
-# ╔═╡ 9d1af19c-e1b3-48aa-9b9b-245347efd682
-cm"""
-- Let's now study some simple linear process of interest.
-
-### White Noise
-***
-
-- ``\{w_t\}`` is a white noise process if ``w_t`` are uncorrelated and identically distributed random variables with:
-    - ``\mathbb{E}[w_t] = 0`` and Var``[w_t] = σ^2``, for all t.
-    
-- If ``\{w_t\}`` are Normally (Gaussian) distributed, we call this Gaussian white noise.
-
-- A white noise process is stationary.
-
-- This is an example with ``σ^2 = 1``:
-"""
-
-# ╔═╡ e410b2af-6665-4ddb-bb89-4b38bec8bfc2
-begin
-	N9 = 10000
-	
-	d9 = Normal()
-	x9 = rand(d9, N9)
-end;
-
-# ╔═╡ 2aca0524-9737-43e9-b456-9fa0b2f7939b
-begin
-	fg9 = Figure()
-	
-	ax1fg9 = Axis(fg9[1, 1],
-	    )
-	
-	
-	lines!(x9,label="sigma=1")
-	
-	axislegend()
-	xlims!(0,N9)
-	
-	fg9
-end
-
-# ╔═╡ 0c8e81ce-7b48-427c-b72e-4fdad4015d51
-md"""
-- The ACF of a white noise shows a distinct and easy to recognize pattern: there should be no significant correlation for any lag but 0.
-"""
-
-# ╔═╡ 63a3b6f2-a46a-4a4c-ba9e-5639714cd93d
-begin
-	rs10 = GetACF(x9,40)
-	fg10 = Figure()
-	axfg10 = Axis(fg10[1, 1],)
-	stem!(rs10[1])
-	hlines!([rs10[2],rs10[3]],linestyle=:dash)
-	fg10
-end
-
-# ╔═╡ d674149a-25a7-4c60-8770-e2b46cb2ed74
-cm"""
-### Random walk (with drift)
-***
-
-- A random walk, with drift, can be defined as:
-
-```math
-x_t = \delta + x_{t-1} + w_t 
-```
-
-- where ``δ`` is a constant, ``w_t`` is a white noise process, and we assume for simplicity ``x_0 = 0``.
-
-- The equation can be rewritten as: `` x_t = t\delta + \sum_{j=1}^t w_j`` simply writing ``x_1 = \delta + w_1``, ``x_2 = \delta + x_1 + w_2 = \delta + \delta + w_1 + w_2``, etc.
-
-- Is a random walk (with or without drift) stationary?
-
-- The expectation value is simple to compute: `` \mathbb{E}[x_t] = \mathbb{E}[t\delta + \sum_{j=1}^t w_j] = t\delta ``, since a sum of random noise should give a zero result.  
-    - Therefore, unless ``δ=0`` the expectation value depends on t.
-
-- For the covariance we need some more steps: 
-	- ``{\rm Cov}(x_t,x_{t+h}) = {\rm Cov}[t\delta + \sum_{j=1}^t w_j,(t+h)\delta + \sum_{j=1}^{t+h} w_j] ``. 
-	- Recalling that ``{\rm Cov}(\sum_i x_, \sum_j x_j) = \sum_i \sum_j {\rm Cov}(x_i, x_j)`` and that ``{\rm Cov}(X,X) = {\rm Var}(X)`` we get that: 
-	- ``{\rm Cov}(x_t,x_{t+h}) = {\rm Cov}[t\delta,(t+h)\delta] +  {\rm Cov}[\sum_{j=1}^t w_j,(t+h)\delta] + {\rm Cov}[t\delta,\sum_{j=1}^{t+h} w_j] + {\rm Cov}[\sum_{j=1}^t w_j,\sum_{j=1}^{t+h} w_j]``. 
-	- All terms but the last are 0 since they include constant terms. We finally have: `` {\rm Cov}(x_t,x_{t+h}) = t{\rm Var}(w_t) = t\sigma^2``.
-    - Clearly non-stationary (for any ``\delta``).
-    
-- And a random walk with drift (``\delta=0.1``) can be:
-"""
-
-# ╔═╡ ea14bb29-f6bf-4a0c-a6b1-d38e285207ee
-begin
-	N10 = 10000
-	delta10 = 0.1
-	
-	d10 = Normal()
-	sigma10 = rand(d10, N10)
-	
-	x10 = zeros(N10)
-	for i in range(2,N10)
-	    x10[i] = x10[i-1]+sigma10[i]+delta10
-	end
-end
-
-# ╔═╡ 95047c44-9d05-4dc3-a50a-aa87cf9cd2c4
-begin
-	fg11 = Figure()
-	
-	ax1fg11 = Axis(fg11[1, 1],
-	    )
-	
-	
-	lines!(x10,label="delta="*string(delta10))
-	
-	axislegend(position=:lt)
-	xlims!(0,N10)
-	
-	fg11
-end
-
-# ╔═╡ 61d7c290-6d4d-4da8-a4f6-f0c2c795a4f8
-cm"""
-### Moving average (of the first order)
-***
-
-- A moving average process of the first order, or MA(1), is defined as:
-
-```math
-x_t = \beta_1 w_{t-1} + w_t
-```
-
-- where again ``w_t`` is a white noise process.
-
-- The expectation value of a MA(1) process is: ``\mathbb{E}[x_t] = \mathbb{E}[\beta_1 w_{t-1} + w_t] = \beta_1\mathbb{E}[w_{t-1}] + \mathbb{E}[w_t] = 0``.
-
-- The variance is: ``{\rm Var}[x_t] = {\rm Var}[\beta_1 w_{t-1} + w_t] = \beta_1^2 {\rm Var}[w_{t-1}] + {\rm Var}[w_t] = \sigma^2 (1 + \beta_1^2) ``. 
-
-- The covariance is: ``{\rm Cov}[x_t,x_{t+h}] = {\rm Cov}[\beta_1 w_{t-1} + w_t,\beta_1 w_{t+h-1} + w_{t+h}]``. 
-    - Now, if ``h=1`` we have: ``{\rm Cov}[x_t,x_{t+1}] = {\rm Cov}[\beta_1 w_{t-1} + w_t,\beta_1 w_{t} + w_{t+1}] = {\rm Cov}[\beta_1 w_{t-1},\beta_1 w_{t}] + {\rm Cov}[\beta_1 w_{t-1},w_{t+1}] + {\rm Cov}[w_t,\beta_1 w_{t}] + {\rm Cov}[w_t,w_{t+1}]``. All terms with different index are zero (no covariance between independent white noise processes), and therefore: ``{\rm Cov}[x_t,x_{t+1}] = \beta_1^2 \sigma^2``.  
-    - If ``h > 1`` all terms are zero and theerfore: ``{\rm Cov}[x_t,x_{t+1}] = 0``.
-
-- A MA(1) with ``\beta_1 = 1`` can be:
-"""
-
-# ╔═╡ 962d9bb2-8fee-4d94-9054-a48f084127d7
-begin
-	N12 = 1000
-	beta112 = 1.
-	
-	d12 = Normal()
-	sigma12 = rand(d12, N12)
-	
-	x12 = zeros(N12)
-	for i in range(2,N12)
-	    x12[i] = sigma12[i]+beta112*sigma12[i-1]
-	end
-end
-
-# ╔═╡ 33df98ca-16f8-4bc7-8848-494d920e60d9
-begin
-	fg12 = Figure()
-	
-	ax1fg12 = Axis(fg12[1, 1],
-	    )
-	
-	
-	lines!(x12,label="beta1="*string(beta112))
-	
-	axislegend()
-	xlims!(0,N12)
-	
-	fg12
-end
-
-# ╔═╡ d4d93ec8-e268-4fc9-b5ee-cdd194636659
-md"""
-- Since the process is a sum of independent noise processes it is visually very close to a random noise.
-
-- Let's analyse the ACF of the previous process and discover this is not fully the case:
-"""
-
-# ╔═╡ 9512aa2e-afaa-4ddd-aac4-826abae447ff
-begin
-	rs13 = GetACF(x12,40)
-	fg13 = Figure()
-	axfg13 = Axis(fg13[1, 1],)
-	stem!(rs13[1])
-	hlines!([rs13[2],rs13[3]],linestyle=:dash)
-	fg13
-end
-
-# ╔═╡ cae1a1ec-d365-4f20-b521-1d2e7ebda912
-md"- And again the PACF:"
-
-# ╔═╡ 5abde48d-abb2-4834-b22d-8c4734cd19fc
-begin
-	rs34 = GetPACF(x12,40)
-	fg34 = Figure()
-	axfg34 = Axis(fg34[1, 1],)
-	stem!(rs34[1])
-	hlines!([rs34[2],rs34[3]],linestyle=:dash)
-	fg34
-end
-
-# ╔═╡ d0dc8d40-75d7-4611-aab6-d8542f82947e
-md"""
-- Apart from lag=0, the only lag showing correlation significantly different from 0 is lag=1, the order of the process. This is not, as we will see, by chance.
-"""
-
-# ╔═╡ b0ae3114-1aca-4109-922a-02c25989e407
-cm"""
-### Autoregressive (of the first order)
-***
-
-- An autoregressiv process of the first order, or AR(1), is defined as:
-
-
-```math
-x_t = \alpha_1 x_{t-1} + w_t
-```
-
-- and again ``w_t`` is a white noise process.
-
-- The process can be rewritten as follows: `` x_t = \alpha_1 x_{t-1} + w_t = \alpha_1 (\alpha_1 x_{t-2} + w_{t-1}) + w_t = \alpha_1^t x_0 + \sum_{i=o}^{t-1} \alpha_1^i w_{t-i}``
-
-- The expectation value is: ``\mathbb{E}[x_t] = \mathbb{E}[\alpha_1^t x_0 + \sum_{i=o}^{t-1} \alpha_1^i w_{t-i}] = \alpha_1^t \mathbb{E}[x_0]``. This is zero only if the starting position is zero.
-
-- The variance is: ``{\rm Var}[x_t] = {\rm Var}[\alpha_1 x_{t-1} + w_t] = \alpha_1^2 {\rm Var}[x_{t-1}] + {\rm Var}[w_t] \Rightarrow  {\rm Var}[x_t] = \frac{\sigma^2}{1-\alpha_1^2}``. This relation gives a valid variance only if ``|\alpha_1| < 1``. 
-
-- The covariance is: ``{\rm Cov}[x_t,x_{t+h}] = {\rm Cov}[x_t,\alpha_1^{t+h} x_0 + \sum_{i=o}^{t+h-1} \alpha_1^i w_{t+h-i}] = {\rm Cov}[x_t,\alpha_1^h x_t + \sum_{i=o}^{h-1} \alpha_1^i w_{t+h-i}] = {\rm Cov}[x_t,\alpha_1^h x_t] = \alpha_1^{2h} {\rm Var}[x_t] = \frac{\alpha_1^{2h} \sigma^2}{1-\alpha_1^2}``, again valid if ``|\alpha_1| < 1``.
-
-- And, therefore, the correlation turns out to be: ``{\rm Corr}[x_t,x_{t+h}] = \frac{{\rm Cov}[x_t,x_{t+h}]}{{\rm Std}[x_t] {\rm Std}[x_{t+h}]} = \alpha_1^{2h}``.
-
-- In AR(1) process, the value of ``\alpha_1`` determines whether the AR(1) process is stationary. 
-
-"""
-
-# ╔═╡ 95f3a029-6b56-4ac9-bf1c-1135094958d8
-cm"- Let's see a AR(1) with ``\alpha_1 = 0.9``."
-
-# ╔═╡ 924e216e-9ba7-4906-9d70-94f1813911e7
-begin
-	N14 = 1000
-	alpha114 = 0.9
-	
-	
-	d14 = Normal()
-	sigma14 = rand(d14, N14)
-	
-	x14 = zeros(N14)
-	for i in range(2,N14)
-	    x14[i] = alpha114*x14[i-1]+sigma14[i]
-	end
-end
-
-# ╔═╡ 30ece656-c5ba-42a6-8de2-e9827d72eabf
-begin
-	fg14 = Figure()
-	
-	ax1fg14 = Axis(fg14[1, 1],
-	    )
-	
-	
-	lines!(x14,label="alpha1="*string(alpha114))
-	
-	axislegend()
-	xlims!(0,N14)
-	
-	fg14
-end
-
-# ╔═╡ b86d10a0-f3a0-4489-b595-64c3eafcfef2
-md"""
-- As one possibly infers looking at the plot the time-series shows fluctuations that do not apper totally random.
-
-- Let's analyse the ACF of the previous process:
-"""
-
-# ╔═╡ 8a8d5e0e-7ccf-43a2-b18b-c389971252e9
-begin
-	rs15 = GetACF(x14,40)
-	fg15 = Figure()
-	axfg15 = Axis(fg15[1, 1],)
-	stem!(rs15[1])
-	hlines!([rs15[2],rs15[3]],linestyle=:dash)
-	fg15
-end
-
-# ╔═╡ c6bab5e0-4a61-4a6c-aa54-34e0e4f2dcdc
-md"""
-- At variance with MA processes, a AR process shows a correlation decreases with increasing lag as a power-law.
-"""
-
-# ╔═╡ 38012afa-faf9-43ef-a443-f5256763a931
-md"- The PACF instead shows one only lag with value different from zero:"
-
-# ╔═╡ 4d06a1b3-0ef5-4fcd-95bb-c2058ea3765a
-begin
-	rs35 = GetPACF(x14,40)
-	fg35 = Figure()
-	axfg35 = Axis(fg35[1, 1],)
-	stem!(rs35[1])
-	hlines!([rs35[2],rs35[3]],linestyle=:dash)
-	fg35
-end
-
-# ╔═╡ 2905155b-0de7-4f15-acb0-aaaf1b421c9b
-# ╠═╡ show_logs = false
-md"""
-- The ACF is indeed a diagnostic tool to infer the nature and the order of a linear process:
-
-
-$(LocalResource("Pics/acftab1.png"))
-
-- Try to guess the kind of process looking at the plots below:
-
-$(LocalResource("Pics/test1.jpg"))
-$(LocalResource("Pics/test2.jpg"))
-
-
-1. Upper left: The ACF shows a decreasing correlation with alternate signs. It is a MA(10) process. 
-2. Upper right: The ACF shows a decreasing correlation as a power-law. Probably it is an AR process, altgough we cannot say the order. In principle it could also be a MA(4) process.
-3. Bottom left: The ACF shows no correlation beyondd lag=0, it is a white noise process.
-4. Bottom right: The ACF shows a 0 correlation after lag=1. It is thus a MA(1) process, although it might also be a AR process.
-
-- As we have seenm the ACF is a powerful diagnostics but often we have ambiguous situations. The application of the PACF will help us to solve these ambiguities, as we are going to see later.
-"""
-
-# ╔═╡ fa1e8adf-969a-4476-81ae-b548cabcd8f6
-md"""
-#### The Autoregressive Moving Average scheme
-***
-
-- This approach were pioneered by [Yule](https://en.wikipedia.org/wiki/Udny_Yule) and [Slutsky](https://en.wikipedia.org/wiki/Eugen_Slutsky) in the 1920’s.
-    - Yule’s researches led to the notion of the autoregressive scheme.
-    - Slutsky’s researches led to the notion of a moving average scheme.
-
-- We have an AutoRegressive scheme when a time series $x_t$ is assumed to be generated as a linear function of its past values, plus a random shock:
-
-```math
-x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + u_t
-```
-
--Conceptualy, an autoregressive scheme is one with a ‘memory’ in the sense thar each values is correlated with p preceding values. The constants $φ_1,...,φ_p$ are weights measuring the influence of preceding values $x_{t−1},...x_{t−p}$ on the value $x_t$.
-
-- We have a Moving Average scheme when a  time series $x_t$ is assumed to be generated as a weighted linear sum of the last $q + 1$ random shocks:
-
-```math
-x_t = u_t + θ_1 u_{t−1} + ... + φ_p u_{t−q}
-```
-
-- If both schemes, the autoregressive and the moving average one, are used, we obtain the so-called Autoregressive Moving Average scheme:
-
-```math
-x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + u_t + θ_1 u_{t−1} + ... + φ_p u_{t−q}
-```
-"""
-
-# ╔═╡ 0edac0fb-f52e-4a2c-b3dc-54f8237ad325
-md"""
-## General linear processes
-***
-
-- The examples we have seen so far are all part of a general family
-
-- We call “linear process” a linear combination of noise variates $w_t$:
-
-```math
-x_t = \sum_{i=0}^\infty \psi_i w_{t-i}
-```
-
-- For this kind of processes, if $\sum_{i=0}^\infty |\psi_i| < \infty$ then the process is stationary. 
-
-- The autocovariance of this process can be written as: 
-
-```math
-\rho(h) = \sigma^2 \sum_{i=0}^\infty \psi_{i+h} \psi_i
-```
-
-- Now we provide a set of useful definitons.
-"""
-
-# ╔═╡ 2eb45539-ef03-4f6d-86be-52a1e9228088
-md"""
-### Backshift operator
-***
-
-- The backshift operator, **B**, is defined as:
-
-```math
-B x_t = x_{t-1}
-```
-
-- It can be extended to more powers as: $B^2 x_t = (B B) x_t = B (B x_t) = B x_{t-1} = x_{t-2}$, so that:
-
-```math
-B^k x_t = x_{t-k}
-```
-
-
-### Difference operator
-***
-
-- The difference operator, $\nabla$, is defined as:
-
-```math
-\nabla^d x_t = (1-B)^d x_t
-```
-
-- e.g., $\nabla^1 x_t = (1-B)^1 x_t = x_t - x_{t-1}$.
-
-- The different operator is often used to convert non-stationary time-series to stationary.
-"""
-
-# ╔═╡ db519b68-35a3-4396-a302-e0bd804985c1
-md"""
-#### Exercise: let's convert MA(1) and AR(1) processes to the general linear form
-***
-
-- MA(1) can be expressed as: $x_t = \beta_1 w_{t-1} + w_t = \sum_{i=0}^\infty \psi_i w_{t-i}$, with $\psi_0 = 1, \psi_1 = \beta_1$ and $\psi_i = 0$ for $i \ge 2$.  
-
-- AR(1) can be expressed as: $x_t = \alpha_1 x_{t-1} + w_t = w_t + \alpha_1 w_{t-1} + \alpha_1^2 w_{t-2}+...$ since $x_{t-1} = \alpha_1 x_{t-2} + w_{t-1}$ etc. 
-    - We thus have $x_t = \sum_{i=0}^\infty \psi_i w_{t-i}$ with $\psi_i = \alpha_1^i$.
-    
-"""
-
-# ╔═╡ a262674e-d56a-4252-8929-3d548150955c
-md"""
-### MA(q) and AR(p)
-***
-
-- MA(q): $x_t = w_t + \beta_1 w_{t-1} + \beta_2 w_{t-2} + ... + \beta_q w_{t-q}$
-- AR(p): $x_t = \alpha_1 x_{t-1} + \alpha_2 x_{t-2} + ... + \alpha_p x_{t-p} + w_t$
-
-
-
-- We can rewrite the above equations by the backshift operator:
-
-- $\theta(B) = 1 + \beta_1 B + \beta_2 B^2 + ... + \beta_q B^q$
-- $\phi(B) = 1 - \alpha_1 B - \alpha_2 B^2 - ... - \alpha_p B^p$
-
-
-
-- So that:
-
-```math
-{\rm MA}(q): x_t = \theta(B) w_t \qquad {\rm AR}(p): \phi(B) x_t = w_t
-```
-
-- A very compact form making easier further manipulations.
-"""
-
-# ╔═╡ c0ca31e3-8026-46b6-aa90-ffe53b7c2305
-md"""
-### ARMA(p,q) processes
-***
-
-- A process, $x_t$, is said to be an ARMA(p,q) process if it has the form: 
-
-```math
-\phi(B) x_t = \theta(B) w_t
-```
-
-- It is possible to prove that:
-    - ARMA(p,q) is stationary if and only if the roots of $\phi(B)w$ lie outside the unit circle (i.e. $\phi(B)w \ne 0$ for all $|w| \le 1$). 
-    - ARMA(p,q) is invertible if and only if the roots of $\theta(B)w$ lie outside the unit circle (i.e. $\theta(B)w \ne 0$ for all $|w| \le 1$).
-
-\
-
-- It is also possible to convert an ARMA process, with $\phi(B)$ and $\theta(B)$ finite ordine polynomials, to infinite order MA or AR processes:
-
-- MA: $x_t = \psi(B)w_t$, where $\psi(B) = \theta(B)/\phi(B)$.
-- AR: $\pi(B)x_t = w_t$, where $\pi(B) = \phi(B)/\theta(B)$. 
-"""
-
-# ╔═╡ 44ab551f-b0cc-45cb-977e-3a4b77f15c9d
-md"""
-#### Exercize: the ACF of MA(p) and AR(q) processes
-***
-
-- MA(1), β₁ = 0.6.
-"""
-
-# ╔═╡ 7ad279de-35ed-4d38-bb78-9a097f5847d9
-begin
-	N16 = 1000
-	beta116 = 0.6
-	
-	
-	d16 = Normal()
-	sigma16 = rand(d16, N16)
-	
-	x16 = zeros(N16)
-	for i in range(2,N16)
-	    x16[i] = sigma16[i]+beta116*sigma16[i-1]
-	end
-	
-	lags16 = 40
-	rs16 = GetACF(x16,lags16)
-	rsp16 = GetPACF(x16,lags16)
-	
-	fg16 = Figure(size=(640,800))
-
-	ax1fg16 = Axis(fg16[1, 1],
-    	title = "Time-Series")
-
-	lines!(x16)
-	
-	ax2fg16 = Axis(fg16[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags16,rs16[1])
-	hlines!([rs16[2],rs16[3]],linestyle=:dash)
-
-	ax3fg16 = Axis(fg16[3, 1],
-		title = "PACF")
-
-	stem!(0:lags16,rsp16[1])
-	hlines!([rsp16[2],rsp16[3]],linestyle=:dash)
-	
-	fg16
-end
-
-# ╔═╡ a7b6b298-49de-4a5f-a095-8306d96661a8
-md"""
-- MA(2), $\beta_1 = 1/6, \beta_2 = 1/2$.
-"""
-
-# ╔═╡ 973b9499-23be-4f59-a4a3-69bb3e1b2871
-begin
-	N17 = 1000
-	beta117 = 1/6
-	beta217 = 0.5
-	
-	d17 = Normal()
-	sigma17 = rand(d17, N17)
-	
-	x17 = zeros(N17)
-	for i in range(3,N17)
-	    x17[i] = sigma17[i]+beta117*sigma17[i-1]+beta217*sigma17[i-2]
-	end
-
-	lags17 = 40
-	rs17 = GetACF(x17,lags17)
-	rsp17 = GetPACF(x17,lags17)
-
-	fg17 = Figure(size=(640,800))
-	ax1fg17 = Axis(fg17[1, 1],
-    	title = "Time-Series")
-
-	lines!(x17)
-	
-	ax2fg17 = Axis(fg17[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags17,rs17[1])
-	hlines!([rs17[2],rs17[3]],linestyle=:dash)
-
-	ax3fg17 = Axis(fg17[3, 1],
-		title = "PACF")
-
-	stem!(0:lags17,rsp17[1])
-	hlines!([rsp17[2],rsp17[3]],linestyle=:dash)
-	
-	fg17
-
-
-end
-
-# ╔═╡ d5caf4c8-59d3-488d-9fa2-f2e75eaa5b85
-md"""
-- MA(5), $\beta_{12} = -1/2, \beta_{345} = 1/4$.
-"""
-
-# ╔═╡ cc23ada7-044a-4620-b312-7e3ccf2eb25f
-begin
-	N18 = 1000
-	beta1218 = -0.5
-	beta34518 = 0.25
-	
-	
-	d18 = Normal()
-	sigma18 = rand(d18, N18)
-	
-	x18 = zeros(N18)
-	for i in range(6,N18)
-	    x18[i] = sigma18[i]+beta1218*sigma18[i-1]+beta1218*sigma18[i-2]+beta34518*sigma18[i-3]+beta34518*sigma18[i-4]+beta34518*sigma18[i-5]
-	end
-	
-	lags18 = 40
-	rs18 = GetACF(x18,lags18)
-	rsp18 = GetPACF(x18,lags18)
-
-	fg18 = Figure(size=(640,800))
-	ax1fg18 = Axis(fg18[1, 1],
-    	title = "Time-Series")
-
-	lines!(x18)
-	
-	ax2fg18 = Axis(fg18[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags18,rs18[1])
-	hlines!([rs18[2],rs18[3]],linestyle=:dash)
-
-	ax3fg18 = Axis(fg18[3, 1],
-		title = "PACF")
-
-	stem!(0:lags18,rsp18[1])
-	hlines!([rsp18[2],rsp18[3]],linestyle=:dash)
-	
-	fg18
-end
-
-# ╔═╡ b679f761-1695-4710-afef-17b63b204e18
-md"""
-- MA(10), $\beta_j = 1/2$ for $j=1...10$.
-"""
-
-# ╔═╡ 86bbfeb7-ccb8-44e9-b9e5-0e7609a1d6db
-begin
-	N19 = 1000
-	beta19 = 0.5
-	
-	
-	d19 = Normal()
-	sigma19 = rand(d19, N19)
-	
-	x19 = []
-	
-	x19 = zeros(10)
-	for i in range(11,N19)
-	    xt = sigma19[i]
-	    for j in range(1,10)
-	        xt = xt + beta19*sigma19[i-j]
-	    end
-	    push!(x19,xt)
-	end
-	
-	lags19 = 40
-	rs19 = GetACF(x19,lags19)
-	rsp19 = GetPACF(x19,lags19)
-
-	fg19 = Figure(size=(640,800))
-	ax1fg19 = Axis(fg19[1, 1],
-    	title = "Time-Series")
-
-	lines!(x19)
-	
-	ax2fg19 = Axis(fg19[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags19,rs19[1])
-	hlines!([rs19[2],rs19[3]],linestyle=:dash)
-
-	ax3fg19 = Axis(fg19[3, 1],
-		title = "PACF")
-
-	stem!(0:lags19,rsp19[1])
-	hlines!([rsp19[2],rsp19[3]],linestyle=:dash)
-	fg19
-end
-
-# ╔═╡ 2f8bb6a9-e09d-4ff3-a158-dc00b26c0fa9
-md"""
-- AR(1): $\alpha_1 = 1/2$.
-"""
-
-# ╔═╡ 7bed93e6-0ee2-4374-8bc2-e4d988ad3c8c
-begin
-	N20 = 1000
-	alpha20 = 0.5
-	
-	
-	d20 = Normal()
-	sigma20 = rand(d20, N20)
-	
-	x20 = [0.,]
-	
-	for i in range(2,N20)
-	    push!(x20,alpha20*x20[i-1]+sigma20[i])
-	end
-	
-	lags20 = 40
-	rs20 = GetACF(x20,lags20)
-	rsp20 = GetPACF(x20,lags20)
-
-	fg20 = Figure(size=(640,800))
-	ax1fg20 = Axis(fg20[1, 1],
-    	title = "Time-Series")
-
-	lines!(x20)
-	
-	ax2fg20 = Axis(fg20[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags20,rs20[1])
-	hlines!([rs20[2],rs20[3]],linestyle=:dash)
-
-	ax3fg20 = Axis(fg20[3, 1],
-		title = "PACF")
-
-	stem!(0:lags20,rsp20[1])
-	hlines!([rsp20[2],rsp20[3]],linestyle=:dash)
-
-	fg20
-end
-
-# ╔═╡ 4457932a-49ab-449e-bd93-240e3458272b
-md"""
-- AR(2), $\alpha = 1/6, \alpha_2 = 1/2$.
-"""
-
-# ╔═╡ 99594bae-47cf-408b-aae7-ead6e783cbd3
-begin
-	N21 = 1000
-	alpha121 = 1/6
-	alpha221 = 0.5
-	
-	
-	d21 = Normal()
-	sigma21 = rand(d21, N21)
-	
-	x21 = [0.,0.]
-	
-	for i in range(3,N21)
-	    push!(x21,alpha121*x21[i-1]+alpha221*x21[i-2]+sigma21[i])
-	end
-	
-	lags21 = 40
-	rs21 = GetACF(x21,lags21)
-	rsp21 = GetPACF(x21,lags21)
-
-	fg21 = Figure(size=(640,800))
-	ax1fg21 = Axis(fg21[1, 1],
-    	title = "Time-Series")
-
-	lines!(x21)
-	
-	ax2fg21 = Axis(fg21[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags21,rs21[1])
-	hlines!([rs21[2],rs21[3]],linestyle=:dash)
-
-	ax3fg21 = Axis(fg21[3, 1],
-		title = "PACF")
-
-	stem!(0:lags21,rsp21[1])
-	hlines!([rsp21[2],rsp21[3]],linestyle=:dash)
-
-	fg21
-end
-
-# ╔═╡ 9cd4d3a6-2c2c-467c-931f-cba17568046a
-md"""
-- AR(5), $\alpha_{12} = -1/2, \alpha_{345} = 1/4$.
-"""
-
-# ╔═╡ abb69c9b-2ccf-408e-8bed-75ded62f6c34
-begin
-	N22 = 1000
-	alpha1222 = -0.5
-	alpha34522 = 0.25
-	
-	
-	d22 = Normal()
-	sigma22 = rand(d22, N22)
-	
-	x22 = [0.,0.,0.,0.,0.]
-	
-	for i in range(6,N22)
-	    push!(x22,alpha1222*x22[i-1]+alpha1222*x22[i-2]+alpha34522*x22[i-3]+alpha34522*x22[i-4]+alpha34522*x22[i-5]+sigma22[i])
-	end
-	
-	lags22 = 40
-	rs22 = GetACF(x22,lags22)
-	rsp22 = GetPACF(x22,lags22)
-
-	fg22 = Figure(size=(640,800))
-	ax1fg22 = Axis(fg22[1, 1],
-    	title = "Time-Series")
-
-	lines!(x22)
-	
-	ax2fg22 = Axis(fg22[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags22,rs22[1])
-	hlines!([rs22[2],rs22[3]],linestyle=:dash)
-
-	ax3fg22 = Axis(fg22[3, 1],
-		title = "PACF")
-
-	stem!(0:lags22,rsp22[1])
-	hlines!([rsp22[2],rsp22[3]],linestyle=:dash)
-	fg22
-end
-
-# ╔═╡ a7174765-5cb1-494c-9974-10010a900de3
-md"""
-- AR(8), $\alpha_j = 1/9$ for $j=1...8$.
-"""
-
-# ╔═╡ 07fe7c84-caa4-4d8e-a4db-f6e874ad7568
-begin
-	N23 = 1000
-	alpha23 = 1/9
-	
-	
-	d23 = Normal()
-	sigma23 = rand(d23, N23)
-	
-	x23 = [0.,0.,0.,0.,0.,0.,0.,0.]
-	
-	for i in range(9,N23)
-	    xt = sigma23[i]
-	    for j in range(1,8)
-	        xt = xt + alpha23*x23[i-j]
-	    end
-	    push!(x23,xt)
-	end
-	
-	lags23 = 40
-	rs23 = GetACF(x23,lags23)
-	rsp23 = GetPACF(x23,lags23)
-
-	fg23 = Figure(size=(640,800))
-	ax1fg23 = Axis(fg23[1, 1],
-    	title = "Time-Series")
-
-	lines!(x23)
-	
-	ax2fg23 = Axis(fg23[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags23,rs23[1])
-	hlines!([rs23[2],rs23[3]],linestyle=:dash)
-
-	ax3fg23 = Axis(fg23[3, 1],
-		title = "PACF")
-
-	stem!(0:lags23,rsp23[1])
-	hlines!([rsp23[2],rsp23[3]],linestyle=:dash)
-	fg23
-end
-
-# ╔═╡ d7d97154-4a7e-4e8f-a7e2-4eea6f9d1595
-md"""
-- ARMA(1,1): $\alpha_1 = 1/2, \beta_1 = 1/2$.
-"""
-
-# ╔═╡ ec56becc-5ba6-4a5c-9a30-cdfbaf823674
-begin
-	N24 = 1000
-	alpha124 = 0.5
-	beta124 = 0.5
-	
-	
-	d24 = Normal()
-	sigma24 = rand(d24, N24)
-	
-	x24 = [0.,]
-	
-	for i in range(2,N24)
-	    xt = sigma24[i] + alpha124*x24[i-1] + beta124*sigma24[i-1]
-	    push!(x24,xt)
-	end
-	
-	lags24 = 40
-	rs24 = GetACF(x24,lags24)
-	rsp24 = GetPACF(x24,lags24)
-
-	fg24 = Figure(size=(640,800))
-	ax1fg24 = Axis(fg24[1, 1],
-    	title = "Time-Series")
-
-	lines!(x24)
-	
-	ax2fg24 = Axis(fg24[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags24,rs24[1])
-	hlines!([rs24[2],rs24[3]],linestyle=:dash)
-
-	ax3fg24 = Axis(fg24[3, 1],
-		title = "PACF")
-
-	stem!(0:lags24,rsp24[1])
-	hlines!([rsp24[2],rsp24[3]],linestyle=:dash)
-	fg24
-end
-
-# ╔═╡ bf3e5cbf-6099-4bdd-966f-bcd59c3f09cf
-md"""
-- From now on we write our ARMA processes by means of a proper library.
-
-- ARMA(2,1): $\alpha_1 = 1/6, \alpha_2=1/2, \beta_1 = 1/2$.
-"""
-
-# ╔═╡ d908b9c8-d4bd-47cd-b2f1-f662f734cd89
-begin
-	arma_rvs25 = arma(1000, 1., SVector(1/6,0.5),SVector(0.5))
-	
-	lags25 = 40
-	rs25 = GetACF(arma_rvs25,lags25)
-	rsp25 = GetPACF(arma_rvs25,lags25)
-
-	fg25 = Figure(size=(640,800))
-	ax1fg25 = Axis(fg25[1, 1],
-    	title = "Time-Series")
-
-	lines!(arma_rvs25)
-	
-	ax2fg25 = Axis(fg25[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags25,rs25[1])
-	hlines!([rs25[2],rs25[3]],linestyle=:dash)
-
-	ax3fg25 = Axis(fg25[3, 1],
-		title = "PACF")
-
-	stem!(0:lags25,rsp25[1])
-	hlines!([rsp25[2],rsp25[3]],linestyle=:dash)
-	fg25
-end
-
-# ╔═╡ 5a27d099-c133-4845-b288-f88304287f73
-md"""
-- ARMA(2,2): $\alpha_1 = -1/2, \alpha_2=1/4, \beta_1 = -1/2, \beta_2 = 1/4$.
-"""
-
-# ╔═╡ cc15941d-5cf3-4c15-9f87-dcd40d0a2eac
-begin
-	arma_rvs26 = arma(1000, 1., SVector(-0.5,0.25),SVector(-0.5,0.25))
-	
-	lags26 = 40
-	rs26 = GetACF(arma_rvs26,lags26)
-	rsp26 = GetPACF(arma_rvs26,lags26)
-
-	fg26 = Figure(size=(640,800))
-	ax1fg26 = Axis(fg26[1, 1],
-    	title = "Time-Series")
-
-	lines!(arma_rvs26)
-	
-	ax2fg26 = Axis(fg26[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags26,rs26[1])
-	hlines!([rs26[2],rs26[3]],linestyle=:dash)
-
-	ax3fg26 = Axis(fg26[3, 1],
-		title = "PACF")
-
-	stem!(0:lags26,rsp26[1])
-	hlines!([rsp26[2],rsp26[3]],linestyle=:dash)
-	fg26
-end
-
-# ╔═╡ bf84f03a-3c9f-4c6f-a886-8b40c24124b8
-md"""
-- ARMA(2,2): $\alpha_1 = 1/9, \alpha_2=1/9, \beta_1 = 1/2, \beta_2 = -1/4$.
-"""
-
-# ╔═╡ 796008cd-13ed-481c-ab43-7f9998e21ebd
-begin
-	arma_rvs27 = arma(1000, 1., SVector(1/9,1/9),SVector(0.5,-0.25))
-	
-	lags27 = 40
-	rs27 = GetACF(arma_rvs27,lags27)
-	rsp27 = GetPACF(arma_rvs27,lags27)
-
-	fg27 = Figure(size=(640,800))
-	ax1fg27 = Axis(fg27[1, 1],
-    	title = "Time-Series")
-
-	lines!(arma_rvs27)
-	
-	ax2fg27 = Axis(fg27[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags27,rs27[1])
-	hlines!([rs27[2],rs27[3]],linestyle=:dash)
-
-	ax3fg27 = Axis(fg27[3, 1],
-		title = "PACF")
-
-	stem!(0:lags27,rsp27[1])
-	hlines!([rsp27[2],rsp27[3]],linestyle=:dash)
-	fg27
-end
-
-# ╔═╡ d94bbb24-b0fd-44d4-bedc-586941fa233c
-# ╠═╡ show_logs = false
-cm"""
-- The ACF is a powerful method to derive the order of the process but as soon as the processes become complex cannot give unambiguos answers.
-
-- A combined use of ACF and PACF can solve more cases.
-
-$(LocalResource("Pics/acfpacf.png"))
-
-- For instance, let's compare AR(1) with ``\alpha_1 = 0.6`` to ARMA(1,1) with ``\alpha_1 = 1/2, \beta_1 = 1/2``. 
-"""
-
-# ╔═╡ c1e80404-665c-4a68-978c-1df72a158059
-begin
-	
-	arma_t = arma(10000, 1., SVector(0.5),SVector(0.5))
-	ar_t = arma(10000, 1., SVector(0.6),nothing)
-	
-	armaacf = GetACF(arma_t,20)
-	armapacf = GetPACF(arma_t,20)
-	aracf = GetACF(ar_t,20)
-	arpacf = GetPACF(ar_t,20)
-	
-	fg28 = Figure()
-	ax1fg28 = Axis(fg28[1, 1],
-	    title = "AR ACF")
-	stem!(aracf[1])
-	hlines!([aracf[2],aracf[3]],linestyle=:dash)
-	
-	ax2fg28 = Axis(fg28[1, 2],
-	    title = "ARMA ACF")
-	stem!(armaacf[1])
-	hlines!([armaacf[2],armaacf[3]],linestyle=:dash)
-	
-	ax3fg28 = Axis(fg28[2, 1],
-	    title = "AR PACF")
-	stem!(arpacf[1])
-	hlines!([arpacf[2],arpacf[3]],linestyle=:dash)
-	
-	ax4fg28 = Axis(fg28[2, 2],
-	    title = "ARMA PACF")
-	stem!(armapacf[1])
-	hlines!([armapacf[2],armapacf[3]],linestyle=:dash)
-	
-	
-	fg28
-	
-end
-
-# ╔═╡ 73aecd0e-d6d0-4429-b63b-38f572115c50
-md"""
-## ARIMA(p,d,q)
-***
-
-- Autoregressive Integrated Moving Average
-
-- A process $x_t$ is ARIMA(p,d,q) if $x_t$, differenced “d times" ($\nabla^d x_t$), is an ARMA(p,q) process.
-
-```math
-\phi(B) \nabla^d x_t = \theta(B) w_t \qquad \phi(B) (1-B)^d x_t = \theta(B) w_t
-```
-
-- Having chosen the right orders of the moving average autoregressive processes there are different strategies for determining the ARIMA parameters (Yule-Walker equations, maximum-likelihood, etc.). 
-
-- Typically, one could follow a procedure known as [Box-Jenkins method](https://en.wikipedia.org/wiki/Box%E2%80%93Jenkins_method) that, with some simplification, essentially is:
-    1. Plot the data
-    2. Difference until series is stationary (find d)
-    3. Examine ACF and PACF to guess p and q
-    4. Fit ARIMA(p,d,q) to the original data
-    5. Check model diagnostics 
-
-- Or, even if time-consuming, a grid-search (or something more elaborated) can be a solution.
-"""
-
-# ╔═╡ 61cade13-3747-4481-aa8a-b59ff87ca05d
-md"""
-#### Exercise: fit a dataset by an ARIMA model
-***
-
-- Let's go back to the airline passenger dataset.
-
-- Converting to log and differencing we got a stationary time-series.
-
-- Let's study the ACF and PACF of the difference time-series.
-"""
-
-# ╔═╡ ca1ac1dd-b580-491b-94b6-8ece8c037298
-begin
-	tracf = GetACF(dropmissing(train)[!,"#Passengers_log_diff"],30)
-	trpacf = GetPACF(dropmissing(train)[!,"#Passengers_log_diff"],30)
-	
-	fg29 = Figure()
-	ax1fg29 = Axis(fg29[1, 1],
-	    title = "ACF")
-	stem!(tracf[1])
-	hlines!([tracf[2],tracf[3]],linestyle=:dash)
-	
-	ax2fg29 = Axis(fg29[2, 1],
-	    title = "PACF")
-	stem!(trpacf[1])
-	hlines!([trpacf[2],trpacf[3]],linestyle=:dash)
-	
-	fg29
-end
-
-# ╔═╡ f1e1cdde-a8b8-4ff5-9c49-6207de8ad125
-md"""
-- The ACF becomes 0 after 2 lags, and the seasonality is clearly visible, while the PACF is 0 after 8 or 9 lags.
-
-- We might guess that the AR order could be 8 and the MA order 2.
-
-- Diagnostic plots of the time series can be used along with heuristic rules to determine the hyperparameters of the ARIMA model.cThese are good in most, but perhaps not all, situations.
-
-- As a matter if fact, we also try with a brute-force grid search:
-"""
-
-# ╔═╡ 6bf9db61-f56c-4e91-af6b-772a5066e709
+# ╔═╡ 26f04717-948d-4e3d-be26-e6e8c6070905
 begin
 	bics = Dict()
 	minbc = 1e6
-	for p in 0:10
-	    for q in 0:10
-	        model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (p, 0, q), suppress_warns=true)
+	for p in 0:5
+	    for q in 0:5
+	        model_ARIMA = StateSpaceModels.SARIMA(dt[!,:Rate]; order = (p, 0, q), suppress_warns=true)
 	        try
 	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead()))
 	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic)
@@ -1869,169 +353,305 @@ begin
 	println(bics)
 end
 
-# ╔═╡ 435071db-e81b-4b3e-ab0e-a271030749e4
+# ╔═╡ ef6c457b-9f04-45b7-bf31-281a39111fb6
 md"""
-- All in all, the grid search did not provide results so different wrt to those suggested by the ACF/PACF plots.
+- Results are indeed not so close to those inferred from the ACF/PACF analysis. Let's see some diagnostic plots.
 """
 
-# ╔═╡ dc5a5f74-9289-4614-b1ae-553d43c33120
+# ╔═╡ b8849f80-f454-464e-881b-4b5a9f2dcbdd
 begin
-	model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (bics["p"], 0, bics["q"]), suppress_warns=true)
+	model_ARIMA = StateSpaceModels.SARIMA(dt[!,:Rate]; order = (bics["p"], 0, bics["q"]), suppress_warns=true)
 	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead()))
-end
+end;
 
-# ╔═╡ 61d51f9c-2368-478c-9d77-90c7d9a72610
+# ╔═╡ 3fdda80e-3360-481c-af16-0bcdd5d3e470
 begin
 	kf = kalman_filter(model_ARIMA)
 	
 	plotdiagnostics(kf)
 end
 
-# ╔═╡ 15cf410a-13ee-4638-b91a-4dc286754c8c
+# ╔═╡ 29e38a84-e43f-434a-83cf-3003a33b1079
 md"""
-- The fit is not perfect, in particular for the tail values, yet for this exercise is fine.
+- And we immediately see that we have discrepancies in particular for the high flixes. This might be due to the hint of periodicity that cannot be described by a pure stochastic model as the ARMA process we are testing.
 """
 
-# ╔═╡ e74e9fba-8062-45b0-aea9-b7ae1a646bf3
+# ╔═╡ 7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
 begin
-	fg30 = Figure()
+	fg3 = Figure()
 	
-	ax1fg30 = Axis(fg30[1, 1],
+	ax1fg3 = Axis(fg3[1, 1],
 	    title="ARMA fit",
 	    )
 	
-	lines!(model_ARIMA.system.y,color=:blue,label="data")
-	lines!(model_ARIMA.system.y .+ StateSpaceModels.get_innovations(kf)[:,1],color=:red,alpha=0.5)
+	lines!(model_ARIMA.system.y,label="data")
+	lines!(model_ARIMA.system.y .+ StateSpaceModels.get_innovations(kf)[:,1],alpha=0.5,label="fit")
 	
 	axislegend()
 	
-	fg30
+	fg3
 end
 
-# ╔═╡ 8d084ab0-3027-49d8-9b3b-24f06d0af830
+# ╔═╡ 604dab44-6d5f-49e3-a2c1-669a947ac5ea
 md"""
-- Indeed the modeling of the input dataset is rather satisfactory.
+- The ARMA model is indeed rather effective in gettig the variability of the data, but it fails to reproduce the extent of the variability, in particular at the highest or lowest fluxes.
 
-- Finally, we can plot our data with the original scale:
+- We then try to apply a more sophisticated analysis, based on a procedure described by [Vaughan (2010)](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract).
 """
 
-# ╔═╡ e688750a-c6a9-4e08-ba7c-c1fd314405ec
+# ╔═╡ a862c4a2-0a3c-432d-86ab-49c9857554b3
+md"""
+- Let's compuyte the Nyquist frequency and a lower-limit for the freqencies accessible with our dataset:
+"""
+
+# ╔═╡ 15fd10c7-c163-4c4c-a1a7-993ec5185843
 begin
-	origdata = collect(skipmissing(ShiftedArrays.lag(train[!,"#Passengers_log"],6))) .+ collect(skipmissing(train[!,"#Passengers_log_diff"]))
-	arimamodel = collect(skipmissing(ShiftedArrays.lag(train[!,"#Passengers_log"],6))) .+ StateSpaceModels.get_innovations(kf)[:,1] .+ model_ARIMA.system.y
-	#origdata = train['#Passengers_log'].shift(6) + train['#Passengers_log_diff']
-	#arimamodel = train['#Passengers_log'].shift(6) + results_ARIMA.predict(0,typ='levels')
+	lendata = maximum(dt.MJD)-minimum(dt.MJD)
+	nqy = 1 / (2*meandelta)
+	#printfmtln("Nyquist frequency: {:.4f}, lowest frequency: {:.4f} 1/day", nqy, 1/lendata)
+end;
+
+# ╔═╡ 83fa92c8-643c-408c-9d05-bc8d744e1e1a
+Markdown.parse("""
+##### Nyquist frequency: $(latexify(nqy,fmt="%.4f")), lowest frequency:  $(latexify(1/lendata,fmt="%.4f"))
+""")
+
+# ╔═╡ 520a01ff-dfca-405a-8cff-4124f0bc0792
+md"""
+- And let's compute the periodogram indicating the expected Poissonian noise.
+"""
+
+# ╔═╡ be5706a4-0325-45ed-b1b1-bab78d6485e7
+begin
+	psd = periodogram(dt.Rate; fs=1/meandelta)
 	
-	fg31 = Figure()
+	freq = psd.freq[psd.freq.>0]
+	power = psd.power[psd.freq.>0]/sum(dt.eRate.^2);
+end;
+
+# ╔═╡ 8678584b-0bee-4ff0-a466-9f073847d2a1
+begin
+	fg4 = Figure()
 	
-	ax1fg31 = Axis(fg31[1, 1],
-	    title="ARMA fit",
+	axfg4 = Axis(fg4[1,1],
+	    title="Fourier periodogram",
+	    ylabel="Power",
+	    xlabel=L"Frequency (day$^{-1}$)",
+	    xscale = log10,
+	    yscale = log10
 	    )
 	
-	lines!(exp.(origdata),color=:blue,label="data")
-	lines!(exp.(arimamodel),color=:red,alpha=0.5,label="fit")
+	lines!(freq,power)
+	hlines!(2.,linestyle=:dash)
 	
-	axislegend(position = :lt)
 	
-	fg31
+	fg4
 end
 
-# ╔═╡ c9b352f2-016d-4d16-8053-48eedc39458d
+# ╔═╡ a8aa2b22-1529-48da-beb0-b51cce0ae2aa
 md"""
-- Nonstationarity is a complex issue, anyway. 
-
-- Another form of nonstationarity occurs when the variance, rather than the local mean level, of  the time series changes during the observation. This is commonly called *volatility*, in econometric contexts.
-
-- These kind of problems can be addressed by the autoregressive conditional heteroscedastic (ARCH) models. Here the variance is assumed to be a stochastic autoregressive process depending on previous values.
-
-- For instance, in a ARCH(1) model: 
-
-```math
-{\rm Var}_{\rm ARCH(1)}(\epsilon_i) = w_t + \alpha_1 {\rm Var(\epsilon_{i-1})}
-```
-
-- Nevertheless, the zoo of general linear processes is rich...!
-    - ARFIMA: autoregressive moving average fractionally integrated.
-    - SARIMA: multiplicative seasonal autoregressive integrated moving average model.
-    - CARFIMA: designed for irregularly sampled time series.
-    - ARMAX: where X stands for “exogenous covariate”.
-
-```math
-x_t = \sum_{i=1}^p \alpha_i x_{t-i} + \sum_{j=1}^q \beta_j w_{t-j} + \sum_{k=1}^r c_k y_{t-k}
-```
-
-- where the exogenous covariates can be any function linear in the parameters: periodic, or some deterministic trend (e.g., polynomial), or even a tabulated variables without a simple mathematical form. 
-
+- We plan to model the noise of the time-series as PL plus a constant, i.e. the Poissonian noise level. The PL+constant model is the null hypotesis of a time-series generated by noise only without any periodicity.
 """
 
-# ╔═╡ e3234616-d59f-43bb-91b3-bd2f727c68b1
+# ╔═╡ 2c1416c7-a866-4742-a424-233eca091657
+function model(theta, x)
+    lnn,a,g = theta
+    return exp.(lnn) .* x.^a .+ abs.(g)
+end
+
+# ╔═╡ 974e371c-c0b2-40db-b7a9-ad19612ab76c
 md"""
-### State space models
+- We are going to carry out a Bayesian analysis and we need to define a proper likelihood. In this case, due to the statistics affecting a periodogram, we work with the *Whittle likelihood*.
+"""
+
+# ╔═╡ 2d72fd9b-25e4-46d0-ad3b-3f35ae4e2c09
+function lnlike(theta, x, y)
+    lnn,a,g = theta
+    return -2.0 .* sum(y ./ model(theta,x) .+ log.(model(theta,x)))
+end
+
+# ╔═╡ fc38a1b7-51e4-4832-bfdb-e6d83af0ed27
+@model function permodel(x,y)
+    #
+    lnn ~ Uniform(-15,0)
+    a ~ Truncated(Normal(0.,10.),-10,0)
+    g ~ Normal(2,0.4)
+    #
+    Turing.@addlogprob! lnlike((lnn,a,g),x,y)
+    #
+    for i in 1:length(y)
+        y[i] ~ Chisq(2) * model((lnn,a,g),x[i]) / 2
+    end
+    #
+end
+
+# ╔═╡ 1d86c6a4-36ab-455a-a6b8-618fe8e36665
+md"""
+- Now, let's prepare and run the MCMC chain.
+"""
+
+# ╔═╡ 47a41ecc-faeb-45f7-a856-03c1d5bb917b
+begin
+	iterations = length(freq)*250
+	burnins = 1000
+	chains = 4
+	
+	chain = mapreduce(c -> sample(permodel(freq,power), NUTS(burnins,0.65), iterations), chainscat, 1:chains)
+end
+
+# ╔═╡ 2abc083b-f39f-4610-9c40-cfbfb73982a3
+StatsPlots.plot(chain)
+
+# ╔═╡ eb11b179-5c4c-4b29-b90d-6fd1cf1c54b4
+md"""
+- And let's check the chain result by a classic *corner plot*!
+"""
+
+# ╔═╡ c9b3afdd-b00f-4735-ab7e-862e9fcac505
+begin
+	dfc = DataFrame(chain)     
+	
+	dfc[!,:Lnn] = log10.(exp.(dfc[!,:lnn]))
+	          
+	dfcs = select(dfc, [:Lnn,:a, :g])
+	
+	fig = pairplot(dfcs, labels = Dict(
+	        :Lnn => "Log N",
+	        :a => "α",  
+	        :g => "g"
+	    ))
+end
+
+# ╔═╡ 39235756-f5b9-4e0d-a47b-64235767ca4c
+md"""
+- The posteriors are well defined and single-peaked.
+
+- Since the statistics is $\chi^2$ with 2 degrees of freedom we can check whether the model is properly fitting the data, as it seems to be the case.
+"""
+
+# ╔═╡ 593ff4f2-6fb9-4031-8a5b-d7c83838ecf7
+begin
+	theta = [mean(chain["lnn"]),mean(chain["a"]),mean(chain["g"])]
+	
+	ExactOneSampleKSTest(2*power./model(theta,freq), Chisq(2))
+end
+
+# ╔═╡ 25258185-5a00-4faa-ad78-fdb2e770909a
+md"""
+- Now, let's compute, basing upon the MSMC chains, the percentile for any chosen level for each frequency bin. Details of the procedure we follow are discussed in [Vaughan (2010)](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract).
+"""
+
+# ╔═╡ 4bc8b53c-b9f6-47b8-ab9e-9cc2871488e1
+begin
+	# Compute the best fit model
+	Sbest = model(theta,freq)
+	
+	# Derive a set of models based on the posterrio distribution
+	S = [model((dfc[i,:lnn],dfc[i,:a],dfc[i,:g]),freq) for i in 1:nrow(dfc)]
+	
+	# Multiply a chi2 distribution to the models and derive the simulated periodograms
+	I = S .* rand(Chisq(2),length(S))/2.
+	
+	# Compute the observed
+	Robs = 2*power./Sbest
+end;
+
+# ╔═╡ a3d22608-bb4f-49db-bc4d-9086a2cf192e
+begin
+	# Compute the simulated Rs
+	Is = reshape(I,(Int(length(I)/length(Sbest)),length(Sbest)))
+	Rsim = [2*Is[i,:][1] ./ Sbest for i in 1:size(Is)[1]]
+end;
+
+# ╔═╡ f7e7a22c-6ef0-4910-9deb-4901aa917c99
+begin
+	# And derive any chosen percentile on the simulated distribution
+	R95 = percentile([maximum(Rsim[i]) for i in 1:length(Rsim)],95.0)
+	R997 = percentile([maximum(Rsim[i]) for i in 1:length(Rsim)],99.7)
+	
+	# And convert back to periodogram values.
+	pp95 = R95.*Sbest/2.
+	pp997 = R997.*Sbest/2.
+end;
+
+# ╔═╡ 3185c0e0-edcb-46b0-9479-de6d84ce08c0
+md"""
+- And finally let's plot our periodogram together with the predictions for pure noise datasets.
+"""
+
+# ╔═╡ e8829c5d-2cf7-4303-9ad4-1c457ca734bd
+begin
+	fg5 = Figure()
+	
+	axfg5 = Axis(fg5[1,1],
+	    title = "PKS2155-304",
+	    xlabel = L"Frequency (day$^{-1}$)",
+	    ylabel = "Power",
+	    xscale=log10,
+	    yscale=log10,
+	    )
+	    
+	
+	lines!(freq,power,label="data",color=:blue)
+	lines!(freq,Sbest,label="fit",color=:red)
+	lines!(freq,pp95,label="95%",color=:magenta)
+	lines!(freq,pp997,label="99.7%",color=:orange)
+	
+	axislegend()
+	
+	#plt.ylim((0.01,3e3));
+	
+	fg5
+end
+
+# ╔═╡ 4f538581-25a3-4aa2-8029-ecebf4234b9e
+md"""
+- The peak in the periodogram, although of interest, does not reach the 3$\sigma$ limit threshold, and we cannot rule out the possibility it is a noise artifact. 
+"""
+
+# ╔═╡ 2fac4aef-b656-40f7-bfaa-88a8cadf3980
+md"""
+### A word of caution
 ***
 
-- SSM form a broader approach to parametric modeling of complicated time series, where autoregressive and other stochastic behaviors can be combined with linear or nonlinear deterministic trends or periodic components.
+- As already mentioned, finding possible QPOs in AGN is a very hot topic, but the analysis is also of great complexity and the rate of false positive is almost always underestimated for various reasons, e.g. too simple noise modeling, ineffective "look elsewhere effect" correction, inadequate analysis tools, etc.
 
-- Functional behaviors can be linear or nonlinear, and can involve derivatives of state variables. Noise can be Gaussian or non-Gaussian, white or autoregressive.
+- In the following figure, taken from [El-Badry et al. (2025)](https://ui.adsabs.harvard.edu/abs/2025arXiv250910601E/abstract), we see the light-curve for an AGN obtained by the [Gaia](https://www.esa.int/Science_Exploration/Space_Science/Gaia) satellite, and by a few more ground based facilities.
 
-- State space models are defined hierarchically with one level describing relationships between “state variables” defining the temporal behavior of the system and other levels describing how the underlying system relates to  the observables. 
+$(LocalResource("Pics/shortlongmonitoring.png"))
 
-- A state-space model for a (possibly multivariate) time series {$Y_t, t = 1,2,...$} consists of two equations. The first, known as the observation equation, expresses the w-dimensional observation $Y_t$ as a linear function of a v-dimensional state variable $X_t$ plus noise. 
-
-```math
-Y_t = G_t X_t + W_t, \qquad t=1,2,...
-```
-
-- The second equation is called the state equation, and determines the state $X_{t+1}$ at time $t+1$ in terms of the previous state $X_t$ and a noise term:
-
-```math
-X_{t+1} = F_t X_t + V_t, \qquad t=1,2,...
-```
-
-- The noise terms are often (but not necessarily) supposed to be uncorrelated.
-
-- It is possible to find a state-space representation for a large number of time-series.
-
-- Neither ${X_t}$ nor ${Y_t}$ is necessarily stationary.
-
-- The beauty of a state-space representation lies in the simple structure of the state equation, which permits relatively simple analysis of the process ${X_t}$.
-
-- The behavior of ${Y_t}$ is then easy to determine from that of ${X_t}$ using the observation equation.
-
-- The coefficients of the model are calculated by least squares or maximum likelihood estimation, often through a recursive algorithm such as, e.g., the *Kalman filter*. 
+- If the analysis is based on Gaia data only, a clear and sinusoidal periodicity appears that was considered signifcant. However, enlarging the monitoring length with data from different sources it is clear that there is no stable periodicity. The recurrent pattern turns out an artifact likely introduced by the correlated noise.
 """
 
-# ╔═╡ 4a98a96f-a1b3-4144-b98a-9f65c0ca44aa
+# ╔═╡ d66e12db-ce72-41a6-8207-2533bee71604
 md"""
 ## Reference & Material
 
 Material and papers related to the topics discussed in this lecture.
 
-- [Ivezić et al. (2020) - "Statistics, Data Mining, and Machine Learning in Astronomy"](https://ui.adsabs.harvard.edu/abs/2020sdmm.book.....I/abstract)
-- [Feigelson et al. (2016) - "Autoregressive Times Series Methods for Time Domain Astronomy”](https://ui.adsabs.harvard.edu/abs/2018FrP.....6...80F/abstract)
-- [Feigelson & Babu (2013) - "Statistical Methods for Astronomy"](https://ui.adsabs.harvard.edu/abs/2013pss2.book..445F/abstract)
+- [Covino et al. (2019) - "Gamma-ray quasi-periodicities of blazars. A cautious approach"](https://ui.adsabs.harvard.edu/abs/2020ApJ...895..122C/abstract)
+- [El-Badry et al. (2025) - "Active galactic nuclei do not exhibit stably periodic brightness variations"](https://ui.adsabs.harvard.edu/abs/2025arXiv250910601E/abstract)
 """
 
-# ╔═╡ e97eaccb-f03c-455e-8f15-b606f66704d9
+# ╔═╡ 14f46e3f-17ba-48a2-8ed1-8ebfe9b3991c
 md"""
 ## Further Material
 
 Papers for examining more closely some of the discussed topics.
 
-- [Alexander (1997) - "Is AGN Variability Correlated with Other AGN Properties? ZDCF Analysis of Small Samples of Sparse Light Curves"](https://ui.adsabs.harvard.edu/abs/1997ASSL..218..163A/abstract)
-- [Kelly et al. (2014) - "Flexible and Scalable Methods for Quantifying Stochastic Variability in the Era of Massive Time-domain Astronomical Data Sets"](https://ui.adsabs.harvard.edu/abs/2014ApJ...788...33K/abstract)
-- [Stone et al. (2022) - "Optical variability of quasars with 20-yr photometric light curves](https://ui.adsabs.harvard.edu/abs/2022MNRAS.514..164S/abstract)
-- [Tarnopolski et al. (2020) - "A Comprehensive Power Spectral Density Analysis of Astronomical Time Series. I. The Fermi-LAT Gamma-Ray Light Curves of Selected Blazars"](https://ui.adsabs.harvard.edu/abs/2020ApJS..250....1T/abstract).
+- [Ackermann et al. (2015) - "Multiwavelength Evidence for Quasi-periodic Modulation in the Gamma-Ray Blazar PG 1553+113"](https://ui.adsabs.harvard.edu/abs/2015ApJ...813L..41A/abstract)
+- [Vaughan (2010) - "A Bayesian test for periodic signals in red noise"](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract)
 """
 
-# ╔═╡ ecfe0d5e-edc1-4557-8534-93c3970f366c
+# ╔═╡ fb3021c6-b871-47e2-acf2-4b4f31ae18a2
 md"""
 ### Credits
 ***
 
-This notebook contains material obtained from [https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/](https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/), [https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c](https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c), [https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/](https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/), [https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/](https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/), and from [https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/](https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/).
+This notebook contains no exertnal material. 
 """
 
-# ╔═╡ eca5662e-1eee-46a0-82ce-ca3f5f70ae77
+# ╔═╡ 1a698a3e-bb7e-46c9-b045-fc12d21f41ab
 cm"""
 ## Course Flow
 
@@ -2043,13 +663,13 @@ cm"""
   </tr>
   <tr>
 	<td>notebook</td>
-    <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl">Science case about climate data</a></td>
-    <td><a href="./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl">Science case about AGN and blazars</a></td>
+    <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl">Lecture about time domain analysis</a></td>
+    <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival</a></td>
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../../Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
-    <td><a href="../../Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
+    <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html">Lecture about time domain analysis</a></td>
+    <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival</a></td>
   </tr>
 
  </table>
@@ -2057,44 +677,55 @@ cm"""
 
 """
 
-# ╔═╡ bd9d24c9-3dc1-4759-b2ea-2663c6a49678
+# ╔═╡ 5f3ce6b3-4df7-4928-b01e-9a4e4849f673
 md"""
 **Copyright**
 
-This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2025*.
+This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2024*.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-ARFIMA = "9d0fb3db-ba49-4108-bc86-650b3813b6d5"
+AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
+DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
+Format = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
-LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
+Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
+PairPlots = "43a3c2be-4208-490b-832a-a21dcd55d7da"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-ShiftedArrays = "1277b4bf-5013-50f5-be3d-901d8477a67a"
 StateSpaceModels = "99342f36-827c-5390-97c9-d7f9ee765c78"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
+Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [compat]
-ARFIMA = "~0.4.0"
+AbstractFFTs = "~1.5.0"
 CSV = "~0.10.16"
 CairoMakie = "~0.15.9"
 CommonMark = "~1.0.1"
+DSP = "~0.8.4"
 DataFrames = "~1.8.1"
-Distributions = "~0.25.123"
+DensityInterface = "~0.4.0"
+Format = "~1.3.7"
 HypothesisTests = "~0.11.6"
-LombScargle = "~1.0.3"
+Latexify = "~0.16.10"
+Optim = "~1.13.3"
+PairPlots = "~3.0.3"
 Plots = "~1.41.6"
-PlutoUI = "~0.7.79"
-ShiftedArrays = "~1.0.0"
-StateSpaceModels = "~0.6.7"
-StatsBase = "~0.33.21"
+PlutoUI = "~0.7.80"
+StateSpaceModels = "~0.7.2"
+StatsBase = "~0.34.10"
+StatsPlots = "~0.15.8"
+Turing = "~0.42.2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -2103,7 +734,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "cabde73850f21f3b11e59cd5c718c403e0029ef0"
+project_hash = "d5874a96fb7bf5c8eef3f556b5e8f2407be4a2a7"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -2120,12 +751,6 @@ version = "1.21.0"
     ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
     EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
 
-[[deps.ARFIMA]]
-deps = ["LinearAlgebra", "Random", "StaticArrays", "Test"]
-git-tree-sha1 = "e75e73b854b4f592466782c0d035f0e5b64ac83d"
-uuid = "9d0fb3db-ba49-4108-bc86-650b3813b6d5"
-version = "0.4.0"
-
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "d92ad398961a3ed262d8bf04a1a2b8340f915fef"
@@ -2136,6 +761,30 @@ weakdeps = ["ChainRulesCore", "Test"]
     [deps.AbstractFFTs.extensions]
     AbstractFFTsChainRulesCoreExt = "ChainRulesCore"
     AbstractFFTsTestExt = "Test"
+
+[[deps.AbstractMCMC]]
+deps = ["BangBang", "ConsoleProgressMonitor", "Dates", "Distributed", "FillArrays", "LogDensityProblems", "Logging", "LoggingExtras", "ProgressLogging", "Random", "StatsBase", "TerminalLoggers", "Transducers", "UUIDs"]
+git-tree-sha1 = "511d0d8cbf38045be05188ae26880afb57342a88"
+uuid = "80f14c24-f653-4e6a-9b94-39d6b0f70001"
+version = "5.14.0"
+
+    [deps.AbstractMCMC.extensions]
+    AbstractMCMCOnlineStatsExt = "OnlineStats"
+    AbstractMCMCTensorBoardLoggerExt = "TensorBoardLogger"
+
+    [deps.AbstractMCMC.weakdeps]
+    OnlineStats = "a15396b6-48d5-5d58-9928-6d29437db91e"
+    TensorBoardLogger = "899adc3e-224a-11e9-021f-63837185c80f"
+
+[[deps.AbstractPPL]]
+deps = ["AbstractMCMC", "Accessors", "DensityInterface", "JSON", "LinearAlgebra", "Random", "StatsBase"]
+git-tree-sha1 = "66aed89871b6a8458bb407327fa997d980ea894f"
+uuid = "7a57a42e-76ec-4ea3-a279-07e840d6d9cf"
+version = "0.13.6"
+weakdeps = ["Distributions"]
+
+    [deps.AbstractPPL.extensions]
+    AbstractPPLDistributionsExt = ["Distributions"]
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -2150,9 +799,9 @@ version = "0.4.5"
 
 [[deps.Accessors]]
 deps = ["CompositionsBase", "ConstructionBase", "Dates", "InverseFunctions", "MacroTools"]
-git-tree-sha1 = "856ecd7cebb68e5fc87abecd2326ad59f0f911f3"
+git-tree-sha1 = "2eeb2c9bef11013efc6f8f97f32ee59b146b09fb"
 uuid = "7d9f7c33-5ae7-4f3b-8dc6-eff91059b697"
-version = "0.1.43"
+version = "0.1.44"
 
     [deps.Accessors.extensions]
     AxisKeysExt = "AxisKeys"
@@ -2188,6 +837,66 @@ git-tree-sha1 = "7e651ea8d262d2d74ce75fdf47c4d63c07dba7a6"
 uuid = "35492f91-a3bd-45ad-95db-fcad7dcfedb7"
 version = "1.2.0"
 
+[[deps.AdvancedHMC]]
+deps = ["AbstractMCMC", "ArgCheck", "DocStringExtensions", "LinearAlgebra", "LogDensityProblems", "LogDensityProblemsAD", "ProgressMeter", "Random", "Setfield", "Statistics", "StatsBase", "StatsFuns"]
+git-tree-sha1 = "15e1bafe97eb0eeb77c8dae63cdcfa133986b254"
+uuid = "0bf59076-c3b1-5ca4-86bd-e02cd72cde3d"
+version = "0.8.3"
+
+    [deps.AdvancedHMC.extensions]
+    AdvancedHMCADTypesExt = "ADTypes"
+    AdvancedHMCCUDAExt = "CUDA"
+    AdvancedHMCComponentArraysExt = "ComponentArrays"
+    AdvancedHMCMCMCChainsExt = "MCMCChains"
+    AdvancedHMCOrdinaryDiffEqExt = "OrdinaryDiffEq"
+
+    [deps.AdvancedHMC.weakdeps]
+    ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    ComponentArrays = "b0b7db55-cfe3-40fc-9ded-d10e2dbeff66"
+    MCMCChains = "c7f686f2-ff18-58e9-bc7b-31028e88f75d"
+    OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+
+[[deps.AdvancedMH]]
+deps = ["AbstractMCMC", "Distributions", "DocStringExtensions", "FillArrays", "LinearAlgebra", "LogDensityProblems", "Random", "Requires"]
+git-tree-sha1 = "62ddbccf0ce5c26f8ef3cebe4bedef6b1599d616"
+uuid = "5b7e9947-ddc0-4b3f-9b55-0d8042f74170"
+version = "0.8.10"
+weakdeps = ["DiffResults", "ForwardDiff", "MCMCChains", "StructArrays"]
+
+    [deps.AdvancedMH.extensions]
+    AdvancedMHForwardDiffExt = ["DiffResults", "ForwardDiff"]
+    AdvancedMHMCMCChainsExt = "MCMCChains"
+    AdvancedMHStructArraysExt = "StructArrays"
+
+[[deps.AdvancedPS]]
+deps = ["AbstractMCMC", "Distributions", "Random", "Random123", "Requires", "SSMProblems", "StatsFuns"]
+git-tree-sha1 = "d92dd3fb4cc2748860ae8d5dd1d324cf0715a53b"
+uuid = "576499cb-2369-40b2-a588-c64705576edc"
+version = "0.7.2"
+weakdeps = ["Libtask"]
+
+    [deps.AdvancedPS.extensions]
+    AdvancedPSLibtaskExt = "Libtask"
+
+[[deps.AdvancedVI]]
+deps = ["ADTypes", "Accessors", "ChainRulesCore", "DiffResults", "DifferentiationInterface", "Distributions", "DocStringExtensions", "FillArrays", "Functors", "LinearAlgebra", "LogDensityProblems", "Optimisers", "ProgressMeter", "Random", "StatsBase"]
+git-tree-sha1 = "a0803d1f1bdb46f051f8b580c639569cc8d09dd5"
+uuid = "b5ca4192-6429-45e5-a2d9-87aec30a685c"
+version = "0.6.1"
+
+    [deps.AdvancedVI.extensions]
+    AdvancedVIBijectorsExt = ["Bijectors", "Optimisers"]
+    AdvancedVIEnzymeExt = ["Enzyme", "ChainRulesCore"]
+    AdvancedVIMooncakeExt = ["Mooncake", "ChainRulesCore"]
+    AdvancedVIReverseDiffExt = ["ReverseDiff", "ChainRulesCore"]
+
+    [deps.AdvancedVI.weakdeps]
+    Bijectors = "76274a88-744f-5084-9051-94815aaf08c4"
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+    Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+
 [[deps.AliasTables]]
 deps = ["PtrArrays", "Random"]
 git-tree-sha1 = "9876e1e164b144ca45e9e3198d0b689cadfed9ff"
@@ -2200,9 +909,26 @@ git-tree-sha1 = "e092fa223bf66a3c41f9c022bd074d916dc303e7"
 uuid = "27a7e980-b3e6-11e9-2bcd-0b925532e340"
 version = "0.4.2"
 
+[[deps.ArgCheck]]
+git-tree-sha1 = "f9e9a66c9b7be1ad7372bbd9b062d9230c30c5ce"
+uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
+version = "2.5.0"
+
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
+
+[[deps.Arpack]]
+deps = ["Arpack_jll", "Libdl", "LinearAlgebra", "Logging"]
+git-tree-sha1 = "9b9b347613394885fd1c8c7729bfc60528faa436"
+uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+version = "0.5.4"
+
+[[deps.Arpack_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "libblastrampoline_jll"]
+git-tree-sha1 = "7f54761502ff149a9d492e4acefe9805898e29b3"
+uuid = "68821587-b530-5797-8361-c406ea357684"
+version = "3.5.2+0"
 
 [[deps.ArrayInterface]]
 deps = ["Adapt", "LinearAlgebra"]
@@ -2262,6 +988,28 @@ git-tree-sha1 = "4126b08903b777c88edf1754288144a0492c05ad"
 uuid = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 version = "0.4.8"
 
+[[deps.BangBang]]
+deps = ["Accessors", "ConstructionBase", "InitialValues", "LinearAlgebra"]
+git-tree-sha1 = "cceb62468025be98d42a5dc581b163c20896b040"
+uuid = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
+version = "0.4.9"
+
+    [deps.BangBang.extensions]
+    BangBangChainRulesCoreExt = "ChainRulesCore"
+    BangBangDataFramesExt = "DataFrames"
+    BangBangStaticArraysExt = "StaticArrays"
+    BangBangStructArraysExt = "StructArrays"
+    BangBangTablesExt = "Tables"
+    BangBangTypedTablesExt = "TypedTables"
+
+    [deps.BangBang.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+    StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
+    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+    TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
+
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
@@ -2270,6 +1018,40 @@ version = "1.11.0"
 git-tree-sha1 = "bca794632b8a9bbe159d56bf9e31c422671b35e0"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
+
+[[deps.Baselet]]
+git-tree-sha1 = "aebf55e6d7795e02ca500a689d326ac979aaf89e"
+uuid = "9718e550-a3fa-408a-8086-8db961cd8217"
+version = "0.1.1"
+
+[[deps.Bessels]]
+git-tree-sha1 = "4435559dc39793d53a9e3d278e185e920b4619ef"
+uuid = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
+version = "0.2.8"
+
+[[deps.Bijectors]]
+deps = ["ArgCheck", "ChainRulesCore", "ChangesOfVariables", "Distributions", "DocStringExtensions", "Functors", "InverseFunctions", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "MappedArrays", "Random", "Reexport", "Roots", "SparseArrays", "Statistics"]
+git-tree-sha1 = "52f3f101c0c541145da25fba9805f3ef076f2d96"
+uuid = "76274a88-744f-5084-9051-94815aaf08c4"
+version = "0.15.16"
+
+    [deps.Bijectors.extensions]
+    BijectorsDistributionsADExt = "DistributionsAD"
+    BijectorsEnzymeCoreExt = "EnzymeCore"
+    BijectorsForwardDiffExt = "ForwardDiff"
+    BijectorsLazyArraysExt = "LazyArrays"
+    BijectorsMooncakeExt = "Mooncake"
+    BijectorsReverseDiffChainRulesExt = ["ChainRules", "ReverseDiff"]
+    BijectorsReverseDiffExt = "ReverseDiff"
+
+    [deps.Bijectors.weakdeps]
+    ChainRules = "082447d4-558c-5d27-93f4-14fc19e9eca2"
+    DistributionsAD = "ced4e74d-a319-5a8a-b0ac-84af2272839c"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
+    Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 
 [[deps.BitFlags]]
 git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
@@ -2327,11 +1109,11 @@ git-tree-sha1 = "a21c5464519504e41e0cbc91f0188e8ca23d7440"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.5+1"
 
-[[deps.Calculus]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "9cb23bbb1127eefb022b022481466c0f1127d430"
-uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
-version = "0.5.2"
+[[deps.ChainRules]]
+deps = ["Adapt", "ChainRulesCore", "Compat", "Distributed", "GPUArraysCore", "IrrationalConstants", "LinearAlgebra", "Random", "RealDot", "SparseArrays", "SparseInverseSubset", "Statistics", "StructArrays", "SuiteSparse"]
+git-tree-sha1 = "3c190c570fb3108c09f838607386d10c71701789"
+uuid = "082447d4-558c-5d27-93f4-14fc19e9eca2"
+version = "1.73.0"
 
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
@@ -2342,6 +1124,33 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
+
+[[deps.Chairmarks]]
+deps = ["Printf", "Random"]
+git-tree-sha1 = "9a49491e67e7a4d6f885c43d00bb101e6e5a434b"
+uuid = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
+version = "1.3.1"
+weakdeps = ["Statistics"]
+
+    [deps.Chairmarks.extensions]
+    StatisticsChairmarksExt = ["Statistics"]
+
+[[deps.ChangesOfVariables]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "3aa4bf1532aa2e14e0374c4fd72bed9a9d0d0f6c"
+uuid = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
+version = "0.1.10"
+weakdeps = ["InverseFunctions", "Test"]
+
+    [deps.ChangesOfVariables.extensions]
+    ChangesOfVariablesInverseFunctionsExt = "InverseFunctions"
+    ChangesOfVariablesTestExt = "Test"
+
+[[deps.Clustering]]
+deps = ["Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "Random", "SparseArrays", "Statistics", "StatsBase"]
+git-tree-sha1 = "3e22db924e2945282e70c33b75d4dde8bfa44c94"
+uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
+version = "0.15.8"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -2453,6 +1262,12 @@ git-tree-sha1 = "21d088c496ea22914fe80906eb5bce65755e5ec8"
 uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
 version = "2.5.1"
 
+[[deps.ConsoleProgressMonitor]]
+deps = ["Logging", "ProgressMeter"]
+git-tree-sha1 = "3ab7b2136722890b9af903859afcf457fa3059e8"
+uuid = "88cd18e8-d9cc-4ea6-8889-5259c0d15c8b"
+version = "0.1.2"
+
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
@@ -2474,6 +1289,16 @@ git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
 
+[[deps.DSP]]
+deps = ["Bessels", "FFTW", "IterTools", "LinearAlgebra", "Polynomials", "Random", "Reexport", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "5989debfc3b38f736e69724818210c67ffee4352"
+uuid = "717857b8-e6f2-59f4-9121-6e50c889abd2"
+version = "0.8.4"
+weakdeps = ["OffsetArrays"]
+
+    [deps.DSP.extensions]
+    OffsetArraysExt = "OffsetArrays"
+
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -2486,10 +1311,10 @@ uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 version = "1.8.1"
 
 [[deps.DataStructures]]
-deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
-git-tree-sha1 = "4e1fe97fdaed23e9dc21d4d664bea76b65fc50a0"
+deps = ["OrderedCollections"]
+git-tree-sha1 = "e357641bb3e0638d353c4b29ea0e40ea644066a6"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.18.22"
+version = "0.19.3"
 
 [[deps.DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -2507,6 +1332,11 @@ git-tree-sha1 = "473e9afc9cf30814eb67ffa5f2db7df82c3ad9fd"
 uuid = "ee1fde0b-3d02-5ea6-8484-8dfef6360eab"
 version = "1.16.2+0"
 
+[[deps.DefineSingletons]]
+git-tree-sha1 = "0fba8b706d0178b4dc7fd44a96a92382c9065c2c"
+uuid = "244e2a9f-e319-4986-a169-4d1fe445cd52"
+version = "0.1.2"
+
 [[deps.DelaunayTriangulation]]
 deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
 git-tree-sha1 = "c55f5a9fd67bdbc8e089b5a3111fe4292986a8e8"
@@ -2518,6 +1348,12 @@ deps = ["Mmap"]
 git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 version = "1.9.1"
+
+[[deps.DensityInterface]]
+deps = ["InverseFunctions", "Test"]
+git-tree-sha1 = "80c3e8639e3353e5d2912fb3a1916b8455e2494b"
+uuid = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
+version = "0.4.0"
 
 [[deps.DiffResults]]
 deps = ["StaticArraysCore"]
@@ -2581,6 +1417,17 @@ version = "0.7.16"
     Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
     Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
+[[deps.Distances]]
+deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "c7e3a542b999843086e2f29dac96a618c105be1d"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.12"
+weakdeps = ["ChainRulesCore", "SparseArrays"]
+
+    [deps.Distances.extensions]
+    DistancesChainRulesCoreExt = "ChainRulesCore"
+    DistancesSparseArraysExt = "SparseArrays"
+
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
 uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
@@ -2591,16 +1438,30 @@ deps = ["AliasTables", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadG
 git-tree-sha1 = "fbcc7610f6d8348428f722ecbe0e6cfe22e672c6"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
 version = "0.25.123"
+weakdeps = ["ChainRulesCore", "DensityInterface", "Test"]
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
     DistributionsDensityInterfaceExt = "DensityInterface"
     DistributionsTestExt = "Test"
 
-    [deps.Distributions.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    DensityInterface = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
-    Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+[[deps.DistributionsAD]]
+deps = ["Adapt", "ChainRules", "ChainRulesCore", "Compat", "Distributions", "FillArrays", "LinearAlgebra", "PDMats", "Random", "Requires", "SpecialFunctions", "StaticArrays", "StatsFuns", "ZygoteRules"]
+git-tree-sha1 = "4acbf909e892ce1f94c39a138541566c1aad5e66"
+uuid = "ced4e74d-a319-5a8a-b0ac-84af2272839c"
+version = "0.6.58"
+
+    [deps.DistributionsAD.extensions]
+    DistributionsADForwardDiffExt = "ForwardDiff"
+    DistributionsADLazyArraysExt = "LazyArrays"
+    DistributionsADReverseDiffExt = "ReverseDiff"
+    DistributionsADTrackerExt = "Tracker"
+
+    [deps.DistributionsAD.weakdeps]
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
 
 [[deps.DocStringExtensions]]
 git-tree-sha1 = "7442a5dfe1ebb773c29cc2962a8980f47221d76c"
@@ -2612,11 +1473,42 @@ deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.7.0"
 
+[[deps.DynamicPPL]]
+deps = ["ADTypes", "AbstractMCMC", "AbstractPPL", "Accessors", "BangBang", "Bijectors", "Chairmarks", "Compat", "ConstructionBase", "DifferentiationInterface", "Distributions", "DocStringExtensions", "InteractiveUtils", "LinearAlgebra", "LogDensityProblems", "MacroTools", "OrderedCollections", "Printf", "Random", "Statistics", "Test"]
+git-tree-sha1 = "23d5ebeef7b334f1d810ede8a2a8a20c96ceaf28"
+uuid = "366bfd00-2699-11ea-058f-f148b4cae6d8"
+version = "0.39.9"
+
+    [deps.DynamicPPL.extensions]
+    DynamicPPLChainRulesCoreExt = ["ChainRulesCore"]
+    DynamicPPLEnzymeCoreExt = ["EnzymeCore"]
+    DynamicPPLForwardDiffExt = ["ForwardDiff"]
+    DynamicPPLJETExt = ["JET"]
+    DynamicPPLMCMCChainsExt = ["MCMCChains"]
+    DynamicPPLMarginalLogDensitiesExt = ["MarginalLogDensities"]
+    DynamicPPLMooncakeExt = ["Mooncake"]
+
+    [deps.DynamicPPL.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+    KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
+    MCMCChains = "c7f686f2-ff18-58e9-bc7b-31028e88f75d"
+    MarginalLogDensities = "f0c3360a-fb8d-11e9-1194-5521fd7ee392"
+    Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
+
 [[deps.EarCut_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "e3290f2d49e661fbd94046d7e3726ffcb2d41053"
 uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
 version = "2.2.4+0"
+
+[[deps.EllipticalSliceSampling]]
+deps = ["AbstractMCMC", "ArrayInterface", "Distributions", "Random", "Statistics"]
+git-tree-sha1 = "e611b7fdfbfb5b18d5e98776c30daede41b44542"
+uuid = "cad2338a-1db2-11e9-3401-43bc07c9ede2"
+version = "2.0.0"
 
 [[deps.EnumX]]
 git-tree-sha1 = "c49898e8438c828577f04b92fc9368c388ac783c"
@@ -2652,6 +1544,11 @@ git-tree-sha1 = "27415f162e6028e81c72b82ef756bf321213b6ec"
 uuid = "e2ba6199-217a-4e67-a87a-7c52f15ade04"
 version = "0.1.10"
 
+[[deps.ExproniconLite]]
+git-tree-sha1 = "c13f0b150373771b0fdc1713c97860f8df12e6c2"
+uuid = "55351af7-c7e9-48d6-89ff-24e801d99491"
+version = "0.10.14"
+
 [[deps.Extents]]
 git-tree-sha1 = "b309b36a9e02fe7be71270dd8c0fd873625332b4"
 uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
@@ -2686,6 +1583,11 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "6d6219a004b8cf1e0b4dbe27a2860b8e04eba0be"
 uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.11+0"
+
+[[deps.FastClosures]]
+git-tree-sha1 = "acebe244d53ee1b461970f8910c235b259e772ef"
+uuid = "9aa1b823-49e4-5ca5-8b0f-3971ec8bab6a"
+version = "0.3.2"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
@@ -2778,9 +1680,9 @@ version = "1.3.7"
 
 [[deps.ForwardDiff]]
 deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "LinearAlgebra", "LogExpFunctions", "NaNMath", "Preferences", "Printf", "Random", "SpecialFunctions"]
-git-tree-sha1 = "eef4c86803f47dcb61e9b8790ecaa96956fdd8ae"
+git-tree-sha1 = "cddeab6487248a39dae1a960fff0ac17b2a28888"
 uuid = "f6369f11-7733-5829-9624-2563aa707210"
-version = "1.3.2"
+version = "1.3.3"
 weakdeps = ["StaticArrays"]
 
     [deps.ForwardDiff.extensions]
@@ -2794,9 +1696,9 @@ version = "4.1.1"
 
 [[deps.FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "2c5512e11c791d1baed2049c5652441b28fc6a31"
+git-tree-sha1 = "70329abc09b886fd2c5d94ad2d9527639c421e3e"
 uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
-version = "2.13.4+0"
+version = "2.14.3+1"
 
 [[deps.FreeTypeAbstraction]]
 deps = ["BaseDirs", "ColorVectorSpace", "Colors", "FreeType", "GeometryBasics", "Mmap"]
@@ -2810,6 +1712,23 @@ git-tree-sha1 = "7a214fdac5ed5f59a22c2d9a885a16da1c74bbc7"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
+[[deps.FunctionWrappers]]
+git-tree-sha1 = "d62485945ce5ae9c0c48f124a84998d755bae00e"
+uuid = "069b7b12-0de2-55c6-9aab-29f3d0a68a2e"
+version = "1.1.3"
+
+[[deps.FunctionWrappersWrappers]]
+deps = ["FunctionWrappers"]
+git-tree-sha1 = "b104d487b34566608f8b4e1c39fb0b10aa279ff8"
+uuid = "77dc65aa-8811-40c2-897b-53d922fa7daf"
+version = "0.1.3"
+
+[[deps.Functors]]
+deps = ["Compat", "ConstructionBase", "LinearAlgebra", "Random"]
+git-tree-sha1 = "60a0339f28a233601cb74468032b5c302d5067de"
+uuid = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
+version = "0.5.2"
+
 [[deps.Future]]
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
@@ -2820,6 +1739,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Xorg_libXcursor_jl
 git-tree-sha1 = "b7bfd56fa66616138dfe5237da4dc13bbd83c67f"
 uuid = "0656b61e-2033-5cc2-a64a-77c0f6c09b89"
 version = "3.4.1+0"
+
+[[deps.GPUArraysCore]]
+deps = ["Adapt"]
+git-tree-sha1 = "83cf05ab16a73219e5f6bd1bdfa9848fa24ac627"
+uuid = "46192b85-c4d5-4398-a991-12ede77f4527"
+version = "0.2.0"
 
 [[deps.GR]]
 deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Preferences", "Printf", "Qt6Wayland_jll", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "p7zip_jll"]
@@ -2986,6 +1911,11 @@ git-tree-sha1 = "d1b1b796e47d94588b3757fe84fbf65a5ec4a80d"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.5"
 
+[[deps.InitialValues]]
+git-tree-sha1 = "4da0f88e9a39111c2fa3add390ab15f3a44f3ca3"
+uuid = "22cec73e-a1b8-11e9-2c92-598750a2cf9c"
+version = "0.3.1"
+
 [[deps.InlineStrings]]
 git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
 uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
@@ -3061,12 +1991,6 @@ weakdeps = ["Random", "RecipesBase", "Statistics"]
     IntervalSetsRecipesBaseExt = "RecipesBase"
     IntervalSetsStatisticsExt = "Statistics"
 
-[[deps.Intervals]]
-deps = ["Dates", "Printf", "RecipesBase", "Serialization", "TimeZones"]
-git-tree-sha1 = "ac0aaa807ed5eaf13f67afe188ebc07e828ff640"
-uuid = "d8418881-c3e1-53bb-8760-2df7ec849ed5"
-version = "1.10.0"
-
 [[deps.InverseFunctions]]
 git-tree-sha1 = "a779299d77cd080bf77b97535acecd73e1c5e5cb"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
@@ -3126,6 +2050,12 @@ version = "1.4.0"
 
     [deps.JSON.weakdeps]
     ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+
+[[deps.Jieko]]
+deps = ["ExproniconLite"]
+git-tree-sha1 = "2f05ed29618da60c06a87e9c033982d4f71d0b6c"
+uuid = "ae98c720-c025-4a4a-838c-29b094483192"
+version = "0.2.1"
 
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
@@ -3207,6 +2137,12 @@ git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
 uuid = "8cdb02fc-e678-4876-92c5-9defec4f444e"
 version = "0.3.1"
 
+[[deps.LeftChildRightSiblingTrees]]
+deps = ["AbstractTrees"]
+git-tree-sha1 = "95ba48564903b43b2462318aa243ee79d81135ff"
+uuid = "1d6d02ad-be62-4b6b-8a6d-2f90e265016e"
+version = "0.2.1"
+
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
@@ -3260,6 +2196,12 @@ git-tree-sha1 = "97bbca976196f2a1eb9607131cb108c69ec3f8a6"
 uuid = "4b2f31a3-9ecc-558c-b454-b3730dcb73e9"
 version = "2.41.3+0"
 
+[[deps.Libtask]]
+deps = ["MistyClosures", "Test"]
+git-tree-sha1 = "c54cab5deb43c7efaad9140adb7419f4c34bf380"
+uuid = "6f1fad26-d15e-5dc8-ae53-837a1d7b8c9f"
+version = "0.9.15"
+
 [[deps.Libtiff_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "LERC_jll", "Libdl", "XZ_jll", "Zlib_jll", "Zstd_jll"]
 git-tree-sha1 = "f04133fe05eff1667d2054c53d59f9122383fe05"
@@ -3295,21 +2237,51 @@ weakdeps = ["ChainRulesCore", "SparseArrays", "Statistics"]
     LinearMapsSparseArraysExt = "SparseArrays"
     LinearMapsStatisticsExt = "Statistics"
 
+[[deps.LogDensityProblems]]
+deps = ["ArgCheck", "DocStringExtensions", "Random"]
+git-tree-sha1 = "d9625f27ded4ad726ceca7819394a4cc77ed25b3"
+uuid = "6fdf6af0-433a-55f7-b3ed-c6c6e0b8df7c"
+version = "2.2.0"
+
+[[deps.LogDensityProblemsAD]]
+deps = ["DocStringExtensions", "LogDensityProblems"]
+git-tree-sha1 = "7b83f3ad0a8105f79a067cafbfd124827bb398d0"
+uuid = "996a588d-648d-4e1f-a8f0-a84b347e47b1"
+version = "1.13.1"
+
+    [deps.LogDensityProblemsAD.extensions]
+    LogDensityProblemsADADTypesExt = "ADTypes"
+    LogDensityProblemsADDifferentiationInterfaceExt = ["ADTypes", "DifferentiationInterface"]
+    LogDensityProblemsADEnzymeExt = "Enzyme"
+    LogDensityProblemsADFiniteDifferencesExt = "FiniteDifferences"
+    LogDensityProblemsADForwardDiffBenchmarkToolsExt = ["BenchmarkTools", "ForwardDiff"]
+    LogDensityProblemsADForwardDiffExt = "ForwardDiff"
+    LogDensityProblemsADReverseDiffExt = "ReverseDiff"
+    LogDensityProblemsADTrackerExt = "Tracker"
+    LogDensityProblemsADZygoteExt = "Zygote"
+
+    [deps.LogDensityProblemsAD.weakdeps]
+    ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+    BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+    DifferentiationInterface = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+    FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
 git-tree-sha1 = "13ca9e2586b89836fd20cccf56e57e2b9ae7f38f"
 uuid = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 version = "0.3.29"
+weakdeps = ["ChainRulesCore", "ChangesOfVariables", "InverseFunctions"]
 
     [deps.LogExpFunctions.extensions]
     LogExpFunctionsChainRulesCoreExt = "ChainRulesCore"
     LogExpFunctionsChangesOfVariablesExt = "ChangesOfVariables"
     LogExpFunctionsInverseFunctionsExt = "InverseFunctions"
-
-    [deps.LogExpFunctions.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    ChangesOfVariables = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
-    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
@@ -3321,11 +2293,17 @@ git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.2.0"
 
-[[deps.LombScargle]]
-deps = ["FFTW", "LinearAlgebra", "Measurements", "Random", "SpecialFunctions", "Statistics"]
-git-tree-sha1 = "d64a0ce7539181136a85fd8fe4f42626387f0f26"
-uuid = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
-version = "1.0.3"
+[[deps.MCMCChains]]
+deps = ["AbstractMCMC", "AxisArrays", "DataAPI", "Dates", "Distributions", "IteratorInterfaceExtensions", "KernelDensity", "LinearAlgebra", "MCMCDiagnosticTools", "MLJModelInterface", "NaturalSort", "OrderedCollections", "PrettyTables", "Random", "RecipesBase", "Statistics", "StatsBase", "StatsFuns", "TableTraits", "Tables"]
+git-tree-sha1 = "060d6bc7cf60e621dfd056ed2c1a2db1e68db0fe"
+uuid = "c7f686f2-ff18-58e9-bc7b-31028e88f75d"
+version = "7.7.0"
+
+[[deps.MCMCDiagnosticTools]]
+deps = ["AbstractFFTs", "DataAPI", "DataStructures", "Distributions", "LinearAlgebra", "MLJModelInterface", "Random", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Tables"]
+git-tree-sha1 = "f90494689e927268dec7bbd1ece64f134ad251f4"
+uuid = "be115224-59cd-429b-ad48-344e309966f0"
+version = "0.3.16"
 
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
@@ -3337,6 +2315,12 @@ deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl",
 git-tree-sha1 = "282cadc186e7b2ae0eeadbd7a4dffed4196ae2aa"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
 version = "2025.2.0+0"
+
+[[deps.MLJModelInterface]]
+deps = ["InteractiveUtils", "REPL", "Random", "ScientificTypesBase", "StatisticalTraits"]
+git-tree-sha1 = "c275fae2e693206b4527dd9d2382aa15359ef3ed"
+uuid = "e80e1ace-859a-464e-9ed9-23947d8ae3ea"
+version = "1.12.1"
 
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
@@ -3373,9 +2357,9 @@ version = "0.6.7"
 
 [[deps.MatrixEquations]]
 deps = ["LinearAlgebra", "LinearMaps"]
-git-tree-sha1 = "f765b4eda3ea9be8e644b9127809ca5151f3d9ea"
+git-tree-sha1 = "51f3fade0b4ff2cf90b36b3312425460631abb56"
 uuid = "99c1a7ee-ab34-5fd5-8076-27c950a045f4"
-version = "2.4.2"
+version = "2.5.6"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
@@ -3389,32 +2373,16 @@ git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.1010+0"
 
-[[deps.Measurements]]
-deps = ["Calculus", "LinearAlgebra", "Printf"]
-git-tree-sha1 = "cb47f69a1cab9dcec7ff4a5d6e163410d6905866"
-uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
-version = "2.14.1"
-
-    [deps.Measurements.extensions]
-    MeasurementsBaseTypeExt = "BaseType"
-    MeasurementsJunoExt = "Juno"
-    MeasurementsMakieExt = "Makie"
-    MeasurementsRecipesBaseExt = "RecipesBase"
-    MeasurementsSpecialFunctionsExt = "SpecialFunctions"
-    MeasurementsUnitfulExt = "Unitful"
-
-    [deps.Measurements.weakdeps]
-    BaseType = "7fbed51b-1ef5-4d67-9085-a4a9b26f478c"
-    Juno = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-    SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
-    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-
 [[deps.Measures]]
 git-tree-sha1 = "b513cedd20d9c914783d8ad83d08120702bf2c77"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 version = "0.3.3"
+
+[[deps.MicroCollections]]
+deps = ["Accessors", "BangBang", "InitialValues"]
+git-tree-sha1 = "44d32db644e84c75dab479f1bc15ee76a1a3618f"
+uuid = "128add7d-3638-4c79-886c-908ea0c25c34"
+version = "0.2.0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -3422,21 +2390,26 @@ git-tree-sha1 = "ec4f7fbeab05d7747bdf98eb74d130a2a2ed298d"
 uuid = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
 version = "1.2.0"
 
+[[deps.MistyClosures]]
+git-tree-sha1 = "d1a692e293c2a0dc8fda79c04cad60582f3d4de3"
+uuid = "dbe65cb8-6be2-42dd-bbc5-4196aaced4f4"
+version = "2.1.0"
+
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 version = "1.11.0"
-
-[[deps.Mocking]]
-deps = ["Compat", "ExprTools"]
-git-tree-sha1 = "2c140d60d7cb82badf06d8783800d0bcd1a7daa2"
-uuid = "78c3b35d-d492-501b-9361-3d52fe80e533"
-version = "0.8.1"
 
 [[deps.MosaicViews]]
 deps = ["MappedArrays", "OffsetArrays", "PaddedViews", "StackViews"]
 git-tree-sha1 = "7b86a5d4d70a9f5cdf2dacb3cbe6d251d1a61dbe"
 uuid = "e94cdb99-869f-56ef-bcf0-1ae2bcbe0389"
 version = "0.3.4"
+
+[[deps.Moshi]]
+deps = ["ExproniconLite", "Jieko"]
+git-tree-sha1 = "53f817d3e84537d84545e0ad749e483412dd6b2a"
+uuid = "2e0e35c7-a2e4-4343-998d-7ef72827ed2d"
+version = "0.3.7"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
@@ -3447,11 +2420,11 @@ git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.4"
 
-[[deps.MutableArithmetics]]
-deps = ["LinearAlgebra", "SparseArrays", "Test"]
-git-tree-sha1 = "22df8573f8e7c593ac205455ca088989d0a2c7a0"
-uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
-version = "1.6.7"
+[[deps.MultivariateStats]]
+deps = ["Arpack", "Distributions", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
+git-tree-sha1 = "7c3ff68a904d0f7404e5d2f7f5bc667934d8d616"
+uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
+version = "0.10.4"
 
 [[deps.NLSolversBase]]
 deps = ["ADTypes", "DifferentiationInterface", "Distributed", "FiniteDiff", "ForwardDiff"]
@@ -3464,6 +2437,23 @@ deps = ["OpenLibm_jll"]
 git-tree-sha1 = "9b8215b1ee9e78a293f99797cd31375471b2bcae"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
 version = "1.1.3"
+
+[[deps.NamedArrays]]
+deps = ["Combinatorics", "DelimitedFiles", "InvertedIndices", "LinearAlgebra", "OrderedCollections", "Random", "Requires", "SparseArrays", "Statistics"]
+git-tree-sha1 = "33d258318d9e049d26c02ca31b4843b2c851c0b0"
+uuid = "86f7a689-2022-50b4-a561-43c23ac3c673"
+version = "0.10.5"
+
+[[deps.NaturalSort]]
+git-tree-sha1 = "eda490d06b9f7c00752ee81cfa451efe55521e21"
+uuid = "c020b1a1-e9b0-503a-9c33-f039bfc54a85"
+version = "1.0.0"
+
+[[deps.NearestNeighbors]]
+deps = ["AbstractTrees", "Distances", "StaticArrays"]
+git-tree-sha1 = "e2c3bba08dd6dedfe17a17889131b885b8c082f0"
+uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+version = "0.4.27"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -3552,6 +2542,60 @@ version = "1.13.3"
     [deps.Optim.weakdeps]
     MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
+[[deps.Optimisers]]
+deps = ["ChainRulesCore", "ConstructionBase", "Functors", "LinearAlgebra", "Random", "Statistics"]
+git-tree-sha1 = "36b5d2b9dd06290cd65fcf5bdbc3a551ed133af5"
+uuid = "3bd65402-5787-11e9-1adc-39752487f4e2"
+version = "0.4.7"
+
+    [deps.Optimisers.extensions]
+    OptimisersAdaptExt = ["Adapt"]
+    OptimisersEnzymeCoreExt = "EnzymeCore"
+    OptimisersReactantExt = "Reactant"
+
+    [deps.Optimisers.weakdeps]
+    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
+    Reactant = "3c362404-f566-11ee-1572-e11a4b42c853"
+
+[[deps.Optimization]]
+deps = ["ADTypes", "ArrayInterface", "ConsoleProgressMonitor", "DocStringExtensions", "LinearAlgebra", "Logging", "LoggingExtras", "OptimizationBase", "Printf", "Reexport", "SciMLBase", "SparseArrays", "TerminalLoggers"]
+git-tree-sha1 = "166ff0e9c44c45f26113fef6971b8783d7ce7998"
+uuid = "7f7a1694-90dd-40f0-9382-eb1efda571ba"
+version = "5.4.0"
+
+[[deps.OptimizationBase]]
+deps = ["ADTypes", "ArrayInterface", "DifferentiationInterface", "DocStringExtensions", "FastClosures", "LinearAlgebra", "PDMats", "PrecompileTools", "Reexport", "SciMLBase", "SparseArrays", "SparseConnectivityTracer", "SparseMatrixColorings"]
+git-tree-sha1 = "9d1129ecde9f1773521196bdb2c5f16170bb2f6c"
+uuid = "bca83a33-5cc9-4baa-983d-23429ab6bcbb"
+version = "4.2.0"
+
+    [deps.OptimizationBase.extensions]
+    OptimizationEnzymeExt = "Enzyme"
+    OptimizationFiniteDiffExt = "FiniteDiff"
+    OptimizationForwardDiffExt = "ForwardDiff"
+    OptimizationMLDataDevicesExt = "MLDataDevices"
+    OptimizationMLUtilsExt = "MLUtils"
+    OptimizationReverseDiffExt = "ReverseDiff"
+    OptimizationSymbolicAnalysisExt = "SymbolicAnalysis"
+    OptimizationZygoteExt = "Zygote"
+
+    [deps.OptimizationBase.weakdeps]
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+    FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    MLDataDevices = "7e8f7934-dd98-4c1a-8fe8-92b47a384d40"
+    MLUtils = "f1d291b0-491e-4a28-83b9-f70985020b54"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    SymbolicAnalysis = "4297ee4d-0239-47d8-ba5d-195ecdf594fe"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
+[[deps.OptimizationOptimJL]]
+deps = ["Optim", "OptimizationBase", "PrecompileTools", "Reexport", "SciMLBase", "SparseArrays"]
+git-tree-sha1 = "ba8f23a14d861a303e829afaf67a7b3f75da945f"
+uuid = "36348300-93cb-4f02-beb5-3c3902f8871e"
+version = "0.4.8"
+
 [[deps.Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "e2bb57a313a74b8104064b7efd01406c0a50d2ff"
@@ -3570,9 +2614,13 @@ version = "10.44.0+1"
 
 [[deps.PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "f07c06228a1c670ae4c87d1276b92c7c597fdda0"
+git-tree-sha1 = "e4cff168707d441cd6bf3ff7e4832bdf34278e4a"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
-version = "0.11.35"
+version = "0.11.37"
+weakdeps = ["StatsBase"]
+
+    [deps.PDMats.extensions]
+    StatsBaseExt = "StatsBase"
 
 [[deps.PNGFiles]]
 deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
@@ -3591,6 +2639,22 @@ deps = ["OffsetArrays"]
 git-tree-sha1 = "0fac6313486baae819364c52b4f483450a9d793f"
 uuid = "5432bcbf-9aad-5242-b902-cca2824c8663"
 version = "0.5.12"
+
+[[deps.PairPlots]]
+deps = ["Contour", "Distributions", "KernelDensity", "LinearAlgebra", "MCMCDiagnosticTools", "Makie", "Measures", "Missings", "OrderedCollections", "PolygonOps", "PrecompileTools", "Printf", "Requires", "StaticArrays", "Statistics", "StatsBase", "TableOperations", "Tables"]
+git-tree-sha1 = "ca8501a0912f6c1e6533904e28cc80a1f23e9247"
+uuid = "43a3c2be-4208-490b-832a-a21dcd55d7da"
+version = "3.0.3"
+
+    [deps.PairPlots.extensions]
+    MCMCChainsExt = "MCMCChains"
+    PairPlotsDynamicQuantitiesExt = "DynamicQuantities"
+    PairPlotsDynamicUnitfulExt = "Unitful"
+
+    [deps.PairPlots.weakdeps]
+    DynamicQuantities = "06fc5a27-2a28-4c7c-a15d-362465fb6821"
+    MCMCChains = "c7f686f2-ff18-58e9-bc7b-31028e88f75d"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.Pango_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "FriBidi_jll", "Glib_jll", "HarfBuzz_jll", "JLLWrappers", "Libdl"]
@@ -3659,9 +2723,9 @@ version = "1.41.6"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "3ac7038a98ef6977d44adeadc73cc6f596c08109"
+git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.79"
+version = "0.7.80"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
@@ -3669,10 +2733,24 @@ uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
 
 [[deps.Polynomials]]
-deps = ["Intervals", "LinearAlgebra", "MutableArithmetics", "RecipesBase"]
-git-tree-sha1 = "a1f7f4e41404bed760213ca01d7f384319f717a5"
+deps = ["LinearAlgebra", "OrderedCollections", "Setfield", "SparseArrays"]
+git-tree-sha1 = "2d99b4c8a7845ab1342921733fa29366dae28b24"
 uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-version = "2.0.25"
+version = "4.1.1"
+
+    [deps.Polynomials.extensions]
+    PolynomialsChainRulesCoreExt = "ChainRulesCore"
+    PolynomialsFFTWExt = "FFTW"
+    PolynomialsMakieExt = "Makie"
+    PolynomialsMutableArithmeticsExt = "MutableArithmetics"
+    PolynomialsRecipesBaseExt = "RecipesBase"
+
+    [deps.Polynomials.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 
 [[deps.PooledArrays]]
 deps = ["DataAPI", "Future"]
@@ -3685,6 +2763,22 @@ deps = ["LinearAlgebra"]
 git-tree-sha1 = "17275485f373e6673f7e7f97051f703ed5b15b20"
 uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
 version = "0.2.4"
+
+[[deps.PreallocationTools]]
+deps = ["Adapt", "ArrayInterface", "PrecompileTools"]
+git-tree-sha1 = "dc8d6bde5005a0eac05ae8faf1eceaaca166cfa4"
+uuid = "d236fae5-4411-538c-8e31-a6e3d9e00b46"
+version = "1.1.2"
+
+    [deps.PreallocationTools.extensions]
+    PreallocationToolsForwardDiffExt = "ForwardDiff"
+    PreallocationToolsReverseDiffExt = "ReverseDiff"
+    PreallocationToolsSparseConnectivityTracerExt = "SparseConnectivityTracer"
+
+    [deps.PreallocationTools.weakdeps]
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -3700,9 +2794,9 @@ version = "1.5.2"
 
 [[deps.PrettyTables]]
 deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "211530a7dc76ab59087f4d4d1fc3f086fbe87594"
+git-tree-sha1 = "eb54b8cc7be601655ee613b9875f8b40d9a0a8ef"
 uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "3.2.3"
+version = "3.3.0"
 
     [deps.PrettyTables.extensions]
     PrettyTablesTypstryExt = "Typstry"
@@ -3720,6 +2814,12 @@ version = "0.5.7"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 version = "1.11.0"
+
+[[deps.ProgressLogging]]
+deps = ["Logging", "SHA", "UUIDs"]
+git-tree-sha1 = "f0803bc1171e455a04124affa9c21bba5ac4db32"
+uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
+version = "0.1.6"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
@@ -3790,6 +2890,18 @@ deps = ["SHA"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 version = "1.11.0"
 
+[[deps.Random123]]
+deps = ["Random", "RandomNumbers"]
+git-tree-sha1 = "dbe5fd0b334694e905cb9fda73cd8554333c46e2"
+uuid = "74087812-796a-5b5d-8853-05524746bad3"
+version = "1.7.1"
+
+[[deps.RandomNumbers]]
+deps = ["Random"]
+git-tree-sha1 = "c6ec94d2aaba1ab2ff983052cf6a606ca5985902"
+uuid = "e6cf234a-135c-5ec9-84dd-332b85af5143"
+version = "1.6.0"
+
 [[deps.RangeArrays]]
 git-tree-sha1 = "b9039e93773ddcfc828f12aadf7115b4b4d225f5"
 uuid = "b3c3ace0-ae52-54e7-9d0b-2c1406fd6b9d"
@@ -3805,6 +2917,12 @@ weakdeps = ["FixedPointNumbers"]
     [deps.Ratios.extensions]
     RatiosFixedPointNumbersExt = "FixedPointNumbers"
 
+[[deps.RealDot]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "9f0a1b71baaf7650f4fa8a1d168c7fb6ee41f0c9"
+uuid = "c1ae055f-0cd5-4b69-90a6-9a35b1a98df9"
+version = "0.1.0"
+
 [[deps.RecipesBase]]
 deps = ["PrecompileTools"]
 git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
@@ -3816,6 +2934,40 @@ deps = ["Dates", "NaNMath", "PlotUtils", "PrecompileTools", "RecipesBase"]
 git-tree-sha1 = "45cf9fd0ca5839d06ef333c8201714e888486342"
 uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
 version = "0.6.12"
+
+[[deps.RecursiveArrayTools]]
+deps = ["Adapt", "ArrayInterface", "DocStringExtensions", "GPUArraysCore", "LinearAlgebra", "PrecompileTools", "RecipesBase", "StaticArraysCore", "SymbolicIndexingInterface"]
+git-tree-sha1 = "18d2a6fd1ea9a8205cadb3a5704f8e51abdd748b"
+uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
+version = "3.48.0"
+
+    [deps.RecursiveArrayTools.extensions]
+    RecursiveArrayToolsFastBroadcastExt = "FastBroadcast"
+    RecursiveArrayToolsForwardDiffExt = "ForwardDiff"
+    RecursiveArrayToolsKernelAbstractionsExt = "KernelAbstractions"
+    RecursiveArrayToolsMeasurementsExt = "Measurements"
+    RecursiveArrayToolsMonteCarloMeasurementsExt = "MonteCarloMeasurements"
+    RecursiveArrayToolsReverseDiffExt = ["ReverseDiff", "Zygote"]
+    RecursiveArrayToolsSparseArraysExt = ["SparseArrays"]
+    RecursiveArrayToolsStatisticsExt = "Statistics"
+    RecursiveArrayToolsStructArraysExt = "StructArrays"
+    RecursiveArrayToolsTablesExt = ["Tables"]
+    RecursiveArrayToolsTrackerExt = "Tracker"
+    RecursiveArrayToolsZygoteExt = "Zygote"
+
+    [deps.RecursiveArrayTools.weakdeps]
+    FastBroadcast = "7034ab61-46d4-4ed7-9d0f-46aef9175898"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    MonteCarloMeasurements = "0987c9cc-fe09-11e8-30f0-b96dd679fdca"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+    StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
+    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
@@ -3873,6 +3025,12 @@ git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
 uuid = "5eaf0fd0-dfba-4ccb-bf02-d820a40db705"
 version = "0.2.1"
 
+[[deps.RuntimeGeneratedFunctions]]
+deps = ["ExprTools", "SHA", "Serialization"]
+git-tree-sha1 = "7257165d5477fd1025f7cb656019dcb6b0512c38"
+uuid = "7e49a35a-f44a-4d26-94aa-eba1b4ca6b47"
+version = "0.5.17"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
@@ -3882,6 +3040,97 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "e24dc23107d426a096d3eae6c165b921e74c18e4"
 uuid = "fdea26ae-647d-5447-a871-4b548cad5224"
 version = "3.7.2"
+
+[[deps.SSMProblems]]
+deps = ["AbstractMCMC", "Distributions", "Random"]
+git-tree-sha1 = "cbf723e4c486375cf91236db53a7beefe8291951"
+uuid = "26aad666-b158-4e64-9d35-0e672562fa48"
+version = "0.6.1"
+
+[[deps.SciMLBase]]
+deps = ["ADTypes", "Accessors", "Adapt", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "Moshi", "PreallocationTools", "PrecompileTools", "Preferences", "Printf", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLLogging", "SciMLOperators", "SciMLPublic", "SciMLStructures", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface"]
+git-tree-sha1 = "0be0208add9b6836a701e0ac3ad30bda72fee51d"
+uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+version = "2.150.0"
+
+    [deps.SciMLBase.extensions]
+    SciMLBaseChainRulesCoreExt = "ChainRulesCore"
+    SciMLBaseDifferentiationInterfaceExt = "DifferentiationInterface"
+    SciMLBaseDistributionsExt = "Distributions"
+    SciMLBaseEnzymeExt = "Enzyme"
+    SciMLBaseForwardDiffExt = "ForwardDiff"
+    SciMLBaseMLStyleExt = "MLStyle"
+    SciMLBaseMakieExt = "Makie"
+    SciMLBaseMeasurementsExt = "Measurements"
+    SciMLBaseMonteCarloMeasurementsExt = "MonteCarloMeasurements"
+    SciMLBaseMooncakeExt = "Mooncake"
+    SciMLBasePartialFunctionsExt = "PartialFunctions"
+    SciMLBasePyCallExt = "PyCall"
+    SciMLBasePythonCallExt = "PythonCall"
+    SciMLBaseRCallExt = "RCall"
+    SciMLBaseReverseDiffExt = "ReverseDiff"
+    SciMLBaseTrackerExt = "Tracker"
+    SciMLBaseZygoteExt = ["Zygote", "ChainRulesCore"]
+
+    [deps.SciMLBase.weakdeps]
+    ChainRules = "082447d4-558c-5d27-93f4-14fc19e9eca2"
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    DifferentiationInterface = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
+    Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    MonteCarloMeasurements = "0987c9cc-fe09-11e8-30f0-b96dd679fdca"
+    Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
+    PartialFunctions = "570af359-4316-4cb7-8c74-252c00c2016b"
+    PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+    PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+    RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
+[[deps.SciMLLogging]]
+deps = ["Logging", "LoggingExtras", "Preferences"]
+git-tree-sha1 = "0161be062570af4042cf6f69e3d5d0b0555b6927"
+uuid = "a6db7da4-7206-11f0-1eab-35f2a5dbe1d1"
+version = "1.9.1"
+
+    [deps.SciMLLogging.extensions]
+    SciMLLoggingTracyExt = "Tracy"
+
+    [deps.SciMLLogging.weakdeps]
+    Tracy = "e689c965-62c8-4b79-b2c5-8359227902fd"
+
+[[deps.SciMLOperators]]
+deps = ["Accessors", "ArrayInterface", "DocStringExtensions", "LinearAlgebra"]
+git-tree-sha1 = "794c760e6aafe9f40dcd7dd30526ea33f0adc8b7"
+uuid = "c0aeaf25-5076-4817-a8d5-81caf7dfa961"
+version = "1.15.1"
+weakdeps = ["SparseArrays", "StaticArraysCore"]
+
+    [deps.SciMLOperators.extensions]
+    SciMLOperatorsSparseArraysExt = "SparseArrays"
+    SciMLOperatorsStaticArraysCoreExt = "StaticArraysCore"
+
+[[deps.SciMLPublic]]
+git-tree-sha1 = "0ba076dbdce87ba230fff48ca9bca62e1f345c9b"
+uuid = "431bcebd-1456-4ced-9d72-93c2757fff0b"
+version = "1.0.1"
+
+[[deps.SciMLStructures]]
+deps = ["ArrayInterface", "PrecompileTools"]
+git-tree-sha1 = "607f6867d0b0553e98fc7f725c9f9f13b4d01a32"
+uuid = "53ae85a6-f571-4167-b2af-e1d143709226"
+version = "1.10.0"
+
+[[deps.ScientificTypesBase]]
+deps = ["InteractiveUtils"]
+git-tree-sha1 = "e785eaa35a0f5518a388f9010e66fda64ea95ede"
+uuid = "30f210dd-8aff-4c5f-94ba-8e64358c1161"
+version = "3.1.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
@@ -3923,9 +3172,9 @@ uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 version = "1.11.0"
 
 [[deps.ShiftedArrays]]
-git-tree-sha1 = "22395afdcf37d6709a5a0766cc4a5ca52cb85ea0"
+git-tree-sha1 = "503688b59397b3307443af35cd953a13e8005c16"
 uuid = "1277b4bf-5013-50f5-be3d-901d8477a67a"
-version = "1.0.0"
+version = "2.0.0"
 
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
@@ -3971,6 +3220,51 @@ deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
 uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 version = "1.12.0"
 
+[[deps.SparseConnectivityTracer]]
+deps = ["ADTypes", "DocStringExtensions", "FillArrays", "LinearAlgebra", "Random", "SparseArrays"]
+git-tree-sha1 = "590b72143436e443888124aaf4026a636049e3f5"
+uuid = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
+version = "1.2.1"
+
+    [deps.SparseConnectivityTracer.extensions]
+    SparseConnectivityTracerChainRulesCoreExt = "ChainRulesCore"
+    SparseConnectivityTracerLogExpFunctionsExt = "LogExpFunctions"
+    SparseConnectivityTracerNNlibExt = "NNlib"
+    SparseConnectivityTracerNaNMathExt = "NaNMath"
+    SparseConnectivityTracerSpecialFunctionsExt = "SpecialFunctions"
+
+    [deps.SparseConnectivityTracer.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
+    NNlib = "872c559c-99b0-510c-b3b7-b6c96a88d5cd"
+    NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
+    SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+
+[[deps.SparseInverseSubset]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
+git-tree-sha1 = "52962839426b75b3021296f7df242e40ecfc0852"
+uuid = "dc90abb0-5640-4711-901d-7e5b23a2fada"
+version = "0.1.2"
+
+[[deps.SparseMatrixColorings]]
+deps = ["ADTypes", "DocStringExtensions", "LinearAlgebra", "PrecompileTools", "Random", "SparseArrays"]
+git-tree-sha1 = "fa43a02c01e3e3cb065c89bf9b648b89e3c06f18"
+uuid = "0a514795-09f3-496d-8182-132a7b665d35"
+version = "0.4.25"
+
+    [deps.SparseMatrixColorings.extensions]
+    SparseMatrixColoringsCUDAExt = "CUDA"
+    SparseMatrixColoringsCliqueTreesExt = "CliqueTrees"
+    SparseMatrixColoringsColorsExt = "Colors"
+    SparseMatrixColoringsJuMPExt = ["JuMP", "MathOptInterface"]
+
+    [deps.SparseMatrixColorings.weakdeps]
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    CliqueTrees = "60701a23-6482-424a-84db-faee86b9b1f8"
+    Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+    JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+    MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
 git-tree-sha1 = "5acc6a41b3082920f79ca3c759acbcecf18a8d78"
@@ -3980,6 +3274,12 @@ weakdeps = ["ChainRulesCore"]
 
     [deps.SpecialFunctions.extensions]
     SpecialFunctionsChainRulesCoreExt = "ChainRulesCore"
+
+[[deps.SplittablesBase]]
+deps = ["Setfield", "Test"]
+git-tree-sha1 = "e08a62abc517eb79667d0a29dc08a3b589516bb5"
+uuid = "171d559e-b47b-412a-8079-5efa626c420e"
+version = "0.1.15"
 
 [[deps.StableRNGs]]
 deps = ["Random"]
@@ -3995,9 +3295,9 @@ version = "0.1.2"
 
 [[deps.StateSpaceModels]]
 deps = ["Distributions", "LinearAlgebra", "MatrixEquations", "Optim", "OrderedCollections", "Polynomials", "Printf", "RecipesBase", "SeasonalTrendLoess", "ShiftedArrays", "SparseArrays", "Statistics", "StatsBase"]
-git-tree-sha1 = "1fca6ae24e606629e0701a347831a675a291e69b"
+git-tree-sha1 = "96273b2e0e5de946309e97800d33d257e9cd6298"
 uuid = "99342f36-827c-5390-97c9-d7f9ee765c78"
-version = "0.6.7"
+version = "0.7.2"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
@@ -4014,6 +3314,12 @@ weakdeps = ["ChainRulesCore", "Statistics"]
 git-tree-sha1 = "6ab403037779dae8c514bad259f32a447262455a"
 uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
 version = "1.4.4"
+
+[[deps.StatisticalTraits]]
+deps = ["ScientificTypesBase"]
+git-tree-sha1 = "89f86d9376acd18a1a4fbef66a56335a3a7633b8"
+uuid = "64bff920-2084-43da-a3e6-9bb72801c0c9"
+version = "3.5.0"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra"]
@@ -4032,10 +3338,10 @@ uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 version = "1.8.0"
 
 [[deps.StatsBase]]
-deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "d1bf48bfcc554a3761a133fe3a9bb01488e06916"
+deps = ["AliasTables", "DataAPI", "DataStructures", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "aceda6f4e598d331548e04cc6b2124a6148138e3"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.33.21"
+version = "0.34.10"
 
 [[deps.StatsFuns]]
 deps = ["HypergeometricFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
@@ -4047,6 +3353,12 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     [deps.StatsFuns.extensions]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
+
+[[deps.StatsPlots]]
+deps = ["AbstractFFTs", "Clustering", "DataStructures", "Distributions", "Interpolations", "KernelDensity", "LinearAlgebra", "MultivariateStats", "NaNMath", "Observables", "Plots", "RecipesBase", "RecipesPipeline", "Reexport", "StatsBase", "TableOperations", "Tables", "Widgets"]
+git-tree-sha1 = "88cf3587711d9ad0a55722d339a013c4c56c5bbc"
+uuid = "f3b207a7-027a-5e70-b257-86293d7955fd"
+version = "0.15.8"
 
 [[deps.StringManipulation]]
 deps = ["PrecompileTools"]
@@ -4080,12 +3392,16 @@ deps = ["Dates", "UUIDs"]
 git-tree-sha1 = "fa95b3b097bcef5845c142ea2e085f1b2591e92c"
 uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
 version = "2.7.1"
-weakdeps = ["Measurements", "StaticArraysCore", "Tables"]
 
     [deps.StructUtils.extensions]
     StructUtilsMeasurementsExt = ["Measurements"]
     StructUtilsStaticArraysCoreExt = ["StaticArraysCore"]
     StructUtilsTablesExt = ["Tables"]
+
+    [deps.StructUtils.weakdeps]
+    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
+    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -4100,16 +3416,26 @@ deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
 uuid = "bea87d4a-7f5b-5778-9afe-8cc45184846c"
 version = "7.8.3+2"
 
+[[deps.SymbolicIndexingInterface]]
+deps = ["Accessors", "ArrayInterface", "RuntimeGeneratedFunctions", "StaticArraysCore"]
+git-tree-sha1 = "94c58884e013efff548002e8dc2fdd1cb74dfce5"
+uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
+version = "0.3.46"
+weakdeps = ["PrettyTables"]
+
+    [deps.SymbolicIndexingInterface.extensions]
+    SymbolicIndexingInterfacePrettyTablesExt = "PrettyTables"
+
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 version = "1.0.3"
 
-[[deps.TZJData]]
-deps = ["Artifacts"]
-git-tree-sha1 = "7def47e953a91cdcebd08fbe76d69d2715499a7d"
-uuid = "dc5dba14-91b3-4cab-a142-028a31da12f7"
-version = "1.4.0+2025a"
+[[deps.TableOperations]]
+deps = ["SentinelArrays", "Tables", "Test"]
+git-tree-sha1 = "e383c87cf2a1dc41fa30c093b2a19877c83e1bc1"
+uuid = "ab02a1b2-a7df-11e8-156e-fb1833f50b87"
+version = "1.2.0"
 
 [[deps.TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
@@ -4134,6 +3460,12 @@ git-tree-sha1 = "1feb45f88d133a655e001435632f019a9a1bcdb6"
 uuid = "62fd8b95-f654-4bbd-a8a5-9c27f68ccd50"
 version = "0.1.1"
 
+[[deps.TerminalLoggers]]
+deps = ["LeftChildRightSiblingTrees", "Logging", "Markdown", "Printf", "ProgressLogging", "UUIDs"]
+git-tree-sha1 = "f133fab380933d042f6796eda4e130272ba520ca"
+uuid = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
+version = "0.1.7"
+
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
@@ -4145,20 +3477,32 @@ git-tree-sha1 = "08c10bc34f4e7743f530793d0985bf3c254e193d"
 uuid = "731e570b-9d59-4bfa-96dc-6df516fadf69"
 version = "0.11.8"
 
-[[deps.TimeZones]]
-deps = ["Artifacts", "Dates", "Downloads", "InlineStrings", "Mocking", "Printf", "Scratch", "TZJData", "Unicode", "p7zip_jll"]
-git-tree-sha1 = "38bb1023fb94bfbaf2a29e1e0de4bbba6fe0bf6d"
-uuid = "f269a46b-ccf7-5d73-abea-4c690281aa53"
-version = "1.21.2"
-weakdeps = ["RecipesBase"]
-
-    [deps.TimeZones.extensions]
-    TimeZonesRecipesBaseExt = "RecipesBase"
-
 [[deps.TranscodingStreams]]
 git-tree-sha1 = "0c45878dcfdcfa8480052b6ab162cdd138781742"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.11.3"
+
+[[deps.Transducers]]
+deps = ["Accessors", "ArgCheck", "BangBang", "Baselet", "CompositionsBase", "ConstructionBase", "DefineSingletons", "Distributed", "InitialValues", "Logging", "Markdown", "MicroCollections", "SplittablesBase", "Tables"]
+git-tree-sha1 = "4aa1fdf6c1da74661f6f5d3edfd96648321dade9"
+uuid = "28d57a85-8fef-5791-bfe6-a80928e7c999"
+version = "0.4.85"
+
+    [deps.Transducers.extensions]
+    TransducersAdaptExt = "Adapt"
+    TransducersBlockArraysExt = "BlockArrays"
+    TransducersDataFramesExt = "DataFrames"
+    TransducersLazyArraysExt = "LazyArrays"
+    TransducersOnlineStatsBaseExt = "OnlineStatsBase"
+    TransducersReferenceablesExt = "Referenceables"
+
+    [deps.Transducers.weakdeps]
+    Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+    BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    LazyArrays = "5078a376-72f3-5289-bfd5-ec5146d43c02"
+    OnlineStatsBase = "925886fa-5bf2-5e8e-b522-a9147a512338"
+    Referenceables = "42d2dcc6-99eb-4e98-b66c-637b7d73030e"
 
 [[deps.Tricks]]
 git-tree-sha1 = "311349fd1c93a31f783f977a71e8b062a57d4101"
@@ -4169,6 +3513,18 @@ version = "0.1.13"
 git-tree-sha1 = "4d4ed7f294cda19382ff7de4c137d24d16adc89b"
 uuid = "981d1d27-644d-49a2-9326-4793e63143c3"
 version = "0.1.0"
+
+[[deps.Turing]]
+deps = ["ADTypes", "AbstractMCMC", "AbstractPPL", "Accessors", "AdvancedHMC", "AdvancedMH", "AdvancedPS", "AdvancedVI", "BangBang", "Bijectors", "Compat", "DataStructures", "Distributions", "DistributionsAD", "DocStringExtensions", "DynamicPPL", "EllipticalSliceSampling", "ForwardDiff", "Libtask", "LinearAlgebra", "LogDensityProblems", "MCMCChains", "NamedArrays", "Optimization", "OptimizationOptimJL", "OrderedCollections", "Printf", "Random", "Reexport", "SciMLBase", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
+git-tree-sha1 = "7d1f051343d5c0047259e5b7a5868da7f9639f7b"
+uuid = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
+version = "0.42.2"
+
+    [deps.Turing.extensions]
+    TuringDynamicHMCExt = "DynamicHMC"
+
+    [deps.Turing.weakdeps]
+    DynamicHMC = "bbc10e6e-7c05-544b-b16e-64fede858acb"
 
 [[deps.URIs]]
 git-tree-sha1 = "bef26fb046d031353ef97a82e3fdb6afe7f21b1a"
@@ -4233,6 +3589,12 @@ deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libw
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
 uuid = "e3aaa7dc-3e4b-44e0-be63-ffb868ccd7c1"
 version = "0.1.3"
+
+[[deps.Widgets]]
+deps = ["Colors", "Dates", "Observables", "OrderedCollections"]
+git-tree-sha1 = "e9aeb174f95385de31e70bd15fa066a505ea82b9"
+uuid = "cc8bc4a8-27d6-5769-a93b-9d913e69aa62"
+version = "0.6.7"
 
 [[deps.WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -4406,6 +3768,12 @@ git-tree-sha1 = "446b23e73536f84e8037f5dce465e92275f6a308"
 uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
 version = "1.5.7+1"
 
+[[deps.ZygoteRules]]
+deps = ["ChainRulesCore", "MacroTools"]
+git-tree-sha1 = "434b3de333c75fc446aa0d19fc394edafd07ab08"
+uuid = "700de1a5-db45-46bc-99cf-38207098b444"
+version = "0.2.7"
+
 [[deps.eudev_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "c3b0e6196d50eab0c5ed34021aaa0bb463489510"
@@ -4543,133 +3911,67 @@ version = "1.13.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─14a0c11f-827d-46c8-bd5f-469a029f9afe
-# ╟─2aeb4208-bc0c-4907-ab6d-da3f48210aa5
-# ╠═508fcfab-51c1-4dc5-992d-d5961517b9bf
-# ╟─fce942fc-7126-4e92-b758-30d36609117f
-# ╟─97bebdb5-df0d-4eb2-b214-1a38dd9ffa85
-# ╟─36377f43-7624-4113-9ea9-409fbd3ef079
-# ╟─91f7ef29-6570-44d1-a5e2-79658576d488
-# ╟─2d403a10-ede5-4d72-a732-59d4715273bc
-# ╟─90b6cf29-44c0-425d-a814-910fb08009d2
-# ╟─91c6247b-af12-47cf-811a-1440b6919576
-# ╟─f1c10261-a2c7-473c-879b-005714127aee
-# ╟─b40d3fb9-f423-44d5-8a3e-32e15a6cc564
-# ╟─40e140c2-a8fb-4e31-9636-a36104f60460
-# ╟─2f7623f2-359c-4c93-b6b2-ab48f606ec56
-# ╟─f3ed1ba4-849b-4713-8e48-4a537ee894d7
-# ╟─f0e73dd6-2f4f-4dd6-9426-f0a739956602
-# ╟─dcb69463-c144-4726-8336-5f3851873d8a
-# ╟─f8b03f2b-a241-4d77-8fc9-4c24a4c8ef90
-# ╟─577fa116-fa14-4077-8fc8-4d3ea544f410
-# ╟─20d1925b-ddb8-49ec-86a2-98f2efac3532
-# ╟─12225d55-9c0a-482c-890b-8ca5f8139c5a
-# ╟─db5d7b3e-66da-4498-a924-2f9b999fda56
-# ╟─06a37524-c82e-4f68-8529-89759cdda2bd
-# ╟─06f77be0-51c6-4ca2-82b1-eaa69d9481b7
-# ╟─b1f35602-c627-41a7-8754-6634d5eff5a7
-# ╟─c097e9b3-f9dc-473e-902a-cc5b03c15da3
-# ╟─08a6a975-b496-4d19-8e8b-5df7aae43ad9
-# ╟─2acb3d30-1b38-4255-b955-a0db9f77be72
-# ╟─f34215b4-91fd-4175-96f1-524097ec7160
-# ╟─45f962f9-79be-492a-8add-737fc73925c2
-# ╟─5c1eff4e-8079-4568-a792-7528465db277
-# ╠═9057a011-76b9-475a-906c-81afd18e99ce
-# ╟─3da138ae-cd0b-4f7b-ab5a-319d4f65dee2
-# ╠═25a8201f-402b-4868-9cd6-262a03b980fb
-# ╟─698e9cc6-9de5-4ca6-b425-5bb038b08b2b
-# ╠═f0996cba-03af-4247-99f7-d148c6e737a0
-# ╟─0f220d9a-ffe5-4d84-ba4b-a65c5dbf4404
-# ╟─59175381-65a4-45e7-ae85-a00467c4d181
-# ╟─9a8ac940-8a2c-4d5a-809f-bbdb1dba12dc
-# ╠═76917ce4-5249-4cbb-bdb7-da654ce2c75d
-# ╠═a7c1c07b-23d7-4721-ac7d-70012483b056
-# ╟─cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
-# ╠═7ecf612d-04ea-4e3b-b176-98476b443688
-# ╠═7da9155f-27d8-48c0-93a6-13a3297fd302
-# ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
-# ╠═6021c695-2cd9-499c-bbbf-7d86b5a6b347
-# ╠═3d013635-b4ac-49ec-85f6-93c26cf7539c
-# ╟─c81ad1a5-b4ed-4056-a161-eab4f9e981d9
-# ╠═f1bc344e-ac85-4815-928f-61f5f48c18a9
-# ╟─381bc481-5c7e-4d9a-80c9-8f245718718d
-# ╟─ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
-# ╟─9d1af19c-e1b3-48aa-9b9b-245347efd682
-# ╠═e410b2af-6665-4ddb-bb89-4b38bec8bfc2
-# ╠═2aca0524-9737-43e9-b456-9fa0b2f7939b
-# ╟─0c8e81ce-7b48-427c-b72e-4fdad4015d51
-# ╠═63a3b6f2-a46a-4a4c-ba9e-5639714cd93d
-# ╟─d674149a-25a7-4c60-8770-e2b46cb2ed74
-# ╠═ea14bb29-f6bf-4a0c-a6b1-d38e285207ee
-# ╠═95047c44-9d05-4dc3-a50a-aa87cf9cd2c4
-# ╟─61d7c290-6d4d-4da8-a4f6-f0c2c795a4f8
-# ╠═962d9bb2-8fee-4d94-9054-a48f084127d7
-# ╠═33df98ca-16f8-4bc7-8848-494d920e60d9
-# ╟─d4d93ec8-e268-4fc9-b5ee-cdd194636659
-# ╠═9512aa2e-afaa-4ddd-aac4-826abae447ff
-# ╟─cae1a1ec-d365-4f20-b521-1d2e7ebda912
-# ╠═5abde48d-abb2-4834-b22d-8c4734cd19fc
-# ╟─d0dc8d40-75d7-4611-aab6-d8542f82947e
-# ╟─b0ae3114-1aca-4109-922a-02c25989e407
-# ╟─95f3a029-6b56-4ac9-bf1c-1135094958d8
-# ╠═924e216e-9ba7-4906-9d70-94f1813911e7
-# ╠═30ece656-c5ba-42a6-8de2-e9827d72eabf
-# ╟─b86d10a0-f3a0-4489-b595-64c3eafcfef2
-# ╠═8a8d5e0e-7ccf-43a2-b18b-c389971252e9
-# ╟─c6bab5e0-4a61-4a6c-aa54-34e0e4f2dcdc
-# ╟─38012afa-faf9-43ef-a443-f5256763a931
-# ╠═4d06a1b3-0ef5-4fcd-95bb-c2058ea3765a
-# ╟─2905155b-0de7-4f15-acb0-aaaf1b421c9b
-# ╟─fa1e8adf-969a-4476-81ae-b548cabcd8f6
-# ╟─0edac0fb-f52e-4a2c-b3dc-54f8237ad325
-# ╟─2eb45539-ef03-4f6d-86be-52a1e9228088
-# ╟─db519b68-35a3-4396-a302-e0bd804985c1
-# ╟─a262674e-d56a-4252-8929-3d548150955c
-# ╟─c0ca31e3-8026-46b6-aa90-ffe53b7c2305
-# ╟─44ab551f-b0cc-45cb-977e-3a4b77f15c9d
-# ╠═7ad279de-35ed-4d38-bb78-9a097f5847d9
-# ╟─a7b6b298-49de-4a5f-a095-8306d96661a8
-# ╠═973b9499-23be-4f59-a4a3-69bb3e1b2871
-# ╟─d5caf4c8-59d3-488d-9fa2-f2e75eaa5b85
-# ╠═cc23ada7-044a-4620-b312-7e3ccf2eb25f
-# ╟─b679f761-1695-4710-afef-17b63b204e18
-# ╠═86bbfeb7-ccb8-44e9-b9e5-0e7609a1d6db
-# ╟─2f8bb6a9-e09d-4ff3-a158-dc00b26c0fa9
-# ╠═7bed93e6-0ee2-4374-8bc2-e4d988ad3c8c
-# ╟─4457932a-49ab-449e-bd93-240e3458272b
-# ╠═99594bae-47cf-408b-aae7-ead6e783cbd3
-# ╟─9cd4d3a6-2c2c-467c-931f-cba17568046a
-# ╠═abb69c9b-2ccf-408e-8bed-75ded62f6c34
-# ╟─a7174765-5cb1-494c-9974-10010a900de3
-# ╠═07fe7c84-caa4-4d8e-a4db-f6e874ad7568
-# ╟─d7d97154-4a7e-4e8f-a7e2-4eea6f9d1595
-# ╠═ec56becc-5ba6-4a5c-9a30-cdfbaf823674
-# ╟─bf3e5cbf-6099-4bdd-966f-bcd59c3f09cf
-# ╠═d908b9c8-d4bd-47cd-b2f1-f662f734cd89
-# ╟─5a27d099-c133-4845-b288-f88304287f73
-# ╠═cc15941d-5cf3-4c15-9f87-dcd40d0a2eac
-# ╟─bf84f03a-3c9f-4c6f-a886-8b40c24124b8
-# ╠═796008cd-13ed-481c-ab43-7f9998e21ebd
-# ╟─d94bbb24-b0fd-44d4-bedc-586941fa233c
-# ╠═c1e80404-665c-4a68-978c-1df72a158059
-# ╟─73aecd0e-d6d0-4429-b63b-38f572115c50
-# ╟─61cade13-3747-4481-aa8a-b59ff87ca05d
-# ╠═ca1ac1dd-b580-491b-94b6-8ece8c037298
-# ╟─f1e1cdde-a8b8-4ff5-9c49-6207de8ad125
-# ╠═6bf9db61-f56c-4e91-af6b-772a5066e709
-# ╟─435071db-e81b-4b3e-ab0e-a271030749e4
-# ╠═dc5a5f74-9289-4614-b1ae-553d43c33120
-# ╠═61d51f9c-2368-478c-9d77-90c7d9a72610
-# ╟─15cf410a-13ee-4638-b91a-4dc286754c8c
-# ╠═e74e9fba-8062-45b0-aea9-b7ae1a646bf3
-# ╟─8d084ab0-3027-49d8-9b3b-24f06d0af830
-# ╠═e688750a-c6a9-4e08-ba7c-c1fd314405ec
-# ╟─c9b352f2-016d-4d16-8053-48eedc39458d
-# ╟─e3234616-d59f-43bb-91b3-bd2f727c68b1
-# ╟─4a98a96f-a1b3-4144-b98a-9f65c0ca44aa
-# ╟─e97eaccb-f03c-455e-8f15-b606f66704d9
-# ╟─ecfe0d5e-edc1-4557-8534-93c3970f366c
-# ╟─eca5662e-1eee-46a0-82ce-ca3f5f70ae77
-# ╟─bd9d24c9-3dc1-4759-b2ea-2663c6a49678
+# ╟─2e053d2a-7cc0-4df7-bda1-f43b7d397518
+# ╟─b1ea7402-3509-46f1-aefb-c2d51215062c
+# ╠═6567291b-91ba-45b4-b625-34e2a2b4caf6
+# ╟─2ceeb12e-e068-4401-a921-bb45a2396424
+# ╟─cb93de12-47c8-40e8-a056-4a4f08d42d66
+# ╟─3f25cd6c-9b2d-4459-9651-7c1df7be5f2c
+# ╟─345f1ef8-e930-453a-aac0-c44cffb76d44
+# ╟─a8f9e126-1730-4f30-8d70-9b454f56ff39
+# ╟─7e8db3bd-fac0-44a3-b4f3-5246cc2eda89
+# ╟─3586aabc-e618-4247-827b-777224115314
+# ╟─edfcfc7f-e288-4c9f-b11b-b4cda0553a78
+# ╟─1c3ac56a-d566-44e6-bf16-be9934724a77
+# ╟─c83c4c6c-b3c3-48a5-973f-ae68427c0972
+# ╠═f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+# ╠═2cdbd150-ccd5-4f2a-9e49-5321070a2208
+# ╟─21f1efc6-2e79-4c06-862d-55b5d20966d5
+# ╠═94e01a40-8bd6-469a-b348-7aba8a6280d4
+# ╟─5a1bc2de-a335-4024-a249-fec980636cdc
+# ╟─8af78ef0-28f1-4222-bd62-1df8dfe4b931
+# ╠═dc922b83-b899-41df-ba15-32c85ad65b2b
+# ╟─70b1d915-2425-4741-9dd9-b7d60496b4ba
+# ╠═abe20ea3-6da8-433a-b58d-77ce6b9dc1fb
+# ╠═31f409e8-9c25-4b30-b768-89a4aab4546e
+# ╟─d9f29b49-fcdf-4762-b1ca-795d2ad62d67
+# ╠═26f04717-948d-4e3d-be26-e6e8c6070905
+# ╟─ef6c457b-9f04-45b7-bf31-281a39111fb6
+# ╠═b8849f80-f454-464e-881b-4b5a9f2dcbdd
+# ╠═3fdda80e-3360-481c-af16-0bcdd5d3e470
+# ╟─29e38a84-e43f-434a-83cf-3003a33b1079
+# ╠═7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
+# ╟─604dab44-6d5f-49e3-a2c1-669a947ac5ea
+# ╟─a862c4a2-0a3c-432d-86ab-49c9857554b3
+# ╠═15fd10c7-c163-4c4c-a1a7-993ec5185843
+# ╟─83fa92c8-643c-408c-9d05-bc8d744e1e1a
+# ╟─520a01ff-dfca-405a-8cff-4124f0bc0792
+# ╠═be5706a4-0325-45ed-b1b1-bab78d6485e7
+# ╠═8678584b-0bee-4ff0-a466-9f073847d2a1
+# ╟─a8aa2b22-1529-48da-beb0-b51cce0ae2aa
+# ╠═2c1416c7-a866-4742-a424-233eca091657
+# ╟─974e371c-c0b2-40db-b7a9-ad19612ab76c
+# ╠═2d72fd9b-25e4-46d0-ad3b-3f35ae4e2c09
+# ╠═fc38a1b7-51e4-4832-bfdb-e6d83af0ed27
+# ╟─1d86c6a4-36ab-455a-a6b8-618fe8e36665
+# ╠═47a41ecc-faeb-45f7-a856-03c1d5bb917b
+# ╠═2abc083b-f39f-4610-9c40-cfbfb73982a3
+# ╟─eb11b179-5c4c-4b29-b90d-6fd1cf1c54b4
+# ╠═c9b3afdd-b00f-4735-ab7e-862e9fcac505
+# ╟─39235756-f5b9-4e0d-a47b-64235767ca4c
+# ╠═593ff4f2-6fb9-4031-8a5b-d7c83838ecf7
+# ╟─25258185-5a00-4faa-ad78-fdb2e770909a
+# ╠═4bc8b53c-b9f6-47b8-ab9e-9cc2871488e1
+# ╠═a3d22608-bb4f-49db-bc4d-9086a2cf192e
+# ╠═f7e7a22c-6ef0-4910-9deb-4901aa917c99
+# ╟─3185c0e0-edcb-46b0-9479-de6d84ce08c0
+# ╠═e8829c5d-2cf7-4303-9ad4-1c457ca734bd
+# ╟─4f538581-25a3-4aa2-8029-ecebf4234b9e
+# ╟─2fac4aef-b656-40f7-bfaa-88a8cadf3980
+# ╟─d66e12db-ce72-41a6-8207-2533bee71604
+# ╟─14f46e3f-17ba-48a2-8ed1-8ebfe9b3991c
+# ╟─fb3021c6-b871-47e2-acf2-4b4f31ae18a2
+# ╟─1a698a3e-bb7e-46c9-b045-fc12d21f41ab
+# ╟─5f3ce6b3-4df7-4928-b01e-9a4e4849f673
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

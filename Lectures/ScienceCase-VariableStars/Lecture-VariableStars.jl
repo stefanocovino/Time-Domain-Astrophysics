@@ -345,7 +345,7 @@ end
 # ╔═╡ c2481fd9-276e-483b-891c-d2620b0db3ff
 cm"""
 
-Try to phase with a wrong period (30% longer)? $tpr
+Try to phase with a wrong period (~30% shorter)? $tpr
 
 """
 

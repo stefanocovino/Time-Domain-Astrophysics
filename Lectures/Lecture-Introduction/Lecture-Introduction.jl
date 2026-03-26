@@ -224,9 +224,9 @@ md"""
 
 $(LocalResource("Pics/TDA.jpg", :width => 200))  
 
-- For most of the users, a web site reporting all the material shown during the lectures is probably the preferred and simpler solution. The course is available online at: [website](http://192.167.38.133:8081/Course.html)
+- For most of the users, a web site reporting all the material shown during the lectures is probably the preferred and simpler solution. The course is available online at: [website](http://vstpol.brera.inaf.it:8081/Course.html)
 
-> The site enables to run interactively some of the examples and/or exercises discussed during the course!
+> The site enables to run interactively all the notebooks with examples and/or exercises discussed during the course!
 
 """
 
@@ -252,9 +252,17 @@ git pull
 
 - This clones the whole tree (i.e. the course material, about 3GB).
 
-> Repeating frequently the last command (`git pull`) you will always have the tree fully updated and you notebooks, data, papers, etc. ready to be used on your computer.
+- In order to start reading the notebooks one can execute, i.e.:
+```
+cd TimeDomainAstrophysics
+julia -e e 'using Pluto; Pluto.run(notebook="Course.jl")'
+```
 
-- This is needed and advised if one wants to get and interact with the full notebooks, with code, data, etc.
+- Repeating frequently the last command (`git pull`) you will always have the tree fully updated and you notebooks, data, papers, etc. ready to be used on your computer.
+
+> Cloning the repository is only needed if one wants to get and interact with the full notebooks, with code, data, etc.
+
+- Single files, papers, etc. can be downloaded browsing the repository or directly by the links included in the notebooks.
 
 
 """
