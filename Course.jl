@@ -67,9 +67,9 @@ md"""
 | 9. Science case: Climate data | [notebook](./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl) | [html](Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html) |
 | 10. Lecture: Time Domain analysis | [notebook](./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl) | [html](Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html) |
 | 11. Science case: AGN and Blazars | [notebook](./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl) | [html](Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html) |
-| 12. Lecture: Time of Arrival | [notebook](./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl) | [html](Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html) |
+| 12. Lecture: Time of Arrival | [notebook](./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl) | [html](Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html) || 
+| 13. Science case: FRBs | [notebook](./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl) | [html](Lectures/ScienceCase-FRBs/Lecture-FRBs.html) |
 
-13. [Science case: FRBs](./open?path=Lectures/Science Case - FRBs/Lecture-FRBs.jl)
 14. [Lecture: Non Parametric Analysis](Lectures/Lecture - Non Parametric Analysis/Lecture-NonParametricAnalysis.ipynb)
 15. [Lecture: Singular Spectrum Analysis](Lectures/Lecture - Singular Spectrum Analysis/Lecture-SSA.jl)
 16. [Lecture: Gaussian Processes](Lectures/Lecture - Gaussian Processes/Lecture-GassianProcesses.jl)

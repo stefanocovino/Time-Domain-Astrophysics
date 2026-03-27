@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -338,14 +338,6 @@ Papers for examining more closely some of the discussed topics.
 - [Bao & Li (2021) - "Searching for quasi-periodic oscillations in active galactic nuclei of the Chandra Deep Field South"](https://ui.adsabs.harvard.edu/abs/2022MNRAS.509.3504B/abstract)
 """
 
-# ╔═╡ f1d7038f-f94c-4b71-8f51-b0c03452ad29
-md"""
-### Credits
-***
-
-This notebook contains material obtained from 
-"""
-
 # ╔═╡ aeaad396-5e2a-4ec5-8b05-e160e5712f35
 cm"""
 ## Course Flow
@@ -359,12 +351,12 @@ cm"""
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl">Science case about AGN and Blazars</a></td>
-    <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.jl">Lecture about time of arrival analysis</a></td>
+    <td><a href="./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl">Science case about FRBs</a></td>
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and Blazars</a></td>
-    <td><a href="Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.html">Lecture about time of arrival analysis</a></td>
+    <td><a href="Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
   </tr>
  </table>
 
@@ -808,9 +800,9 @@ version = "4.1.1"
 
 [[deps.FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "70329abc09b886fd2c5d94ad2d9527639c421e3e"
+git-tree-sha1 = "2c5512e11c791d1baed2049c5652441b28fc6a31"
 uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
-version = "2.14.3+1"
+version = "2.13.4+0"
 
 [[deps.FreeTypeAbstraction]]
 deps = ["BaseDirs", "ColorVectorSpace", "Colors", "FreeType", "GeometryBasics", "Mmap"]
@@ -2064,7 +2056,6 @@ version = "4.1.0+0"
 # ╟─f9bb204d-53d4-4ac1-92dc-4faf5faba96b
 # ╟─c7fc2cd6-6715-46d7-a9e0-c6e0bb7b13eb
 # ╟─7661198f-10bc-4448-be6b-9f4fd1a16f3c
-# ╟─f1d7038f-f94c-4b71-8f51-b0c03452ad29
 # ╟─aeaad396-5e2a-4ec5-8b05-e160e5712f35
 # ╟─7aecb81a-a226-4133-9182-53e159f5fc43
 # ╟─00000000-0000-0000-0000-000000000001
