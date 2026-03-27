@@ -96,7 +96,7 @@ md"""
 
     - By construction, wavelets are localized in both frequency and time domains. 
 
-- Individual wavelets are specified by a set of *wavelet filter coefficients*. Given a wavelet, a complete orthonormal set of basis functions can be constructed by scalings and translations.
+- Individual wavelets are specified by a set of *wavelet filter coefficients*. Given a wavelet, a set of basis functions can be constructed by scalings and translations.
 
 - Different wavelet families trade the localization of a wavelet with its smoothness. Popular wavelets include “Mexican hat”, Haar and Daubechies wavelets. 
 
@@ -158,6 +158,16 @@ g(x) = \frac{1}{\sigma \sqrt{2 \pi}} e^{\frac{- (x-mu)^2}{2 \sigma^2}}
 
 # ╔═╡ edcc2680-4e10-41a1-a55f-be64b0ae8911
 md"- And a Morlet wavelet is nothing more than a sine wave multiplied by a Gaussian envelope:"
+
+# ╔═╡ e9962a48-f9d4-4f30-bab8-538032816bf8
+md"""
+
+- The mathematical expresion for the Morlet wavelet is:
+
+```math
+\psi(t) = \pi^{-1/4} e^{i \omega_0 t} e^{-\frac{t^2}{2}}
+```
+"""
 
 # ╔═╡ e05f97a3-92ee-40b8-8ec9-ed31b7444f77
 function morlet(t, ω0=6.0)
@@ -229,14 +239,8 @@ cm"""
 - Again referring to the Morlet wavelet, we can write it as: ``w(t|t_0, f_0, Q) = A e^{i 2 \pi f_0 (t-t_0)} e^{-f_0^2 (t-t_0)^2 / Q^2}``, where ``t_0``  is the central time, ``f_0``  is the central frequency, and the dimensionless parameter ``Q`` is a model parameter which controls the width of the frequency window.
 
 $(LocalResource("Pics/waveletex1.png"))
-    
-- The Fourier transform of the previous wavelet is:
 
-```math
-W(t|t_0, f_0, Q) = \left( \frac{\pi}{f_0^2/Q^2} \right)^{1/2} \exp[i 2 \pi f_0 t_0] \exp[-\frac{\pi^2 Q^2 (f-f_0)^2}{Q f_0^2}]
-```
-
-- Roughly speaking, one might think to it as a “matched filters”.
+- Wavelet analysis has, roughly speaking, some connections with a “matched filters” analysis.
 
 - Given a signal ``h(t)``, its wavelet transform is given by the convolution:
 
@@ -256,9 +260,7 @@ H_w(t_0; f_0, Q) = \int_{-\infty}^\infty h(t)w(t|t_0, f_0, Q)
 
 - A scaled wavelet is evaluated for various values of the scale ``\sigma`` (usually taken to be multiples of the lowest possible frequency), as well as all values of ``\tau`` between the start and end dates. A two-dimensional picture of the variability can then be constructed by plotting the wavelet amplitude and phase.
 
-- This is indeed one the approaches (we are simplifying a lot here…) used in the, e.g., LIGO/Virgo projects to detect gravitational wave events. 
-
-- Because of the noise level in the GW measurements, rather than a standard wavelet they instead use functions which are tuned to the expected form of the signal (i.e., matched filters).
+- This is indeed one the approaches (we are simplifying a lot here…) used in many fields looking for transients events (climatology, gravitational wave astronomy, etc.). 
 
 
         
@@ -449,7 +451,7 @@ end
 
 # ╔═╡ 8550f405-2819-4a33-9cd2-c72dbbb04a87
 md"""
-- Let's now compute a Fourier periodogram
+- Let's first compute a Fourier periodogram of this signal:
 """
 
 # ╔═╡ 0e3b9aaf-0d91-4c60-8118-5624273d3983
@@ -478,7 +480,7 @@ end
 
 # ╔═╡ 7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
 md"""
-- The periodogram shows power at the lowest frequencies with a break at frequencies higher than $\sim 0.5$Hz, i.e. for time-scales shorter than $\sim 1$s.
+- The periodogram shows power at the lowest frequencies with a break at frequencies higher than $\sim 0.5$Hz, i.e., for time-scales shorter than $\sim 1$s.
 
 - Let's try to study the time-evolution of the PSD by a *spectrogram*:
 """
@@ -505,7 +507,7 @@ end
 
 # ╔═╡ 576eb9f0-40c6-4a9a-9504-d562452541e6
 md"""
-- And, it is indeed clearly visible a signal appearing at about -20s with frequncy increasing with time.
+- And, it is indeed clearly visible a signal appearing at about -20s with frequency increasing with time.
 
 - Nevertheless, this is not an optimal solution since the number of bins is arbitrary, and clearly we reduce the resolution of the analysis decreasing the length of the time-series.
 
@@ -520,6 +522,9 @@ begin
 	
 	res = cwt(h, c)
 end;
+
+# ╔═╡ 21cf27d2-968f-46fc-8eb7-d105e5fc59a7
+md"- The result of a wavelet analysis is shown below:"
 
 # ╔═╡ 6a71ccd0-8ee7-4c39-b8c7-88b398e98d1a
 begin
@@ -541,68 +546,6 @@ end
 # ╔═╡ f153fdfa-57d5-4112-8d59-847ee1ec06ca
 md"""
 - And we can appreciate how the formation and evolution of the signal is clealry visible in the plot.
-"""
-
-# ╔═╡ 138dc591-5a42-4ae7-8b34-863c947b59e3
-md"""
-
-## Wavelets: a few more technical concepts
-***
-
-### What is the *scale* parameter?
-***
-
-- There could be some confusion between the *scale* of a wavelet and the *frequency", the *scale* matches the extent over time of the wavelet. 
-
-- Essentially, a mother wavelet function is built and has an extent over time of *base-duration* and the Continuous Wavelet Transform (CWT) is performed for each value of ``scales``, `s`, with a child wavelet of duration $base-duration \times s$. 
-
-- This child wavelet is convolved (it's like a moving average with the child wavelet instead of ones for the window) with the data array.
-
-- The mother wavelet is described by the function of time $\Psi(t)$
-- The child function at scale $s$ is $\Psi_{s,x}(t) = \frac{1}{\sqrt{s} } \frac{\Psi(t-x)}{s}$
-    - where $x$ is the shift parameter used to convolve the signal being analysed with the wavelet.
-
-
-
-- The frequency associated to the scale value $s$ is $frequency = \frac{central-frequency}{s}$, where the $central-frequency$ is a parameter of the chosen wavelet.
-
-- The central frequency corresponds to the signal frequency to which the wavelet function will be the most sensitive for scale $s=1$.
-"""
-
-# ╔═╡ 463ed10c-6321-4e26-ae0d-1bc5b5eb6754
-LocalResource("Pics/centralfrequency.png")
-
-# ╔═╡ bf197511-19c5-443b-a541-7608b61518c4
-md"""
-- In the right plot (Frequency), the yellow vertical line show the location of the peak: this is the *central frequency* of the wavelet.
-
-- The bandwidth parameter selects how much the wavelet is sensitive to the frequencies around the central one. On the frequency plot, the bandwidth is represented by the width of the bell shaped curve (also called the *wings*).
-"""
-
-# ╔═╡ 03a06450-8121-48fc-bd7f-d129c52d3f64
-md"""
-### So, which period value correspond to a given *scale*?
-
-
-- Wavelet functions are designed to be compact in time and frequency. When looking at the plot above, you can see that the oscillations falls quickly around the center of the function. This *compactness in time* allow the scalogram to show local measurements of the signal *variations*. In fact, from the considerations above: $period =\frac{s}{central-frequency}$
-
-- Of course, please pay attention that, at a given scale, the wavelet sensitivity is maximum to the central frequency but the bandwidth is not null, hence it will also probe frequency around the *central frequency* value.
-
-- This will appear on scaleogram as a smoothing effect along the Y axis. This property will also manifest in time domain where the signal decrease *smoothly* to zero around the maximum oscillation amplitude.
-
-> For this reason it is probably better to use the term of *pseudo period* to describe the time scale. This property manifest on the *scaleograms* wih some amount of fuzziness around the signal features which are well localized in time. This fuzziness is proportional to the scale $s$.  
-
-- Another important factor is the choice of a set of scaling parameters $s$, such that we adequately sample all the frequencies present in our time series. 
-- We typically first choose the smallest resolvable scale, $s_0$, as some multiple of our time resolution of the input data, $\delta t$. 
-- The larger scales (longer periods) are (often) chosen as power-of-two multiples of this smallest scale.
-- A common choice for the scake scould then be: $s_j = s_0 2^{j\delta_j}$, for $j = 1, ..., J$.
-- And therefore the maximum scale becomes: $J = \delta_j^{-1} \log_2(N\delta t/s_0)$.
-
-> The difference between period and scale is essentially that the scale refers to the width of the wavelet. As the scale increases and the wavelet gets wider, it includes more of the time series, and the finer details get smeared out.
-> The scale can be defined as the distance between oscillations in the wavelet (e.g. for the Morlet), or it can be some average width of the entire wavelet (e.g. for the Marr or Mexican hat).
-
-- The period (or inverse frequency) is the approximate Fourier period that corresponds to the oscillations within the wavelet. For all wavelets, there is a one-to-one relationship between the scale and period. The relationship can be derived by finding the wavelet transform of a pure cosine wave with a known Fourier period, and then computing the scale at which the wavelet power spectrum reaches its maximum.
-
 """
 
 # ╔═╡ 9d0b25ab-b8bc-455c-bf42-40f0d085be08
@@ -639,7 +582,7 @@ end
 # ╔═╡ 9d094cc4-60f4-49c0-af51-e5b4a666d41b
 md"""
 
-- The "scaleogram" clearly shows the twon signal, and that they are present for the whole observation".
+- The plot clearly shows the two signals, and that they are present for the whole observation.
 
 """
 
@@ -808,7 +751,68 @@ end
 md"""
 - As you can see, the scale influences not only the sensitivity on the Y axis but has also a smoothing effect on the X axis: the second cos() line at period does not "see" the first hole in the data, but the signal amplitude has diminished.
 
-- The second observation is the apparition on a weak spurious line at period~30. This is due to the sharp cut applied on the data between 50 and 100. This effect is another example of aliasing in frequency.
+- The second observation is the appearance on a weak spurious line at period ~30. This is due to the sharp cut applied on the data between 50 and 100. This effect is another example of aliasing in frequency.
+"""
+
+# ╔═╡ 138dc591-5a42-4ae7-8b34-863c947b59e3
+md"""
+
+## Wavelets: a few more technical concepts
+***
+
+### What is the *scale* parameter?
+***
+
+- There could be some confusion between the *scale* of a wavelet and the *frequency*, the *scale* matches the extent over time of the wavelet. 
+
+- Essentially, a mother wavelet function is built and has an extent over time of a given *base duration*, ``bs`` and the Continuous Wavelet Transform (CWT) is performed for each value of *scales*, `s`, with a child wavelet of duration ``bs \times s``. 
+
+- This child wavelet is convolved with the data array.
+
+- The mother wavelet is described by the function of time $\Psi(t)$
+- The child function at scale $s$ is $\Psi_{s,x}(t) = \frac{1}{\sqrt{s} } \frac{\Psi(t-x)}{s}$, where $x$ is the shift parameter used to convolve the signal being analysed with the wavelet.
+
+
+
+- The frequency, $\omega$, associated to the scale value $s$ is $\omega = \frac{\omega_0}{s}$, where $\omega_0$ is the parameter of the chosen wavelet.
+
+- The central frequency corresponds to the signal frequency to which the wavelet function will be the most sensitive for scale $s=1$.
+"""
+
+# ╔═╡ 463ed10c-6321-4e26-ae0d-1bc5b5eb6754
+LocalResource("Pics/centralfrequency.png")
+
+# ╔═╡ bf197511-19c5-443b-a541-7608b61518c4
+md"""
+- In the right plot (Frequency), the yellow vertical line show the location of the peak: this is the *central frequency* of the wavelet.
+
+- The bandwidth parameter selects how much the wavelet is sensitive to the frequencies around the central one. On the frequency plot, the bandwidth is represented by the width of the bell shaped curve (also called the *wings*).
+"""
+
+# ╔═╡ 03a06450-8121-48fc-bd7f-d129c52d3f64
+md"""
+### So, which period value correspond to a given *scale*?
+
+
+- Wavelet functions are designed to be compact in time and frequency. When looking at the plot above, you can see that the oscillations falls quickly around the center of the function. This *compactness in time* allow the scalogram to show local measurements of the signal *variations*. In fact, from the considerations above: $period =\frac{s}{\omega_0}$
+
+- Of course, please pay attention that, at a given scale, the wavelet sensitivity is maximum to the central frequency but the bandwidth is not null, hence it will also probe frequency around the *central frequency* value.
+
+- This will appear on scaleogram as a smoothing effect along the Y axis. This property will also manifest in time domain where the signal decrease *smoothly* to zero around the maximum oscillation amplitude.
+
+> For this reason it is probably better to use the term of *pseudo period* to describe the time scale. This property manifest on the *scaleograms* wih some amount of fuzziness around the signal features which are well localized in time. This fuzziness is proportional to the scale $s$.  
+
+- Another important factor is the choice of a set of scaling parameters $s$, such that we adequately sample all the frequencies present in our time series. 
+- We typically first choose the smallest resolvable scale, $s_0$, as some multiple of our time resolution of the input data, $\delta t$. 
+- The larger scales (longer periods) are (often) chosen as power-of-two multiples of this smallest scale.
+- A common choice for the scake scould then be: $s_j = s_0 2^{j\delta_j}$, for $j = 1, ..., J$.
+- And therefore the maximum scale becomes: $J = \delta_j^{-1} \log_2(N\delta t/s_0)$.
+
+> The difference between period and scale is essentially that the scale refers to the width of the wavelet. As the scale increases and the wavelet gets wider, it includes more of the time series, and the finer details get smeared out.
+> The scale can be defined as the distance between oscillations in the wavelet (e.g. for the Morlet), or it can be some average width of the entire wavelet (e.g. for the Marr or Mexican hat).
+
+- The period (or inverse frequency) is the approximate Fourier period that corresponds to the oscillations within the wavelet. For all wavelets, there is a one-to-one relationship between the scale and period. The relationship can be derived by finding the wavelet transform of a pure cosine wave with a known Fourier period, and then computing the scale at which the wavelet power spectrum reaches its maximum.
+
 """
 
 # ╔═╡ bde447ae-3998-4a1a-8e4e-32f97b2854a1
@@ -2688,6 +2692,7 @@ version = "4.1.0+0"
 # ╟─efe4400e-dce7-40ab-b142-6ac560b98eaf
 # ╟─4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
 # ╟─edcc2680-4e10-41a1-a55f-be64b0ae8911
+# ╟─e9962a48-f9d4-4f30-bab8-538032816bf8
 # ╟─e05f97a3-92ee-40b8-8ec9-ed31b7444f77
 # ╟─c742ac3f-5ef3-4bad-9f67-d4ceac8d64a4
 # ╟─41a5ec30-5887-450c-973f-5931d13dec11
@@ -2705,7 +2710,7 @@ version = "4.1.0+0"
 # ╟─05cba47a-d054-43d3-8a03-9c2579c0941a
 # ╟─e84babed-8d59-40a0-be3a-7029986a5170
 # ╟─a37c5419-797a-4626-8138-2f2d5ab8f416
-# ╟─f3f93bff-1c39-4652-aa41-0b7d88ad9caf
+# ╠═f3f93bff-1c39-4652-aa41-0b7d88ad9caf
 # ╟─13fbe8ec-5266-4b72-b85e-f171c8c7ba90
 # ╟─8550f405-2819-4a33-9cd2-c72dbbb04a87
 # ╟─0e3b9aaf-0d91-4c60-8118-5624273d3983
@@ -2713,12 +2718,9 @@ version = "4.1.0+0"
 # ╟─738b344d-e2ae-4f99-b755-38c0dcdc3da3
 # ╟─576eb9f0-40c6-4a9a-9504-d562452541e6
 # ╟─6e81c233-8aa5-4ab4-a011-c56ad0026ea9
+# ╟─21cf27d2-968f-46fc-8eb7-d105e5fc59a7
 # ╟─6a71ccd0-8ee7-4c39-b8c7-88b398e98d1a
 # ╟─f153fdfa-57d5-4112-8d59-847ee1ec06ca
-# ╟─138dc591-5a42-4ae7-8b34-863c947b59e3
-# ╟─463ed10c-6321-4e26-ae0d-1bc5b5eb6754
-# ╟─bf197511-19c5-443b-a541-7608b61518c4
-# ╟─03a06450-8121-48fc-bd7f-d129c52d3f64
 # ╟─9d0b25ab-b8bc-455c-bf42-40f0d085be08
 # ╟─1c4ceb56-af5c-4f12-860d-d64380e7a0ca
 # ╟─46e6b3f3-0376-4a30-9b70-16d0f35a2f86
@@ -2732,6 +2734,10 @@ version = "4.1.0+0"
 # ╟─7433ebb9-bdb5-4478-bf81-5246f2603a88
 # ╟─254d346e-8861-4bbf-ac15-f49d0d8c52d3
 # ╟─cf2a10d9-12c8-46ca-8493-0d902f153932
+# ╟─138dc591-5a42-4ae7-8b34-863c947b59e3
+# ╟─463ed10c-6321-4e26-ae0d-1bc5b5eb6754
+# ╟─bf197511-19c5-443b-a541-7608b61518c4
+# ╟─03a06450-8121-48fc-bd7f-d129c52d3f64
 # ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
 # ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b
 # ╟─af38d725-6e0f-4958-85bb-1be029ba3fb5
