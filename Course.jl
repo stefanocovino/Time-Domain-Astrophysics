@@ -69,7 +69,7 @@ md"""
 | 11. Science case: AGN and Blazars | [notebook](./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl) | [html](Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html) |
 | 12. Lecture: Time of Arrival | [notebook](./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl) | [html](Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html) || 
 | 13. Science case: FRBs | [notebook](./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl) | [html](Lectures/ScienceCase-FRBs/Lecture-FRBs.html) |
-|14. Lecture: Non Parametric Analysis | [notebook](Lectures/Lecture-NonParametric Analysis/Lecture-NonParametricAnalysis.jl) | [html](Lectures/Lecture-NonParametric Analysis/Lecture-NonParametricAnalysis.html) |
+|14. Lecture: Non Parametric Analysis | [notebook](./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl) | [html](Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html) |
 
 
 15. [Lecture: Singular Spectrum Analysis](Lectures/Lecture - Singular Spectrum Analysis/Lecture-SSA.jl)

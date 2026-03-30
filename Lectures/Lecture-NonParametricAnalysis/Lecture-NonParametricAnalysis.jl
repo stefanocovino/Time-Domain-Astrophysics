@@ -553,12 +553,12 @@ cm"""
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl">Science case about FRBs</a></td>
-    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodogram.jl">Lecture about non-parametric periodograms</a></td>
+    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
-    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodogram.html">Lecture about non-parametric periodograms</a></td>
+    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograma.html">Lecture about non-parametric periodograms</a></td>
   </tr>
  </table>
 
@@ -2239,7 +2239,7 @@ version = "4.1.0+0"
 # ╟─c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
 # ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
 # ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b
-# ╠═241907cb-1fb0-4963-8bb9-7894136e43de
+# ╟─241907cb-1fb0-4963-8bb9-7894136e43de
 # ╟─d3b81af7-b85b-4212-82a2-0f97ec31a484
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

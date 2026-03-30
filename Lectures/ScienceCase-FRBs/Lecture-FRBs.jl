@@ -379,13 +379,13 @@ cm"""
   </tr>
   <tr>
 	<td>notebook</td>
-    <td><a href="./open?path=Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival analysis</a></td>
-    <td><a href="./open?path=Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
+    <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival analysis</a></td>
+    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
-    <td><a href="Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+    <td><a href="Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
+    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
   </tr>
  </table>
 
