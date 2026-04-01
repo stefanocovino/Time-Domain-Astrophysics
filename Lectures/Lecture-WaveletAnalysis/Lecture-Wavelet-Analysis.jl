@@ -432,6 +432,14 @@ begin
 	h = h_true .+ rand(d,N)
 end;
 
+# ╔═╡ da37588c-5fba-4b3a-8e65-daf1ad864d14
+nosgl = @bind prd CheckBox(default=false);
+
+# ╔═╡ 0d341682-c4a8-43b4-b241-981d60dfe35d
+cm"""
+- Do you want to remove the clean signal from the plot? $nosgl
+"""
+
 # ╔═╡ 13fbe8ec-5266-4b72-b85e-f171c8c7ba90
 begin
 	fg1 = Figure()
@@ -442,7 +450,9 @@ begin
 	    )
 	
 	lines!(t,h,label="Chirp signal")
-	lines!(t,h_true,label="Chirp signal without noise")
+	if !prd
+		lines!(t,h_true,label="Chirp signal without noise")
+	end
 	
 	axislegend()
 	
@@ -2711,6 +2721,8 @@ version = "4.1.0+0"
 # ╟─e84babed-8d59-40a0-be3a-7029986a5170
 # ╟─a37c5419-797a-4626-8138-2f2d5ab8f416
 # ╠═f3f93bff-1c39-4652-aa41-0b7d88ad9caf
+# ╟─da37588c-5fba-4b3a-8e65-daf1ad864d14
+# ╟─0d341682-c4a8-43b4-b241-981d60dfe35d
 # ╟─13fbe8ec-5266-4b72-b85e-f171c8c7ba90
 # ╟─8550f405-2819-4a33-9cd2-c72dbbb04a87
 # ╟─0e3b9aaf-0d91-4c60-8118-5624273d3983

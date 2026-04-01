@@ -2105,8 +2105,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../../Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
-    <td><a href="../../Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
+    <td><a href="Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
+    <td><a href="Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
   </tr>
 
  </table>
