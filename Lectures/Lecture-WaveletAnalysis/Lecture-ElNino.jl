@@ -50,14 +50,6 @@ md"""
 
 ***
 
-- In this exercize we analyse the Niño3 sea surface temperature (SST) used as a measure of the amplitude of the El Niño–Southern Oscillation (ENSO).
-
-- The Niño3 SST index is defined as the seasonal SST averaged over the central Pacific (5°S–5°N, 90°–150°W). 
-
-- Data sources are discussed in [Torrence & Compo (1998)](https://ui.adsabs.harvard.edu/abs/1998BAMS...79...61T/abstract)
-
-- The seasonal means for the entire record have been removed to define an anomaly time series.
-
 """
 
 # ╔═╡ 6721746e-71e6-4d3d-a32a-6c0385986351
@@ -67,6 +59,84 @@ begin
 	sst = df[:,2]  # el nino signal (sea surface temperature SST)
 	x   = df[:,3];  # el nino temperature anomaly
 end;
+
+# ╔═╡ 07cfa930-26ef-4798-895d-0639c7013b92
+cm"""
+
+- The **El Niño–Southern Oscillation (ENSO)** is one of the most important climate phenomena on Earth due to its ability to change the global atmospheric circulation, which in turn influences temperature and precipitation across the globe.
+
+- Essentially, ENSO is a recurring climate pattern involving changes in the temperature of waters in the central and eastern tropical Pacific Ocean. It operates in a cycle consisting of three phases:
+
+### 1. El Niño (The Warm Phase)
+
+- During El Niño, the trade winds weaken or even reverse. This allows warm surface water from the western Pacific to surge eastward toward the coast of South America.
+
+	- This shift suppresses the upwelling of cold, nutrient-rich water, disrupting marine ecosystems and shifting storm patterns, often leading to wetter conditions in the southern US and droughts in Southeast Asia and Australia.
+
+
+
+### 2. La Niña (The Cold Phase)
+
+- La Niña is essentially the opposite. The trade winds become exceptionally strong, pushing even more warm water toward Asia.
+
+	- This causes an increase in the upwelling of cold water off the coast of South America. Globally, this often leads to dryer conditions in the southern US and heavier rainfall (and potential flooding) in places like Indonesia and Australia.
+
+
+
+### 3. Neutral Phase
+
+- This is the "normal" state where trade winds blow from east to west, keeping warm water piled up in the western Pacific while maintaining cooler temperatures in the east.
+
+"""
+
+# ╔═╡ c148c070-e43a-49b9-91da-84ec41851766
+cm"""
+#### Why the Name?
+
+- **El Niño:** Originally named by Peruvian fishermen (*The Boy Child* or *Little Boy*) because the warming usually peaked around Christmas.
+
+"""
+
+# ╔═╡ 28c04add-45d8-4ccb-a101-fb0220d44c1a
+cm"""
+
+####  El Niño Effect on the Atacama desert
+***
+
+- The [Atacama Desert](https://en.wikipedia.org/wiki/Atacama_Desert) is considered the driest non-polar place on Earth, but ENSO acts as the "on/off switch" for its rare biological explosions. Because the Atacama sits directly adjacent to the eastern Pacific, it is hyper-sensitive to the shifting ocean temperatures.
+
+- It is also the site of most of the ESO ([European Southern Observatory](https://en.wikipedia.org/wiki/European_Southern_Observatory)) telescopes.
+
+$(LocalResource("Pics/chile_map.jpg"))
+
+##### The El Niño Effect: The "Flowering Desert"
+
+- In a typical year, the cold **Humboldt Current** and the high pressure of the South Pacific Anticyclone keep the Atacama bone-dry. However, during an **El Niño** event:
+	* **Warm Water Arrival:** The pool of warm water that usually stays near Indonesia shifts east toward Chile.
+	* **Atmospheric Breakdown:** This warm water weakens the high-pressure system that usually blocks clouds. Moist air rises, leading to unusual, heavy rainfall.
+	* **The *Desierto Florido*:** When rainfall exceeds a certain threshold (roughly 15–20 mm), it triggers the germination of millions of dormant seeds. This transforms the grey landscape into a carpet of purple, white, and yellow flowers (*Cistanthe grandiflora*, *Nolana*, etc.).
+
+##### The La Niña Effect: Extreme Aridity
+
+- Conversely, **La Niña** acts as a "super-normal" state for the Atacama:
+	* **Enhanced Cold:** The Humboldt Current becomes even colder and the upwelling of deep, icy water intensifies.
+	* **Drought Intensification:** The atmospheric high pressure strengthens, making it virtually impossible for rain clouds to form or reach the desert floor. During strong La Niña years, some parts of the Atacama may see zero measurable precipitation for the entire year.
+
+
+"""
+
+# ╔═╡ 9bb8f0eb-db20-4f25-8ba7-b3d64ae98439
+cm"""
+
+- In this exercize we analyse the Niño3 Sea Surface Temperature (SST) used as a measure of the amplitude of the El Niño–Southern Oscillation (ENSO).
+
+- The Niño3 SST index is defined as the seasonal SST averaged over the central Pacific (5°S–5°N, 90°–150°W). 
+
+- Data sources are discussed in [Torrence & Compo (1998)](https://ui.adsabs.harvard.edu/abs/1998BAMS...79...61T/abstract)
+
+- The seasonal means for the entire record have been removed to define an anomaly time series.
+
+"""
 
 # ╔═╡ cf2a10d9-12c8-46ca-8493-0d902f153932
 begin
@@ -134,7 +204,7 @@ end;
 # ╔═╡ 911b7cde-882d-407e-9f97-13159c131fa1
 md"""
 
-- And let's compute a wavelet analysis of this dataset, by a Morlet wavelet"
+- And let's compute a wavelet analysis of this dataset, by a *Morlet wavelet*:
 
 """
 
@@ -196,6 +266,18 @@ md"""
 - It is also possible to see variations in the frequency of occurrence and amplitude of El Niño (warm) and La Niña (cold) events.
     - During 1875–1920 and 1960–90 there were many warm and cold events of large amplitude, while during 1920–60 there were few events.
     - From 1875–1910, there was a slight shift from a period near 4 yr to a period closer to 2 yr, while from 1960–90 the shift is from shorter to longer periods.
+"""
+
+# ╔═╡ c900ad94-db1a-4c19-85d0-b5c7f9ddd01f
+cm"""
+- In general, well betond this simple exercise, a wavelet analysis can allow scientists to study:
+
+	1. Non-Stationarity (The Shifting Rhythm). ENSO is **non-stationary**, meaning its behavior changes across decades. In the 1920s–1950s, ENSO was relatively quiet. In the 1980s and 1990s, it became much more frequent and intense.
+
+	2. Identifying "Regime Shifts". Around **1976-1977**, the Pacific underwent a major "regime shift." Wavelet analysis clearly shows a sudden burst of power in the lower frequency bands at this exact moment, indicating a fundamental change in how the ocean and atmosphere were interacting.
+
+	3. Multi-Scale Interaction. There could be an **Annual Cycle:**, a **Quasi-Biennial** cycle (a 2–3 year cycle) ***Decadal** cycles, wiyj a 10–20 year patterns (like the Pacific Decadal Oscillation).
+
 """
 
 # ╔═╡ fc09bcf9-6512-4881-babb-52a0e7f8ccdf
@@ -2088,14 +2170,19 @@ version = "4.1.0+0"
 # ╟─f40ad72a-b6fd-4024-ab09-de1b6e31501b
 # ╟─090ffe2f-b381-49ec-bc08-53219c690e77
 # ╟─6721746e-71e6-4d3d-a32a-6c0385986351
+# ╟─07cfa930-26ef-4798-895d-0639c7013b92
+# ╟─c148c070-e43a-49b9-91da-84ec41851766
+# ╟─28c04add-45d8-4ccb-a101-fb0220d44c1a
+# ╟─9bb8f0eb-db20-4f25-8ba7-b3d64ae98439
 # ╟─cf2a10d9-12c8-46ca-8493-0d902f153932
-# ╟─ea016e4b-21c6-4e84-a646-444d6fb9a1b5
-# ╟─d87f7818-4dd9-457b-b15b-6056df5e4683
-# ╟─00d6567b-5706-4cd8-9e01-567a8d36e150
-# ╟─2b63c7ed-51da-4415-a380-000db490a137
+# ╠═ea016e4b-21c6-4e84-a646-444d6fb9a1b5
+# ╠═d87f7818-4dd9-457b-b15b-6056df5e4683
+# ╠═00d6567b-5706-4cd8-9e01-567a8d36e150
+# ╠═2b63c7ed-51da-4415-a380-000db490a137
 # ╟─911b7cde-882d-407e-9f97-13159c131fa1
 # ╟─90ec63d7-5694-4e2f-8420-11923054541b
 # ╟─4764ec57-550b-4afb-855e-6838e444b622
+# ╟─c900ad94-db1a-4c19-85d0-b5c7f9ddd01f
 # ╟─fc09bcf9-6512-4881-babb-52a0e7f8ccdf
 # ╟─83785073-c8da-4ceb-a7f2-685cd6e920f1
 # ╟─dd8bfd81-5e0d-4cb7-887a-dfacf1ede27c

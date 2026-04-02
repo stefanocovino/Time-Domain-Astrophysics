@@ -31,7 +31,7 @@ md"""
 
 # ╔═╡ 2aeb4208-bc0c-4907-ab6d-da3f48210aa5
 md"""
-**This is a `Julia` notebook**
+**This is a `Pluto` notebook**
 """
 
 # ╔═╡ fce942fc-7126-4e92-b758-30d36609117f
@@ -4265,7 +4265,7 @@ version = "4.1.0+0"
 # ╔═╡ Cell order:
 # ╟─14a0c11f-827d-46c8-bd5f-469a029f9afe
 # ╟─2aeb4208-bc0c-4907-ab6d-da3f48210aa5
-# ╠═508fcfab-51c1-4dc5-992d-d5961517b9bf
+# ╟─508fcfab-51c1-4dc5-992d-d5961517b9bf
 # ╟─fce942fc-7126-4e92-b758-30d36609117f
 # ╟─97bebdb5-df0d-4eb2-b214-1a38dd9ffa85
 # ╟─36377f43-7624-4113-9ea9-409fbd3ef079

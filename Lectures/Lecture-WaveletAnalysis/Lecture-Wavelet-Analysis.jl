@@ -112,7 +112,7 @@ md"""
 
 $(LocalResource("Pics/wavelets.png"))
 
-- Three examples of wavelets. From left to right: Haar wavelet, mexican hat and morlet wavelet.
+- Three examples of wavelets. From left to right: Haar wavelet, mexican hat and Morlet wavelet.
 """
 
 # ╔═╡ caa79afb-d9cb-483f-87f3-05bfa215d047
@@ -149,7 +149,7 @@ end
 
 # ╔═╡ 4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
 md"""
-- The Mexican hat function/wavelet is actually the rescaled negative second derivative of the gaussian function:
+- The Mexican hat function/wavelet is actually the rescaled negative second derivative of the Gaussian function:
 
 ```math
 g(x) = \frac{1}{\sigma \sqrt{2 \pi}} e^{\frac{- (x-mu)^2}{2 \sigma^2}}
@@ -555,7 +555,7 @@ end
 
 # ╔═╡ f153fdfa-57d5-4112-8d59-847ee1ec06ca
 md"""
-- And we can appreciate how the formation and evolution of the signal is clealry visible in the plot.
+- And we can appreciate how the formation and evolution of the signal is clearly visible in the plot.
 """
 
 # ╔═╡ 9d0b25ab-b8bc-455c-bf42-40f0d085be08
