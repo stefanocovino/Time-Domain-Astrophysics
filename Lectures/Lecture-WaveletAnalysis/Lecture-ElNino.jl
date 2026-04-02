@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ d2361176-db34-450c-8721-ed4391b90e9c
 begin
 	using CairoMakie
@@ -138,6 +150,16 @@ cm"""
 
 """
 
+# ╔═╡ aa69e46d-a12a-44e4-a51f-1e8f49adad79
+md"""
+Plot lower limit: $( @bind year0 PlutoUI.Slider(1865:1:2000, default=1865) ) 
+"""
+
+# ╔═╡ fba009f7-d327-4cab-929c-d76270c2e9bd
+cm"""
+Year: $year0
+"""
+
 # ╔═╡ cf2a10d9-12c8-46ca-8493-0d902f153932
 begin
 	fig_ts = Figure(size = (900, 580))
@@ -149,6 +171,8 @@ begin
 	        )
 	
 	lines!(ax1, t, sst; color = :royalblue)
+
+	xlims!(year0,2000)
 	
 	ax2 = Axis(fig_ts[2,1],
 	        xlabel = "time (year)",
@@ -157,6 +181,8 @@ begin
 	        )
 	
 	lines!(ax2, t, x; color = :crimson)
+
+	xlims!(year0,2000)
 	
 	fig_ts
 end
@@ -2174,6 +2200,8 @@ version = "4.1.0+0"
 # ╟─c148c070-e43a-49b9-91da-84ec41851766
 # ╟─28c04add-45d8-4ccb-a101-fb0220d44c1a
 # ╟─9bb8f0eb-db20-4f25-8ba7-b3d64ae98439
+# ╟─aa69e46d-a12a-44e4-a51f-1e8f49adad79
+# ╟─fba009f7-d327-4cab-929c-d76270c2e9bd
 # ╟─cf2a10d9-12c8-46ca-8493-0d902f153932
 # ╠═ea016e4b-21c6-4e84-a646-444d6fb9a1b5
 # ╠═d87f7818-4dd9-457b-b15b-6056df5e4683

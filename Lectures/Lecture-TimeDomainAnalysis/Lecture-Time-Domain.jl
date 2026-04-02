@@ -126,7 +126,7 @@ ACF(k) = \frac{\sum_{t=1}^{n-k}(X_t - \bar{X})(X_{t+k} - \bar{X})}{\sum_{t=1}^k 
 
 - The distribution of the sample is asymptotically normal with mean ``−1/n`` and variance ``1/n``, i.e. the distribution of the null case ACF is ``ACF(k) = \mathcal{N}(−1/n,1/n)``. 
 
-- However, this holds under the assumtpion one is testing whether a time-series is white noise, i.e. the residuals of a fit. Else, a different formula, based on the assumption that a time-series can be described as a moving average process (see later), is known as Bartlett's formula: `` \sigma_{\rm ACF(k)} ≈ (1 / \sqrt{N})  \sqrt{1 + 2\sum_{i=1}^{k-1} {\rm ACF(i)}^2}``.
+- However, this holds under the assumtpion one is testing whether a time-series is white noise, i.e. the residuals of a fit. Else, a different formula, based on the assumption that a time-series can be described as a moving average process (see later), is known as [Bartlett's formula](https://en.wikipedia.org/wiki/Correlogram): `` \sigma_{\rm ACF(k)} ≈ (1 / \sqrt{N})  \sqrt{1 + 2\sum_{i=1}^{k-1} {\rm ACF(i)}^2}``.
 
 
     - Essentially, Bartlett's formula refines the confidence interval calculation for ACF by accounting for the potential dependence between ACF values in non-white noise processes, particularly those following a moving average structure.
