@@ -270,13 +270,13 @@ md"""
 
 # ╔═╡ c900ad94-db1a-4c19-85d0-b5c7f9ddd01f
 cm"""
-- In general, well betond this simple exercise, a wavelet analysis can allow scientists to study:
+- In general, well beyond this simple exercise, a wavelet analysis can allow scientists to study:
 
 	1. Non-Stationarity (The Shifting Rhythm). ENSO is **non-stationary**, meaning its behavior changes across decades. In the 1920s–1950s, ENSO was relatively quiet. In the 1980s and 1990s, it became much more frequent and intense.
 
 	2. Identifying "Regime Shifts". Around **1976-1977**, the Pacific underwent a major "regime shift." Wavelet analysis clearly shows a sudden burst of power in the lower frequency bands at this exact moment, indicating a fundamental change in how the ocean and atmosphere were interacting.
 
-	3. Multi-Scale Interaction. There could be an **Annual Cycle:**, a **Quasi-Biennial** cycle (a 2–3 year cycle) ***Decadal** cycles, wiyj a 10–20 year patterns (like the Pacific Decadal Oscillation).
+	3. Multi-Scale Interaction. There could be an **Annual Cycle:**, a **Quasi-Biennial** cycle (a 2–3 year cycle) **Decadal** cycles, wiyj a 10–20 year patterns (like the Pacific Decadal Oscillation).
 
 """
 

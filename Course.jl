@@ -72,7 +72,7 @@ md"""
 | 14. Lecture: Non Parametric Analysis | [notebook](./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl) | [html](Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html) |
 | 15. Lecture: Singular Spectrum Analysis | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html) |
 | 16. Science case: Motion sensor data | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html) |
-| 17. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-Gaussian Processes/Lecture-GassianProcesses.jl) | [html](./open?path=Lectures/Lecture-Gaussian Processes/Lecture-GassianProcesses.html) | 
+| 17. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GassianProcesses.jl) | [html](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GassianProcesses.html) | 
 | 18. Science case: CO₂ content in atmosphere | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-CO2.html) |
 
 19. [Science case: GRBs](Lectures/Science Case - GRBs/Lecture-GRBs.jl)
