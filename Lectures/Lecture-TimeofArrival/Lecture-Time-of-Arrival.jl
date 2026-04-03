@@ -198,7 +198,7 @@ md"""
 
 # ╔═╡ bd88c8fa-856b-40d8-9763-942b465d5504
 cm"""
-- In order to on we need to recap some of the main features of the Poisson distribution
+- Now, in order to go on, it is useful to recap some of the main features of the Poisson distribution
 
 ## Poisson Distribution: a brief recap
 ***

@@ -34,6 +34,9 @@ md"""
 **This is a `Pluto` notebook**
 """
 
+# ╔═╡ 9c867bf2-fc3b-4836-9de1-a81b90b4ed1c
+TableOfContents()
+
 # ╔═╡ fce942fc-7126-4e92-b758-30d36609117f
 # ╠═╡ show_logs = false
 md"""
@@ -106,7 +109,7 @@ cm"""
 ACF(\Delta t) = \frac{\lim_{T\to\infty} \int_{(T)} y(t) y(t+\Delta t)dt}{\sigma^2_y}
 ```
 
-- The autocorrelation function and the PSD of function ``y(t)`` are Fourier pairs; this fact is known as the Wiener–Khinchin theorem and applies to stationary random processes.
+- The autocorrelation function and the PSD of function ``y(t)`` are Fourier pairs; this fact is known as the [Wiener–Khinchin theorem](https://en.wikipedia.org/wiki/Wiener%E2%80%93Khinchin_theorem) and applies to stationary random processes.
 
 - The sample auto-correlation function is defined as:
 
@@ -150,7 +153,7 @@ ACF(k) = \frac{\sum_{t=1}^{n-k}(X_t - \bar{X})(X_{t+k} - \bar{X})}{\sum_{t=1}^k 
 \tau_{X,{\rm int}} = \int_0^\infty ACF (\tau) d\tau
 ```
 
-- This allows one to define the *effective* number of samples in our dataset `` N_{\rm eff} = N / 2 \tau_{X,{\rm int}}`` so that the variance can be written as ``\widehat{Var}(\bar{X}_n) = \sigma^2 / N_{\rm eff} ``.
+- This allows one to define the *effective* number of samples in our dataset `` N_{\rm eff} = (N / 2) \tau_{X,{\rm int}}`` so that the variance can be written as ``\widehat{Var}(\bar{X}_n) = \sigma^2 / N_{\rm eff} ``.
 
 - The ACF is *non-negative definite*, i.e.: ``\sum_{i=1}^n \sum_{j=1}^n \alpha_j ACF(i-j) \alpha_j \ge 0`` for all positive integers ``n`` and vectors ``\alpha = (\alpha_1,\alpha_2,...,\alpha_n)' \in \mathbb{R}^n``. In fact, ``\sum_{i=1}^n \sum_{j=1}^n \alpha_j ACF(i-j) \alpha_j = Var \left( \sum_{i=1}^n \alpha_j x_j \right)``.
 """
@@ -229,6 +232,53 @@ z(t) = \frac{1}{2} \ln \left( \frac{1+{\rm DCF}(\tau)}{1-{\rm DCF}(\tau)} \right
 
 
 
+# ╔═╡ 56fb0117-2dc3-41c0-aba9-405cd48ff72b
+cm"""
+
+## Ergodic processes
+***
+
+- We know, or learn soon, that the autocovariance function plays a key role in the construction of a model for our time series.
+- Thus, an important question is: Is it possible to obtain a ’good’ estimate of the
+autocovariance function?
+
+
+
+- The question is not trivial, since we observe only one realization of the process.
+- In general, with a single realization we are unable to estimate a moment function of a stochastic process.
+
+- Try to think to the simple mean. A possible way to estimate the mean would be to average the each single realization of the random process generating your data. 
+
+- But, in case one only realization is available, we can only average the obtained time-series, but we could wonder whether this estimate of the average of the parent distribution is *good*.
+
+
+
+- The answer is yes, if the stationary process is **ergodic**.
+"""
+
+# ╔═╡ c2d5a2be-6ac7-4908-a96b-f39a4b3fb573
+cm"""
+
+- A stationary stochastic process is said ergodic, with respect to a given population moment, if the sample (or time) moment for a single finite realization of length ``T`` converges in quadratic mean to the population moment as ``T`` increases to ``\infty``.
+
+- Ergodicity must be related directly to the particular population moment, e.g. mean value, covariance, etc.
+
+> While this is a fascinating topic in statistics, it is clear it is also beyond our purpose here. Yet, it is important to note that not all stationary processes are
+ergodic.
+
+"""
+
+# ╔═╡ d5fb82f9-c94f-46e5-9261-9760110b146e
+cm"""
+
+- For instance, consider a stationary process ``\{x_t; t \in \mathbb{Z}\}``, with ``x_t = A \ \forall t \in \mathbb{Z}``, where ``A`` is a random variable with mean 3 and variance 7.
+
+- The process is not mean-ergodic since the sample mean ``\hat{x}_T`` does not converge to the parental mean as ``T \to \infty``.
+
+
+- The ergodicity is a matter of information contained in a single realization of a long duration of the process.
+"""
+
 # ╔═╡ b40d3fb9-f423-44d5-8a3e-32e15a6cc564
 cm"""
 ### The Structure Function
@@ -258,7 +308,7 @@ SF(\Delta t) = SF_\infty[1-{\rm ACF}(\Delta t)]^{1/2}
 
 - where ``SF_\infty`` is the standard deviation of the time series evaluated over an infinitely large time interval (or at least much longer than any characteristic timescale τ). 
 
-- The structure function with q=2 is equal to the standard deviation of the distribution of the difference of ``y(t_2)-y(t_1)`` evaluated at many different ``t_1`` and ``t_2``. 
+	- The structure function with q=2 is equal to the standard deviation of the distribution of the difference of ``y(t_2)-y(t_1)`` evaluated at many different ``t_1`` and ``t_2``. 
 
 - As mentioned before, when the structure function ``SF \propto t^α``, then the ``{\rm PSD} \propto 1/f^{1+2α}``.
 
@@ -272,7 +322,7 @@ md"""
 ### Different stochastic processes can be categorized based on their ACF/PSD
 ***
 
-- A stochastic process with $1/f^2$ spectrum is known as random walk (if discrete) or Brownian motion (or, more accurately, Wiener process) if continuous. These physically occur when the value being observed is subjected to a series of independent changes of similar size. It's also sometimes called as "red noise". Quasar variability (for instance) exhibits $1/f^2$ properties at high frequencies (that is, short time scales, below a year or so).
+- A stochastic process with $1/f^2$ spectrum is known as random walk (if discrete) or [Brownian motion](https://en.wikipedia.org/wiki/Brownian_motion) (or, more accurately, [Wiener process](https://en.wikipedia.org/wiki/Wiener_process)) if continuous. These physically occur when the value being observed is subjected to a series of independent changes of similar size. It's also sometimes called as "red noise". Quasar variability (for instance) exhibits $1/f^2$ properties at high frequencies (that is, short time scales, below a year or so).
 
 - A stochastic process with $1/f$ spectrum are sometimes called "long-term memory processes" (also sometimes know as "pink noise"). They have equal energy at all octaves (or over any other logarithmic frequency interval). This type of process has infinite variance and an undefined mean (similar to a Lorentzian distribution).
 
@@ -322,11 +372,6 @@ begin
 	nep[!,"dDead"] = pushfirst!(dDead,0)
 end;
 
-# ╔═╡ 577fa116-fa14-4077-8fc8-4d3ea544f410
-md"""
-- We need to slighly rearrange the data in order to compute the number of deaths per day.
-"""
-
 # ╔═╡ 20d1925b-ddb8-49ec-86a2-98f2efac3532
 begin
 	fg1 = Figure()
@@ -370,8 +415,9 @@ begin
 	    )
 
 	ccr = GetCrossCorr(nep[!,"dDead"],nep[!,"New Infected"],50)
-	
-	lines!(-50:50,ccr)
+
+	trange = -50:50
+	lines!(trange,ccr)
 	
 	
 	#axislegend(position=:lt)
@@ -381,7 +427,7 @@ end
 
 # ╔═╡ 06a37524-c82e-4f68-8529-89759cdda2bd
 md"""
-- A $\sim$15-20 day delay appears, that is quite reasonable. 
+- A ~$(abs(trange[findmax(ccr)[2]])) day delay appears, that is quite reasonable. 
 
 - Of course, a much more meaningful analysis would have required to separate the infected peole basing upon age, sex, etc.
 """
@@ -452,7 +498,7 @@ end
 
 # ╔═╡ 2acb3d30-1b38-4255-b955-a0db9f77be72
 md"""
-- A distinct peat at a week is clearly visible, indicating the "periodicity" in the collection of data. 
+- A distinct peat at a week is clearly visible, indicating the "periodicity" in the collection of data! 
 """
 
 # ╔═╡ f34215b4-91fd-4175-96f1-524097ec7160
@@ -2085,7 +2131,7 @@ md"""
 ### Credits
 ***
 
-This notebook contains material obtained from [https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/](https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/), [https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c](https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c), [https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/](https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/), [https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/](https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/), and from [https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/](https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/).
+This notebook contains material obtained from [https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/](https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/), [https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c](https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c), [https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/](https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/), [https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/](https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/), [https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/](https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/) and from [https://www.lem.sssup.it/phd/documents/Lesson6.pdf](https://www.lem.sssup.it/phd/documents/Lesson6.pdf).
 """
 
 # ╔═╡ eca5662e-1eee-46a0-82ce-ca3f5f70ae77
@@ -4266,6 +4312,7 @@ version = "4.1.0+0"
 # ╟─14a0c11f-827d-46c8-bd5f-469a029f9afe
 # ╟─2aeb4208-bc0c-4907-ab6d-da3f48210aa5
 # ╟─508fcfab-51c1-4dc5-992d-d5961517b9bf
+# ╟─9c867bf2-fc3b-4836-9de1-a81b90b4ed1c
 # ╟─fce942fc-7126-4e92-b758-30d36609117f
 # ╟─97bebdb5-df0d-4eb2-b214-1a38dd9ffa85
 # ╟─36377f43-7624-4113-9ea9-409fbd3ef079
@@ -4274,17 +4321,19 @@ version = "4.1.0+0"
 # ╟─90b6cf29-44c0-425d-a814-910fb08009d2
 # ╟─91c6247b-af12-47cf-811a-1440b6919576
 # ╟─f1c10261-a2c7-473c-879b-005714127aee
+# ╟─56fb0117-2dc3-41c0-aba9-405cd48ff72b
+# ╟─c2d5a2be-6ac7-4908-a96b-f39a4b3fb573
+# ╟─d5fb82f9-c94f-46e5-9261-9760110b146e
 # ╟─b40d3fb9-f423-44d5-8a3e-32e15a6cc564
 # ╟─40e140c2-a8fb-4e31-9636-a36104f60460
 # ╟─2f7623f2-359c-4c93-b6b2-ab48f606ec56
 # ╟─f3ed1ba4-849b-4713-8e48-4a537ee894d7
 # ╟─f0e73dd6-2f4f-4dd6-9426-f0a739956602
 # ╟─dcb69463-c144-4726-8336-5f3851873d8a
-# ╟─f8b03f2b-a241-4d77-8fc9-4c24a4c8ef90
-# ╟─577fa116-fa14-4077-8fc8-4d3ea544f410
+# ╠═f8b03f2b-a241-4d77-8fc9-4c24a4c8ef90
 # ╟─20d1925b-ddb8-49ec-86a2-98f2efac3532
 # ╟─12225d55-9c0a-482c-890b-8ca5f8139c5a
-# ╟─db5d7b3e-66da-4498-a924-2f9b999fda56
+# ╠═db5d7b3e-66da-4498-a924-2f9b999fda56
 # ╟─06a37524-c82e-4f68-8529-89759cdda2bd
 # ╟─06f77be0-51c6-4ca2-82b1-eaa69d9481b7
 # ╟─b1f35602-c627-41a7-8754-6634d5eff5a7
