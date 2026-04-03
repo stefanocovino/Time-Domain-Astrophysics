@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ 6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 begin
 	using AbstractGPs
@@ -52,10 +64,96 @@ md"""
 # Modeling and forecasting atmospheric CO$_2$
 ***
 
+"""
+
+# ╔═╡ 34482a03-a7df-4d7d-bfe3-df688df43388
+cm"""
+
+
+- Each year, human activities release more carbon dioxide into the atmosphere than natural processes can remove, causing the amount of carbon dioxide in the atmosphere to increase.
+- The global average carbon dioxide set a new record every year, we are now at more than 400 parts per million ("ppm" for short).
+- Atmospheric carbon dioxide is now 50% higher than it was before the Industrial Revolution.
+- The ocean has absorbed enough carbon dioxide to lower its pH by 0.1 units, a 30% increase in acidity. 
+"""
+
+
+# ╔═╡ 5ee9f2bd-b6d3-41ef-9363-b2ac4915a07c
+cm"""
+
+- The years with the largest annual carbon dioxide growth tend to be associated with the strongest El Niños —the warm phase of a natural climate pattern in the tropical Pacific— which lead to high temperatures over land and sea and an expansion of global drought area. 
+- In turn, these weather conditions typically lead to less plant growth, which reduces carbon dioxide uptake, as well as increased decomposition of carbon in soil and increased carbon dioxide emissions from forest fires. 
+- Together, these impacts cause atmospheric carbon dioxide levels to rise faster than normal. 
+
+"""
+
+# ╔═╡ 74145e84-dc22-4222-93c4-fb92a4867d30
+cm"""
+
+- Carbon dioxide concentrations are rising [mostly because of the fossil fuels](https://globalcarbonatlas.org/budgets/carbon-budget/) that people have been burning for energy since the start of the Industrial Revolution. Fossil fuels like coal and oil contain the carbon from millions of years of photosynthesis. We are returning that carbon to the atmosphere in just a few hundred years. Since the middle of the 20th century, annual emissions of carbon dioxide from burning fossil fuels have increased every decade, from close to 11 billion tons of carbon dioxide per year in the 1960s to about 40 billion tons in 2024.
+
+"""
+
+# ╔═╡ 2b7196d6-0653-4ed0-91cb-fc83dbc7fc47
+cm"""
+
+$(LocalResource("Pics/carbon-dioxide-emissions-vs-atmospheric-concentration-1751-2024.png"))
+
+- The amount of carbon dioxide in the atmosphere (blue line) has increased along with human emissions (gray line) since the start of the Industrial Revolution in 1750. 
+"""
+
+# ╔═╡ aedff415-5d23-4a65-a873-1bb108006d44
+cm"""
+- Natural “sinks,” including plant growth and ocean absorption, remove about half of carbon dioxide humans emit into the atmosphere from fossil fuel burning. The rest stays in the atmosphere. Every year, we are adding more carbon dioxide to the atmosphere than natural sinks can remove, and so the total amount of carbon dioxide in the atmosphere goes up. The bigger the overshoot, the faster atmospheric carbon dioxide increases.
+
+- In the 1960s, atmospheric carbon dioxide increased by about 0.8 ppm per year on average. That growth rate doubled to an average of 1.6 ppm per year in the 1980s and 1.5 ppm per year in the 1990s. In the last decade (2015-2024), the annual increase has accelerated to 2.6 ppm per year. As a result, the annual rate of increase in atmospheric carbon dioxide over the past 60 years is 100-200 times faster than the increase that occurred at the end of the last ice age 11,000-17,000 years ago. 
+"""
+
+# ╔═╡ 65c77d95-83e8-4550-8274-ce6702d355b6
+cm"""
+
+- Carbon dioxide is Earth’s most important long-lived greenhouse gas: a gas that absorbs and radiates heat. Unlike oxygen or nitrogen (which make up most of Earth's atmosphere), greenhouse gases absorb heat radiating from the Earth’s surface and re-release it in all directions. Without any carbon dioxide, Earth’s natural greenhouse effect would be too weak to keep the average global surface temperature above freezing.
+
+- By adding more carbon dioxide to the atmosphere, we are amplifying the natural greenhouse effect, causing global temperature to rise. According to observations and analysis by the NOAA Global Monitoring Laboratory, carbon dioxide alone is responsible for about 80% of the [total heating influence](https://gml.noaa.gov/aggi/aggi.html) of all human-produced greenhouse gases since 1990.
+
+- Carbon dioxide also dissolves into the ocean reacting with water molecules, producing carbonic acid and lowering the ocean's pH (raising its acidity). Since the start of the Industrial Revolution, the pH of the ocean's surface waters has dropped from 8.21 to 8.10. This drop in pH is called ocean acidification, and it interferes with the ability of marine life to extract calcium from sea water to build skeletons and shells.
+
+
+"""
+
+# ╔═╡ d1ac5f88-b14d-4077-951f-55cf7acaeb46
+cm"""
+- Natural increases in carbon dioxide concentrations have periodically warmed Earth’s temperature during ice age cycles over the past million years or more. 
+- The warm episodes (interglacials) began with a small increase in incoming sunlight in the Northern Hemisphere summer due to variations in Earth’s orbit around the Sun and its axis of rotation.
+
+- The little increase in sunlight caused a small warming. Yet, as the oceans warmed, they outgassed carbon dioxide. The extra carbon dioxide in the atmosphere greatly amplified the initial, solar-driven warming.
+
+- Based on air bubbles trapped in mile-thick ice cores and other paleoclimate evidence, we know that during the ice age cycles of the past million years or so, atmospheric carbon dioxide didn't get any higher than 300 ppm. Before the Industrial Revolution started in the mid-1700s, atmospheric carbon dioxide was 280 ppm or less.
+"""
+
+# ╔═╡ a1473a9a-e52f-4691-b697-3a5f780e0aea
+cm"""
+
+$(LocalResource("Pics/atmospheric-carbon-dioxide.png"))
+
+- Atmospheric carbon dioxide (CO2) in parts per million (ppm) for the past 800,000 years based on ice-core data (light purple line) compared to 2024 concentrations (bright magenta dot). The peaks and valleys in the line show ice ages (low CO2) and warmer interglacials (higher CO2). Throughout that time, CO2 was never higher than 300 ppm (light purple dot, between 300,000 and 400,000 years ago). 
+
+"""
+
+# ╔═╡ f111c99f-d985-46e3-9007-0fcedd248677
+cm"""
+
+- Carbon dioxide levels today are higher than at any point in human history. In fact, the last time atmospheric carbon dioxide amounts were this high was roughly 3 million years ago, during the Mid-Pliocene Warm Period, when global surface temperature was 2.5–4 degrees Celsius warmer than during the pre-industrial era. Sea level was at least 5m higher than it was in 1900 and possibly as much as 25m higher.
+"""
+
+# ╔═╡ 880aa6d8-1daf-4a36-a7bd-3b8d471a2f47
+cm"""
+
+## Carbon Dioxide modeling and forecast
+***
+
 - We now apply Gaussian process regression to the Mauna Loa CO₂ dataset. This exercise might require a farly advanced coding skill, yet it is anyway of interest since it showcases a rich combination of kernels, and how to handle and optimize all their parameters.
 
 - First, let's download the data, and extract the variable of our interest. We separate data betwwen a training and test set, as it is common in machine learning. 
-
 """
 
 # ╔═╡ 72cf6fcf-2e2f-4dee-994b-ce2bfef51802
@@ -195,7 +293,7 @@ cm"- Let's visualize what the GP fitted to the data looks like, for the initial 
 
 # ╔═╡ 2616def6-215c-4667-ba7e-cd99fb7d4c08
 begin
-	function plot_gp!(f; label)
+	function plot_gp!(f; label, miny=1920)
 	    fg = Figure()
 	    ax1 = Axis(fg[1, 1],
 	        xlabel="year",
@@ -208,7 +306,9 @@ begin
 	    plot!(1920:0.2:2030,f(1920:0.2:2030); bandscale=2, label=label, color=(:green,0.2))
 	    
 	    axislegend(ax1,position=:rb)
-	    
+
+		xlims!(miny,2030)
+		
 	    return fg
 	end
 	
@@ -282,8 +382,19 @@ fpost_opt = build_posterior_gp(ParameterHandling.value(θ_opt))
 # ╔═╡ 830058f9-4c91-4328-b3bb-6d984e2bb334
 cm"- And, finally, we can visualize our optimized posterior GP:"
 
+# ╔═╡ 3b5397d4-9276-48c4-af0f-2601b89992b7
+md"""
+Plot lower limit: $( @bind year0 PlutoUI.Slider(1920:1:2030, default=1923) ) 
+"""
+
+# ╔═╡ 1491068f-37c2-47cf-9144-e61a06450554
+cm"""
+Year: $year0
+
+"""
+
 # ╔═╡ 1bcd7ccd-5f26-4f2c-9b43-eba9be02ea3c
-plot_gp!(fpost_opt; label="optimized posterior f(⋅)")
+plot_gp!(fpost_opt; label="optimized posterior f(⋅)", miny=year0)
 
 # ╔═╡ 98a39332-d977-4322-90ee-eba5e3691b96
 cm"""
@@ -3055,10 +3166,20 @@ version = "4.1.0+0"
 # ╔═╡ Cell order:
 # ╟─4d477519-c44f-434c-b7e0-8daaa5009358
 # ╟─ec67de24-d88a-46fa-ae46-c0cd7b797adc
-# ╠═6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
+# ╟─6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 # ╟─3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
 # ╟─5029a214-0841-40fb-b397-4a2e1047bfb7
 # ╟─404060d3-23ec-400b-84cf-779e63b90293
+# ╟─34482a03-a7df-4d7d-bfe3-df688df43388
+# ╟─5ee9f2bd-b6d3-41ef-9363-b2ac4915a07c
+# ╟─74145e84-dc22-4222-93c4-fb92a4867d30
+# ╟─2b7196d6-0653-4ed0-91cb-fc83dbc7fc47
+# ╟─aedff415-5d23-4a65-a873-1bb108006d44
+# ╟─65c77d95-83e8-4550-8274-ce6702d355b6
+# ╟─d1ac5f88-b14d-4077-951f-55cf7acaeb46
+# ╟─a1473a9a-e52f-4691-b697-3a5f780e0aea
+# ╟─f111c99f-d985-46e3-9007-0fcedd248677
+# ╟─880aa6d8-1daf-4a36-a7bd-3b8d471a2f47
 # ╠═72cf6fcf-2e2f-4dee-994b-ce2bfef51802
 # ╟─6c026eaa-cd29-4ce1-ab32-90bbcd717b9d
 # ╠═8b80f672-4533-41af-9521-dec56b136dbd
@@ -3085,7 +3206,9 @@ version = "4.1.0+0"
 # ╟─4553bca7-a86d-4a2f-b8ff-0b92126c1beb
 # ╠═e9970cae-8b6a-4416-b080-1e92f078911e
 # ╟─830058f9-4c91-4328-b3bb-6d984e2bb334
-# ╠═1bcd7ccd-5f26-4f2c-9b43-eba9be02ea3c
+# ╟─3b5397d4-9276-48c4-af0f-2601b89992b7
+# ╟─1491068f-37c2-47cf-9144-e61a06450554
+# ╟─1bcd7ccd-5f26-4f2c-9b43-eba9be02ea3c
 # ╟─98a39332-d977-4322-90ee-eba5e3691b96
 # ╟─2d596c28-74bc-4ff8-a030-fbac18dbceb0
 # ╟─139ed0c9-fbcb-4994-9066-e5cea39233b3
