@@ -284,7 +284,7 @@ function fit!(pg::Periodogram, t::AbstractVector, y::AbstractVector;
     pg.best_score = scores[best_idx]
 
     if n_local_optima > 0
-        finetune!(pg; fresolution=1e-5, n_local_optima=n_local_optima)
+        finetune!(pg; fresolution=resolution/10, n_local_optima=n_local_optima)
     else
         pg.refined_frequencies = Float64[]
         pg.refined_scores = Float64[]

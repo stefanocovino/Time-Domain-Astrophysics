@@ -16,6 +16,9 @@ begin
 	using StatsBase
 end
 
+# ╔═╡ 7f04786b-a1c6-42ac-ac41-2cbe68878149
+include("src/P4J.jl")
+
 # ╔═╡ 4d477519-c44f-434c-b7e0-8daaa5009358
 md"""
 **What is this?**
@@ -307,7 +310,7 @@ cm"""
 begin
 	# Define frequency range
 	# np.linspace(start, stop, num) -> range(start, stop, length=num)
-	freq = range(1, 1/0.02, length=2000)
+	freq = range(1, 0.9/0.02, length=2000)
 
 	# Force to 1D Floats
 	final_t = convert(Vector{Float64}, vec(plottime))
@@ -568,13 +571,60 @@ cm"""
 - Coverting a light-curve from the time-domain to the phase-domain, given a period, typically destroyes the correlation affecting the data.
 """
 
+# ╔═╡ 3d81e826-977c-401c-aec1-0e63c1c8db8b
+begin
+	pg_qmi = Periodogram("qmieu")
+	fit!(pg_qmi, plottime, plotrate; dy = plotrate/10, fmin = 5, fmax = 1/0.02, resolution = 1e-2);
+end
+
+# ╔═╡ edf2856d-5c77-456c-bde5-db3bc4de8ed5
+begin
+	figqmi = Figure(size = (800, 600))
+	
+	axqmi = Axis(figqmi[1, 1],
+	    xlabel = "Frequency (Hz)",
+	    ylabel = "Power",
+	    title = "QMI periodogram",
+	    xgridvisible = true,
+	    ygridvisible = true
+	)
+	
+	# Linea principale del periodogramma
+	lines!(axqmi, pg_qmi.frequencies, pg_qmi.scores, color = :dodgerblue, linewidth = 2)	
+	
+	vlines!(axqmi, pg_qmi.best_frequency, ymin = 0, ymax = 1, color = :orange, linewidth = 8, alpha = 0.25)
+	
+	figqmi
+end
+
+# ╔═╡ f72f2ffc-e826-4102-b849-a95a3f305627
+cm"""
+- We now see that the periodogram looks flat and the main peak is at ``\sim 20Hz`` and higher harmonics.
+
+- It is not, anyway, truly dominant the periodogram. This sugegsts that it should not be highly significant.
+"""
+
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
-md"""
+cm"""
 ## Reference & Material
 
 Material and papers related to the topics discussed in this lecture.
 
-- [Huijse et al. (2018) - Robust Period Estimation Using Mutual Information for Multiband Light Curves in the Synoptic Survey](https://ui.adsabs.harvard.edu/abs/2018ApJS..236...12H/abstract)
+- [Piran (2004) - "The physics of gamma-ray bursts"](https://ui.adsabs.harvard.edu/abs/2004RvMP...76.1143P/abstract)
+- [Hübner et al. (2022) - "Pitfalls of Periodograms: The Nonstationarity Bias in the Analysis of Quasiperiodic Oscillations"](https://ui.adsabs.harvard.edu/abs/2022ApJS..259...32H/abstract)
+- [Huppenkothen et al. (2025) - "Searching for quasi-periodicities in short transients: the curious case of GRB 230307A"](https://ui.adsabs.harvard.edu/abs/2025arXiv250410153H/abstract)
+"""
+
+# ╔═╡ 3adba216-1df6-43f0-8000-05084c4d58c2
+cm"""
+## Further Material
+
+Papers for examining more closely some of the discussed topics.
+
+- [Klebesadel et al. (1973) - "Observations of Gamma-Ray Bursts of Cosmic Origin"](https://ui.adsabs.harvard.edu/abs/1973ApJ...182L..85K/abstract)
+- [Xiao et al. (2024) - "The Peculiar Precursor of a Gamma-Ray Burst from a Binary Merger Involving a Magnetar"](https://ui.adsabs.harvard.edu/abs/2024ApJ...970....6X/abstract)
+- [Chirenti et al. (2024) - "Evidence of a Strong 19.5 Hz Flux Oscillation in Swift BAT and Fermi GBM Gamma-Ray Data from GRB 211211A"](https://ui.adsabs.harvard.edu/abs/2024ApJ...967...26C/abstract)
+- [Norris et al. (1996) - "Attributes of Pulses in Long Bright Gamma-Ray Bursts"](https://ui.adsabs.harvard.edu/abs/1996ApJ...459..393N/abstract)
 """
 
 # ╔═╡ b36fd613-95c8-44bf-876d-4eb345c26f08
@@ -589,13 +639,13 @@ cm"""
   </tr>
   <tr>
 	<td>notebook</td>
-    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
-    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
+    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
+    <td><a href="./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.jl">Lecture about singlular spectrum analysis"</a></td>
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
-<td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
+<td><a href="Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html">Lecture about singlular spectrum analysis</a></td>
   </tr>
 </table>
 
@@ -2494,6 +2544,7 @@ version = "4.1.0+0"
 # ╟─4d477519-c44f-434c-b7e0-8daaa5009358
 # ╟─ec67de24-d88a-46fa-ae46-c0cd7b797adc
 # ╠═6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
+# ╠═7f04786b-a1c6-42ac-ac41-2cbe68878149
 # ╟─3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
 # ╟─5029a214-0841-40fb-b397-4a2e1047bfb7
 # ╟─404060d3-23ec-400b-84cf-779e63b90293
@@ -2530,7 +2581,11 @@ version = "4.1.0+0"
 # ╠═459347f8-da91-47d1-ab14-ec4af1c3c650
 # ╟─4ed94405-688f-4f72-80d6-e09d632f907d
 # ╟─907b2aea-ff2b-426f-a336-215467adc25e
+# ╠═3d81e826-977c-401c-aec1-0e63c1c8db8b
+# ╠═edf2856d-5c77-456c-bde5-db3bc4de8ed5
+# ╟─f72f2ffc-e826-4102-b849-a95a3f305627
 # ╟─2d596c28-74bc-4ff8-a030-fbac18dbceb0
+# ╟─3adba216-1df6-43f0-8000-05084c4d58c2
 # ╟─b36fd613-95c8-44bf-876d-4eb345c26f08
 # ╟─206474b8-0811-4785-8a71-acdcfd20b76c
 # ╟─00000000-0000-0000-0000-000000000001
