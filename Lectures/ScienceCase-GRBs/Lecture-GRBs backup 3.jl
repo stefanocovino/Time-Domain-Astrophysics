@@ -12,7 +12,6 @@ begin
 	using FITSIO
 	using LsqFit
 	using LombScargle
-	using Optim
 	using PlutoUI
 	using ProgressLogging
 	using Random
@@ -687,79 +686,30 @@ end;
 # ╔═╡ f6a030e2-83df-433b-b2a8-8f02afae4d33
 @progress for i in 1:niter
     tt_b, cc_b, ee_b = block_bootstrap(plottime, plotrate, plotrate/10, block_length=0.3)
-	pg_qmib = Periodogram("qmieu")
-    fit!(pg_qmib, plottime, plotrate; dy = plotrate/10, fmin = ffmin, fmax = ffmax, resolution = ffres, n_local_optima=0)
-    pbest_bootstrap[i, :] = reverse(sort(pg_qmib.scores))[1:nmaxima]
+    fit!(pg_qmi, plottime, plotrate; dy = plotrate/10, fmin = ffmin, fmax = ffmax, resolution = ffres, n_local_optima=0)
+    pbest_bootstrap[i, :] = reverse(sort(pg_qmi.scores))[1:nmaxima]
 end
 
 # ╔═╡ d0bba050-d6a8-4b7f-a187-d488ff6ba7f6
+# 1. Flatten the 2D array into a 1D vector (equivalent to .ravel())
+# vec() creates a view, whereas pbest_bootstrap[:] creates a copy
+data_flat = vec(pbest_bootstrap)
 
+# 2. Fit the Generalized Extreme Value distribution
+# fit(Type, data) automatically estimates parameters
+d_gev = fit(GeneralizedExtremeValue, data_flat)
 
-# ╔═╡ db8d55db-b7c8-499d-a720-a91d7e29519d
-begin
-	# 1. Flatten the data
-	data = vec(pbest_bootstrap)
-	
-	# 2. Define the Log-Likelihood function
-	# We want to MINIMIZE the negative log-likelihood
-	function log_likelihood(p)
-	    μ, σ, ξ = p
-	    # Standard GEV constraints: σ must be positive
-	    if σ <= 0
-	        return Inf
-	    end
-	    
-	    # Create the distribution object with current parameters
-	    d = GeneralizedExtremeValue(μ, σ, ξ)
-	    
-	    # Return negative log-likelihood
-	    return -loglikelihood(d, data)
-	end
-	
-	# 3. Set initial guesses [μ, σ, ξ]
-	# μ ≈ mean, σ ≈ std, ξ ≈ 0.1 (common starting point)
-	p00 = [mean(data), std(data), 0.1]
-	
-	# 4. Run the optimizer (Nelder-Mead is robust for GEV)
-	result = optimize(log_likelihood, p00)
-	
-	# 5. Extract the best-fit distribution
-	μ_best, σ_best, ξ_best = Optim.minimizer(result)
-	d_gev = GeneralizedExtremeValue(μ_best, σ_best, ξ_best)
-	
-	println("Fitted Parameters: μ=$μ_best, σ=$σ_best, ξ=$ξ_best")
-	
-	
-	quantile_val95 = quantile(d_gev, 0.95) # 95th percentile
-	quantile_val90 = quantile(d_gev, 0.90) # 90th percentile
-	
-end
+# 3. Access parameters (location μ, scale σ, shape ξ)
+# Note: Julia's ξ (xi) corresponds to SciPy's -c (usually)
+μ, σ, ξ = params(d_gev)
 
-# ╔═╡ 2ff0ecfc-cfe1-402a-b25d-9da6ae24be40
-begin
-	figqmi2 = Figure(size = (800, 600))
-	
-	axqmi2 = Axis(figqmi2[1, 1],
-	    xlabel = "Frequency (Hz)",
-	    ylabel = "Power",
-	    title = "QMI periodogram",
-	    xgridvisible = true,
-	    ygridvisible = true
-	)
-	
-	# Linea principale del periodogramma
-	lines!(axqmi2, pg_qmi.frequencies, pg_qmi.scores, color = :dodgerblue, linewidth = 2)	
-	
-	vlines!(axqmi2, pg_qmi.best_frequency, ymin = 0, ymax = 1, color = :orange, linewidth = 8, alpha = 0.25)
-
-    hlines!(axqmi2, [quantile_val90], color = :green, linestyle = :dash, label = "90% FAP")
-	hlines!(axqmi2, [quantile_val95], color = :orange, linestyle = :dash, label = "95% FAP")
-
-	
-	axislegend(axqmi2)
-	
-	figqmi2
-end
+# 4. 'rv' in SciPy is the distribution object. 
+# In Julia, d_gev is already that object.
+# You can now call functions on it:
+p_val = pdf(d_gev, 0.5)      # Probability Density Function
+c_val = cdf(d_gev, 0.5)      # Cumulative Distribution Function
+quantile_val95 = quantile(d_gev, 0.95) # 95th percentile
+quantile_val90 = quantile(d_gev, 0.90) # 90th percentile
 
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
 cm"""
@@ -821,26 +771,22 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
 LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
 LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
-Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 CairoMakie = "~0.15.9"
 CommonMark = "~0.8.15"
-Distributions = "~0.25.123"
 FITSIO = "~0.17.5"
 LombScargle = "~1.0.3"
 LsqFit = "~0.15.1"
-Optim = "~1.13.3"
 PlutoUI = "~0.7.61"
-ProgressLogging = "~0.1.6"
+ProgressMeter = "~1.11.0"
 StatsBase = "~0.34.10"
 """
 
@@ -850,7 +796,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.5"
 manifest_format = "2.0"
-project_hash = "65baf1b3239c727bed5180cbc887bee92474c185"
+project_hash = "6a197aca714120d9868c1100aaa52f4491e66cb3"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -1834,12 +1780,6 @@ git-tree-sha1 = "d0205286d9eceadc518742860bf23f703779a3d6"
 uuid = "38a345b3-de98-5d2b-a5d3-14cd9215e700"
 version = "2.41.3+0"
 
-[[deps.LineSearches]]
-deps = ["LinearAlgebra", "NLSolversBase", "NaNMath", "Printf"]
-git-tree-sha1 = "9ea3422d03222c6de679934d1c08f0a99405aa03"
-uuid = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
-version = "7.5.1"
-
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -2049,18 +1989,6 @@ git-tree-sha1 = "1346c9208249809840c91b26703912dff463d335"
 uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
 version = "0.5.6+0"
 
-[[deps.Optim]]
-deps = ["Compat", "EnumX", "FillArrays", "ForwardDiff", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
-git-tree-sha1 = "48968edaf014f67e58fe4c8a4ce72d392aed3294"
-uuid = "429524aa-4258-5aef-a3af-852621145aeb"
-version = "1.13.3"
-
-    [deps.Optim.extensions]
-    OptimMOIExt = "MathOptInterface"
-
-    [deps.Optim.weakdeps]
-    MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-
 [[deps.Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "e2bb57a313a74b8104064b7efd01406c0a50d2ff"
@@ -2155,12 +2083,6 @@ git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
 
-[[deps.PositiveFactorizations]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "17275485f373e6673f7e7f97051f703ed5b15b20"
-uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
-version = "0.2.4"
-
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
 git-tree-sha1 = "5aa36f7049a63a1528fe8f7c3f2113413ffd4e1f"
@@ -2183,12 +2105,6 @@ version = "0.5.7"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 version = "1.11.0"
-
-[[deps.ProgressLogging]]
-deps = ["Logging", "SHA", "UUIDs"]
-git-tree-sha1 = "f0803bc1171e455a04124affa9c21bba5ac4db32"
-uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
-version = "0.1.6"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
@@ -2782,8 +2698,6 @@ version = "4.1.0+0"
 # ╠═8fd8d5b1-9201-4b72-bd8c-dd6fbc09fb54
 # ╠═f6a030e2-83df-433b-b2a8-8f02afae4d33
 # ╠═d0bba050-d6a8-4b7f-a187-d488ff6ba7f6
-# ╠═db8d55db-b7c8-499d-a720-a91d7e29519d
-# ╠═2ff0ecfc-cfe1-402a-b25d-9da6ae24be40
 # ╟─2d596c28-74bc-4ff8-a030-fbac18dbceb0
 # ╟─3adba216-1df6-43f0-8000-05084c4d58c2
 # ╟─b36fd613-95c8-44bf-876d-4eb345c26f08

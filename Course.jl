@@ -21,12 +21,7 @@ md"""
 **What is this?**
 
 
-*This pluto notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ bfe2b83c-dba1-4c64-a35f-83264822c9d7
-md"""
-**This is a `Pluto` notebook**
+*This pluto notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 9883ac05-9471-4ed1-ac19-9b42ca193360
@@ -86,6 +81,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
+md"Notebook v1.0.0 - 5 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -388,7 +386,6 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╟─14ef8e22-f10f-472a-b512-5cd62781b082
-# ╟─bfe2b83c-dba1-4c64-a35f-83264822c9d7
 # ╟─ad6879b3-ad9d-4d7c-9122-f034949ae0cf
 # ╟─9883ac05-9471-4ed1-ac19-9b42ca193360
 # ╟─9b05aaa6-d44f-4081-8749-ab5408a492b9
@@ -396,5 +393,6 @@ version = "17.7.0+0"
 # ╟─aec92f06-df81-4c51-99cb-ac3ebc91c7fc
 # ╟─78f7f381-9d3e-4715-87d4-b4165025aded
 # ╟─0fb9db7b-6dd2-4aaf-870d-49f36a5e0f00
+# ╟─090ca6f5-7292-4438-a63d-e68e1747defa
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

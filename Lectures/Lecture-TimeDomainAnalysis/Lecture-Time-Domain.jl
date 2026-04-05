@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -656,7 +656,7 @@ md"""
 ***
 
 - Strict Stationary: A strict stationary series satisfies the mathematical definition of a stationary process. For a strict stationary series, the mean, variance and covariance are not the function of time. The aim is to convert a non-stationary series into a strict stationary series for making predictions.
-- Trend Stationary: A series that has no unit root but exhibits a trend is referred to as a trend stationary series. Once the trend is removed, the resulting series will be strict stationary. The KPSS test classifies a series as stationary on the absence of unit root. This means that the series can be strict stationary or trend stationary.
+- Trend Stationary: A series that has no unit root but exhibits a trend is referred to as a trend stationary series. Once the trend is removed, the resulting series will be strict stationary. 
 - Difference Stationary: A time series that can be made strict stationary by differencing falls under difference stationary. ADF test is also known as a difference stationarity test.
 """
 
@@ -666,15 +666,14 @@ md"""
 ***
 
 - Is it possible to "stationarize" a time-series? 
-    - In several cases it is. For instance if the non-stationarity is due to a trend, etc.
+    - In several cases, it is. For instance, if the non-stationarity is due to a trend, etc.
     
-- Trends can be removed by differencation, i.e. we compute the difference of consecutive terms in the series. Differencing is typically performed to get rid of the varying mean: $ y_t‘ = y_t – y_{(t-1)}$, where y$_t$ is the value at a time t.
+- Trends can be removed by fitting a smooth version of a time-series or, often, by differenciation, i.e. we compute the difference of consecutive terms in the series. Differencing is typically performed to get rid of the varying mean: `` y_t' = y_t – y_{(t-1)}``, where ``y_t`` is the value at a time t.
 
 - Let's apply a differentiation on our series and plotting the results:
 """
 
 # ╔═╡ 76917ce4-5249-4cbb-bdb7-da654ce2c75d
-#transform!(train, "#Passengers" => ShiftedArrays.lag => "#Passengers_shift")
 train[!,"#Passengers_diff"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"]);
 
 # ╔═╡ a7c1c07b-23d7-4721-ac7d-70012483b056
@@ -696,7 +695,7 @@ end
 md"""
 - The average now seems to be fairly constant, but variance and probably covariance are not.
 
-- It is possiboe to compute te differece with longer lags than 1. This is often called *seasonal differencing*.
+- It is possible to compute te differece with longer lags than 1. This is often called *seasonal differencing*.
 
 - In seasonal differencing, instead of calculating the difference between consecutive values, we calculate the difference between an observation and a previous observation from the same "season": y$_t$‘ = y$_t$ – y$_{(t-n)}$.
 
@@ -724,9 +723,9 @@ end
 md"""
 - The curve is now cleaner, yet still far from being, even visually, stationary.
 
-- Together in alternatve to differencing it is also possible to transform the data. 
+- As an alternative to differencing, it is also possible to transform the data. 
 
-- Transformations are used to stabilize the non-constant variance of a series. Common transformation methods include power transform, square root, and log transform. 
+- Transformations are used to stabilize the non-constant variance of a series. Common transformation methods include power transforms, square roots, and log transforms. 
 """
 
 # ╔═╡ 6021c695-2cd9-499c-bbbf-7d86b5a6b347
@@ -752,7 +751,7 @@ end
 
 # ╔═╡ c81ad1a5-b4ed-4056-a161-eab4f9e981d9
 md"""
-- The improvement seems to be significan over the previous plots. Let's apply the ADF stationarity test.
+- The improvement seems to be significant over the previous plots. Let's apply the ADF stationarity test.
 
 - In principle, a seasonality with one year (12 months) period could be preferred here. But we see that even a 6 month period does a good job in making the time-series stationary.
 """
@@ -770,7 +769,7 @@ md"""
 ### Covariance matrix
 ***
 
-- Let's take the opportunity to formally define the covariance matrix $\Sigma$, whose components are $\sigma_{i,j} = {\rm Cov}(X_i,X_j)$:
+- Let's take the opportunity to formally (re-)define the covariance matrix $\Sigma$, whose components are $\sigma_{i,j} = {\rm Cov}(X_i,X_j)$:
 
 ```math
 \Sigma=\left[
@@ -4352,13 +4351,13 @@ version = "4.1.0+0"
 # ╟─59175381-65a4-45e7-ae85-a00467c4d181
 # ╟─9a8ac940-8a2c-4d5a-809f-bbdb1dba12dc
 # ╠═76917ce4-5249-4cbb-bdb7-da654ce2c75d
-# ╠═a7c1c07b-23d7-4721-ac7d-70012483b056
+# ╟─a7c1c07b-23d7-4721-ac7d-70012483b056
 # ╟─cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
 # ╠═7ecf612d-04ea-4e3b-b176-98476b443688
-# ╠═7da9155f-27d8-48c0-93a6-13a3297fd302
+# ╟─7da9155f-27d8-48c0-93a6-13a3297fd302
 # ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
 # ╠═6021c695-2cd9-499c-bbbf-7d86b5a6b347
-# ╠═3d013635-b4ac-49ec-85f6-93c26cf7539c
+# ╟─3d013635-b4ac-49ec-85f6-93c26cf7539c
 # ╟─c81ad1a5-b4ed-4056-a161-eab4f9e981d9
 # ╠═f1bc344e-ac85-4815-928f-61f5f48c18a9
 # ╟─381bc481-5c7e-4d9a-80c9-8f245718718d
