@@ -1,8 +1,20 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
+
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
 
 # ╔═╡ 508fcfab-51c1-4dc5-992d-d5961517b9bf
 begin
@@ -26,12 +38,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ 2aeb4208-bc0c-4907-ab6d-da3f48210aa5
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 9c867bf2-fc3b-4836-9de1-a81b90b4ed1c
@@ -821,6 +828,8 @@ begin
 	
 	axislegend()
 	xlims!(0,N9)
+
+	xlims!(5000,6000)
 	
 	fg9
 end
@@ -863,7 +872,8 @@ x_t = \delta + x_{t-1} + w_t
 - For the covariance we need some more steps: 
 	- ``{\rm Cov}(x_t,x_{t+h}) = {\rm Cov}[t\delta + \sum_{j=1}^t w_j,(t+h)\delta + \sum_{j=1}^{t+h} w_j] ``. 
 	- Recalling that ``{\rm Cov}(\sum_i x_, \sum_j x_j) = \sum_i \sum_j {\rm Cov}(x_i, x_j)`` and that ``{\rm Cov}(X,X) = {\rm Var}(X)`` we get that: 
-	- ``{\rm Cov}(x_t,x_{t+h}) = {\rm Cov}[t\delta,(t+h)\delta] +  {\rm Cov}[\sum_{j=1}^t w_j,(t+h)\delta] + {\rm Cov}[t\delta,\sum_{j=1}^{t+h} w_j] + {\rm Cov}[\sum_{j=1}^t w_j,\sum_{j=1}^{t+h} w_j]``. 
+	- ``{\rm Cov}(x_t,x_{t+h}) = {\rm Cov}[t\delta,(t+h)\delta] +  {\rm Cov}[\sum_{j=1}^t w_j,(t+h)\delta] +`` 
+		 ``+{\rm Cov}[t\delta,\sum_{j=1}^{t+h} w_j] + {\rm Cov}[\sum_{j=1}^t w_j,\sum_{j=1}^{t+h} w_j]``. 
 	- All terms but the last are 0 since they include constant terms. We finally have: `` {\rm Cov}(x_t,x_{t+h}) = t{\rm Var}(w_t) = t\sigma^2``.
     - Clearly non-stationary (for any ``\delta``).
     
@@ -918,7 +928,8 @@ x_t = \beta_1 w_{t-1} + w_t
 - The variance is: ``{\rm Var}[x_t] = {\rm Var}[\beta_1 w_{t-1} + w_t] = \beta_1^2 {\rm Var}[w_{t-1}] + {\rm Var}[w_t] = \sigma^2 (1 + \beta_1^2) ``. 
 
 - The covariance is: ``{\rm Cov}[x_t,x_{t+h}] = {\rm Cov}[\beta_1 w_{t-1} + w_t,\beta_1 w_{t+h-1} + w_{t+h}]``. 
-    - Now, if ``h=1`` we have: ``{\rm Cov}[x_t,x_{t+1}] = {\rm Cov}[\beta_1 w_{t-1} + w_t,\beta_1 w_{t} + w_{t+1}] = {\rm Cov}[\beta_1 w_{t-1},\beta_1 w_{t}] + {\rm Cov}[\beta_1 w_{t-1},w_{t+1}] + {\rm Cov}[w_t,\beta_1 w_{t}] + {\rm Cov}[w_t,w_{t+1}]``. All terms with different index are zero (no covariance between independent white noise processes), and therefore: ``{\rm Cov}[x_t,x_{t+1}] = \beta_1^2 \sigma^2``.  
+    - Now, if ``h=1`` we have: ``{\rm Cov}[x_t,x_{t+1}] = {\rm Cov}[\beta_1 w_{t-1} + w_t,\beta_1 w_{t} + w_{t+1}] =``
+	``{\rm Cov}[\beta_1 w_{t-1},\beta_1 w_{t}] + {\rm Cov}[\beta_1 w_{t-1},w_{t+1}] + {\rm Cov}[w_t,\beta_1 w_{t}] + {\rm Cov}[w_t,w_{t+1}]``. All terms with different index are zero (no covariance between independent white noise processes), and therefore: ``{\rm Cov}[x_t,x_{t+1}] = \beta_1^2 \sigma^2``.  
     - If ``h > 1`` all terms are zero and theerfore: ``{\rm Cov}[x_t,x_{t+1}] = 0``.
 
 - A MA(1) with ``\beta_1 = 1`` can be:
@@ -926,7 +937,7 @@ x_t = \beta_1 w_{t-1} + w_t
 
 # ╔═╡ 962d9bb2-8fee-4d94-9054-a48f084127d7
 begin
-	N12 = 1000
+	N12 = 10000
 	beta112 = 1.
 	
 	d12 = Normal()
@@ -950,6 +961,8 @@ begin
 	
 	axislegend()
 	xlims!(0,N12)
+
+	xlims!(5000,6000)
 	
 	fg12
 end
@@ -971,8 +984,13 @@ begin
 	fg13
 end
 
+# ╔═╡ d0dc8d40-75d7-4611-aab6-d8542f82947e
+md"""
+- Apart from lag=0, the only lag showing correlation significantly different from 0 is lag=1, the order of the process. This is not, as we will see, by chance.
+"""
+
 # ╔═╡ cae1a1ec-d365-4f20-b521-1d2e7ebda912
-md"- And again the PACF:"
+md"- And now also the PACF:"
 
 # ╔═╡ 5abde48d-abb2-4834-b22d-8c4734cd19fc
 begin
@@ -984,17 +1002,15 @@ begin
 	fg34
 end
 
-# ╔═╡ d0dc8d40-75d7-4611-aab6-d8542f82947e
-md"""
-- Apart from lag=0, the only lag showing correlation significantly different from 0 is lag=1, the order of the process. This is not, as we will see, by chance.
-"""
+# ╔═╡ 3445c6a8-6ebd-4a16-93fe-9cb798329791
+cm"- That is, instead, showing a regularly decreasing correlation increasing the lag."
 
 # ╔═╡ b0ae3114-1aca-4109-922a-02c25989e407
 cm"""
 ### Autoregressive (of the first order)
 ***
 
-- An autoregressiv process of the first order, or AR(1), is defined as:
+- An autoregressive process of the first order, or AR(1), is defined as:
 
 
 ```math
@@ -1022,7 +1038,7 @@ cm"- Let's see a AR(1) with ``\alpha_1 = 0.9``."
 
 # ╔═╡ 924e216e-9ba7-4906-9d70-94f1813911e7
 begin
-	N14 = 1000
+	N14 = 10000
 	alpha114 = 0.9
 	
 	
@@ -1047,13 +1063,15 @@ begin
 	
 	axislegend()
 	xlims!(0,N14)
+
+	xlims!(5000,6000)
 	
 	fg14
 end
 
 # ╔═╡ b86d10a0-f3a0-4489-b595-64c3eafcfef2
 md"""
-- As one possibly infers looking at the plot the time-series shows fluctuations that do not apper totally random.
+- Just visually looking at the plot, the time-series shows fluctuations that do not apper totally random.
 
 - Let's analyse the ACF of the previous process:
 """
@@ -1073,9 +1091,6 @@ md"""
 - At variance with MA processes, a AR process shows a correlation decreases with increasing lag as a power-law.
 """
 
-# ╔═╡ 38012afa-faf9-43ef-a443-f5256763a931
-md"- The PACF instead shows one only lag with value different from zero:"
-
 # ╔═╡ 4d06a1b3-0ef5-4fcd-95bb-c2058ea3765a
 begin
 	rs35 = GetPACF(x14,40)
@@ -1086,10 +1101,13 @@ begin
 	fg35
 end
 
+# ╔═╡ 38012afa-faf9-43ef-a443-f5256763a931
+md"- The PACF instead shows one only lag with value significantly different from zero:"
+
 # ╔═╡ 2905155b-0de7-4f15-acb0-aaaf1b421c9b
 # ╠═╡ show_logs = false
 md"""
-- The ACF is indeed a diagnostic tool to infer the nature and the order of a linear process:
+- As a matter of fact, the ACF (and PACF) are indeed a diagnostic tools to infer the nature and the order of a linear process:
 
 
 $(LocalResource("Pics/acftab1.png"))
@@ -1105,7 +1123,7 @@ $(LocalResource("Pics/test2.jpg"))
 3. Bottom left: The ACF shows no correlation beyondd lag=0, it is a white noise process.
 4. Bottom right: The ACF shows a 0 correlation after lag=1. It is thus a MA(1) process, although it might also be a AR process.
 
-- As we have seenm the ACF is a powerful diagnostics but often we have ambiguous situations. The application of the PACF will help us to solve these ambiguities, as we are going to see later.
+> As we have seen, the ACF is a powerful diagnostics but often we have ambiguous situations. The application of the PACF will help us to solve these ambiguities, as we are going to see later.
 """
 
 # ╔═╡ fa1e8adf-969a-4476-81ae-b548cabcd8f6
@@ -1120,21 +1138,21 @@ md"""
 - We have an AutoRegressive scheme when a time series $x_t$ is assumed to be generated as a linear function of its past values, plus a random shock:
 
 ```math
-x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + u_t
+x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + w_t
 ```
 
--Conceptualy, an autoregressive scheme is one with a ‘memory’ in the sense thar each values is correlated with p preceding values. The constants $φ_1,...,φ_p$ are weights measuring the influence of preceding values $x_{t−1},...x_{t−p}$ on the value $x_t$.
+- Conceptualy, an autoregressive scheme is one with a ‘memory’ in the sense that each values is correlated with p preceding values. The constants $φ_1,...,φ_p$ are weights measuring the influence of preceding values $x_{t−1},...x_{t−p}$ on the value $x_t$.
 
 - We have a Moving Average scheme when a  time series $x_t$ is assumed to be generated as a weighted linear sum of the last $q + 1$ random shocks:
 
 ```math
-x_t = u_t + θ_1 u_{t−1} + ... + φ_p u_{t−q}
+x_t = w_t + θ_1 w_{t−1} + ... + φ_p w_{t−q}
 ```
 
 - If both schemes, the autoregressive and the moving average one, are used, we obtain the so-called Autoregressive Moving Average scheme:
 
 ```math
-x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + u_t + θ_1 u_{t−1} + ... + φ_p u_{t−q}
+x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + w_t + θ_1 w_{t−1} + ... + φ_p w_{t−q}
 ```
 """
 
@@ -1191,7 +1209,7 @@ B^k x_t = x_{t-k}
 
 - e.g., $\nabla^1 x_t = (1-B)^1 x_t = x_t - x_{t-1}$.
 
-- The different operator is often used to convert non-stationary time-series to stationary.
+- The different operator is often used to convert non-stationary time-series to a stationary one.
 """
 
 # ╔═╡ db519b68-35a3-4396-a302-e0bd804985c1
@@ -1259,14 +1277,21 @@ md"""
 md"""
 #### Exercize: the ACF of MA(p) and AR(q) processes
 ***
-
-- MA(1), β₁ = 0.6.
 """
 
-# ╔═╡ 7ad279de-35ed-4d38-bb78-9a097f5847d9
+# ╔═╡ abfe9259-4cb5-4305-8cdf-1c0f67409891
+PlutoUI.combine() do bind
+	cm"""
+	MA(1):
+	
+	``\beta_1 =`` $(@bind beta116 NumberField(-1:0.1:1, default=0.6))
+	"""
+end
+
+# ╔═╡ 7447a47a-431c-4f82-83c9-e90d30108275
 begin
-	N16 = 1000
-	beta116 = 0.6
+	N16 = 10000
+	#beta116 = 0.6
 	
 	
 	d16 = Normal()
@@ -1276,7 +1301,10 @@ begin
 	for i in range(2,N16)
 	    x16[i] = sigma16[i]+beta116*sigma16[i-1]
 	end
-	
+end
+
+# ╔═╡ 7ad279de-35ed-4d38-bb78-9a097f5847d9
+begin
 	lags16 = 40
 	rs16 = GetACF(x16,lags16)
 	rsp16 = GetPACF(x16,lags16)
@@ -1287,6 +1315,8 @@ begin
     	title = "Time-Series")
 
 	lines!(x16)
+
+	xlims!(5000,6000)
 	
 	ax2fg16 = Axis(fg16[2, 1],
 		title = "ACF")
@@ -1303,16 +1333,19 @@ begin
 	fg16
 end
 
-# ╔═╡ a7b6b298-49de-4a5f-a095-8306d96661a8
-md"""
-- MA(2), $\beta_1 = 1/6, \beta_2 = 1/2$.
-"""
+# ╔═╡ 819d1f87-acd1-493d-8c57-54acd3cdf41b
+PlutoUI.combine() do bind
+	cm"""
+	MA(2):
+	
+	``\beta_1 =`` $(@bind beta117 NumberField(-1:0.1:1, default=0.2))
+	``\beta_2 =`` $(@bind beta217 NumberField(-1:0.1:1, default=0.5))
+	"""
+end
 
-# ╔═╡ 973b9499-23be-4f59-a4a3-69bb3e1b2871
+# ╔═╡ 74352751-22ef-4cd2-b30a-9930d641aff3
 begin
-	N17 = 1000
-	beta117 = 1/6
-	beta217 = 0.5
+	N17 = 10000
 	
 	d17 = Normal()
 	sigma17 = rand(d17, N17)
@@ -1321,7 +1354,10 @@ begin
 	for i in range(3,N17)
 	    x17[i] = sigma17[i]+beta117*sigma17[i-1]+beta217*sigma17[i-2]
 	end
+end
 
+# ╔═╡ 973b9499-23be-4f59-a4a3-69bb3e1b2871
+begin
 	lags17 = 40
 	rs17 = GetACF(x17,lags17)
 	rsp17 = GetPACF(x17,lags17)
@@ -1331,6 +1367,8 @@ begin
     	title = "Time-Series")
 
 	lines!(x17)
+
+	xlims!(5000,6000)
 	
 	ax2fg17 = Axis(fg17[2, 1],
 		title = "ACF")
@@ -1349,61 +1387,18 @@ begin
 
 end
 
-# ╔═╡ d5caf4c8-59d3-488d-9fa2-f2e75eaa5b85
-md"""
-- MA(5), $\beta_{12} = -1/2, \beta_{345} = 1/4$.
-"""
-
-# ╔═╡ cc23ada7-044a-4620-b312-7e3ccf2eb25f
-begin
-	N18 = 1000
-	beta1218 = -0.5
-	beta34518 = 0.25
+# ╔═╡ 769641d9-5adf-4461-8435-e8bfbf80a69c
+PlutoUI.combine() do bind
+	cm"""
+	MA(10):
 	
-	
-	d18 = Normal()
-	sigma18 = rand(d18, N18)
-	
-	x18 = zeros(N18)
-	for i in range(6,N18)
-	    x18[i] = sigma18[i]+beta1218*sigma18[i-1]+beta1218*sigma18[i-2]+beta34518*sigma18[i-3]+beta34518*sigma18[i-4]+beta34518*sigma18[i-5]
-	end
-	
-	lags18 = 40
-	rs18 = GetACF(x18,lags18)
-	rsp18 = GetPACF(x18,lags18)
-
-	fg18 = Figure(size=(640,800))
-	ax1fg18 = Axis(fg18[1, 1],
-    	title = "Time-Series")
-
-	lines!(x18)
-	
-	ax2fg18 = Axis(fg18[2, 1],
-		title = "ACF")
-	
-	stem!(0:lags18,rs18[1])
-	hlines!([rs18[2],rs18[3]],linestyle=:dash)
-
-	ax3fg18 = Axis(fg18[3, 1],
-		title = "PACF")
-
-	stem!(0:lags18,rsp18[1])
-	hlines!([rsp18[2],rsp18[3]],linestyle=:dash)
-	
-	fg18
+	``\beta_j =`` $(@bind beta19 NumberField(-1:0.1:1, default=0.5)) for ``j=1...10``.
+	"""
 end
 
-# ╔═╡ b679f761-1695-4710-afef-17b63b204e18
-md"""
-- MA(10), $\beta_j = 1/2$ for $j=1...10$.
-"""
-
-# ╔═╡ 86bbfeb7-ccb8-44e9-b9e5-0e7609a1d6db
+# ╔═╡ 86f1c050-efc8-44d1-b537-dd1d0042296f
 begin
-	N19 = 1000
-	beta19 = 0.5
-	
+	N19 = 10000	
 	
 	d19 = Normal()
 	sigma19 = rand(d19, N19)
@@ -1418,7 +1413,10 @@ begin
 	    end
 	    push!(x19,xt)
 	end
-	
+end
+
+# ╔═╡ 86bbfeb7-ccb8-44e9-b9e5-0e7609a1d6db
+begin
 	lags19 = 40
 	rs19 = GetACF(x19,lags19)
 	rsp19 = GetPACF(x19,lags19)
@@ -1428,6 +1426,8 @@ begin
     	title = "Time-Series")
 
 	lines!(x19)
+
+	xlims!(5000,6000)
 	
 	ax2fg19 = Axis(fg19[2, 1],
 		title = "ACF")
@@ -1448,10 +1448,18 @@ md"""
 - AR(1): $\alpha_1 = 1/2$.
 """
 
-# ╔═╡ 7bed93e6-0ee2-4374-8bc2-e4d988ad3c8c
+# ╔═╡ 25f1583f-39b8-4252-9b34-75cfc3a3ea62
+PlutoUI.combine() do bind
+	cm"""
+	AR(1):
+	
+	``α₁ =`` $(@bind alpha20 NumberField(-1:0.1:1, default=0.5)) 
+	"""
+end
+
+# ╔═╡ 7f68516e-19e1-494e-aa8a-5575dc337e70
 begin
-	N20 = 1000
-	alpha20 = 0.5
+	N20 = 10000
 	
 	
 	d20 = Normal()
@@ -1462,7 +1470,10 @@ begin
 	for i in range(2,N20)
 	    push!(x20,alpha20*x20[i-1]+sigma20[i])
 	end
-	
+end
+
+# ╔═╡ 7bed93e6-0ee2-4374-8bc2-e4d988ad3c8c
+begin
 	lags20 = 40
 	rs20 = GetACF(x20,lags20)
 	rsp20 = GetPACF(x20,lags20)
@@ -1472,6 +1483,8 @@ begin
     	title = "Time-Series")
 
 	lines!(x20)
+
+	xlims!(5000,6000)
 	
 	ax2fg20 = Axis(fg20[2, 1],
 		title = "ACF")
@@ -1488,16 +1501,19 @@ begin
 	fg20
 end
 
-# ╔═╡ 4457932a-49ab-449e-bd93-240e3458272b
-md"""
-- AR(2), $\alpha = 1/6, \alpha_2 = 1/2$.
-"""
+# ╔═╡ d5df27e2-9bcc-43e6-89c1-998594537c31
+PlutoUI.combine() do bind
+	cm"""
+	AR(2):
+	
+	``\alpha_1 =`` $(@bind alpha121 NumberField(-1:0.1:1, default=0.2))
+	``\alpha_2 =`` $(@bind alpha221 NumberField(-1:0.1:1, default=0.5))
+	"""
+end
 
-# ╔═╡ 99594bae-47cf-408b-aae7-ead6e783cbd3
+# ╔═╡ 141379f1-59a0-4c1d-8c72-4de55c8c4c54
 begin
-	N21 = 1000
-	alpha121 = 1/6
-	alpha221 = 0.5
+	N21 = 10000
 	
 	
 	d21 = Normal()
@@ -1508,6 +1524,10 @@ begin
 	for i in range(3,N21)
 	    push!(x21,alpha121*x21[i-1]+alpha221*x21[i-2]+sigma21[i])
 	end
+end
+
+# ╔═╡ 99594bae-47cf-408b-aae7-ead6e783cbd3
+begin
 	
 	lags21 = 40
 	rs21 = GetACF(x21,lags21)
@@ -1518,6 +1538,8 @@ begin
     	title = "Time-Series")
 
 	lines!(x21)
+
+	xlims!(5000,6000)
 	
 	ax2fg21 = Axis(fg21[2, 1],
 		title = "ACF")
@@ -1534,16 +1556,19 @@ begin
 	fg21
 end
 
-# ╔═╡ 9cd4d3a6-2c2c-467c-931f-cba17568046a
-md"""
-- AR(5), $\alpha_{12} = -1/2, \alpha_{345} = 1/4$.
-"""
+# ╔═╡ 78dddbba-5f56-4a8f-b241-42c2a0273dc7
+PlutoUI.combine() do bind
+	cm"""
+	AR(5):
+	
+	``\alpha_{12} =`` $(@bind alpha1222 NumberField(-1:0.1:1, default=-0.5))
+	``\alpha_{345} =`` $(@bind alpha34522 NumberField(-1:0.1:1, default=0.3))
+	"""
+end
 
-# ╔═╡ abb69c9b-2ccf-408e-8bed-75ded62f6c34
+# ╔═╡ 2c5c49c3-cf39-4e8c-920e-edf34cc62206
 begin
-	N22 = 1000
-	alpha1222 = -0.5
-	alpha34522 = 0.25
+	N22 = 10000
 	
 	
 	d22 = Normal()
@@ -1554,6 +1579,10 @@ begin
 	for i in range(6,N22)
 	    push!(x22,alpha1222*x22[i-1]+alpha1222*x22[i-2]+alpha34522*x22[i-3]+alpha34522*x22[i-4]+alpha34522*x22[i-5]+sigma22[i])
 	end
+end
+
+# ╔═╡ abb69c9b-2ccf-408e-8bed-75ded62f6c34
+begin
 	
 	lags22 = 40
 	rs22 = GetACF(x22,lags22)
@@ -1564,6 +1593,8 @@ begin
     	title = "Time-Series")
 
 	lines!(x22)
+
+	xlims!(5000,6000)
 	
 	ax2fg22 = Axis(fg22[2, 1],
 		title = "ACF")
@@ -1584,10 +1615,18 @@ md"""
 - AR(8), $\alpha_j = 1/9$ for $j=1...8$.
 """
 
-# ╔═╡ 07fe7c84-caa4-4d8e-a4db-f6e874ad7568
+# ╔═╡ 14667a34-9dd7-4d35-9eed-3de975ea0714
+PlutoUI.combine() do bind
+	cm"""
+	AR(8):
+	
+	``\alpha_j =`` $(@bind alpha23 NumberField(-1:0.1:1, default=0.1)) for ``j=1...8``.
+	"""
+end
+
+# ╔═╡ ada59f3e-9584-4d39-85cb-c47fb5b6fa81
 begin
-	N23 = 1000
-	alpha23 = 1/9
+	N23 = 10000
 	
 	
 	d23 = Normal()
@@ -1602,7 +1641,10 @@ begin
 	    end
 	    push!(x23,xt)
 	end
-	
+end
+
+# ╔═╡ 07fe7c84-caa4-4d8e-a4db-f6e874ad7568
+begin
 	lags23 = 40
 	rs23 = GetACF(x23,lags23)
 	rsp23 = GetPACF(x23,lags23)
@@ -1612,6 +1654,7 @@ begin
     	title = "Time-Series")
 
 	lines!(x23)
+	xlims!(5000,6000)
 	
 	ax2fg23 = Axis(fg23[2, 1],
 		title = "ACF")
@@ -1632,12 +1675,20 @@ md"""
 - ARMA(1,1): $\alpha_1 = 1/2, \beta_1 = 1/2$.
 """
 
-# ╔═╡ ec56becc-5ba6-4a5c-9a30-cdfbaf823674
-begin
-	N24 = 1000
-	alpha124 = 0.5
-	beta124 = 0.5
+# ╔═╡ ca6973a3-d80b-4c2f-923b-68e17d57d8c4
+PlutoUI.combine() do bind
+	cm"""
+	ARMA(1,1):
 	
+	``\alpha_{1} =`` $(@bind alpha124 NumberField(-1:0.1:1, default=0.5))
+	``\beta_{1} =`` $(@bind beta124 NumberField(-1:0.1:1, default=0.5))
+	"""
+end
+
+# ╔═╡ 13e0d3db-264e-4322-952e-d9941f81a29e
+begin
+	N24 = 10000
+
 	
 	d24 = Normal()
 	sigma24 = rand(d24, N24)
@@ -1648,6 +1699,10 @@ begin
 	    xt = sigma24[i] + alpha124*x24[i-1] + beta124*sigma24[i-1]
 	    push!(x24,xt)
 	end
+end
+
+# ╔═╡ ec56becc-5ba6-4a5c-9a30-cdfbaf823674
+begin
 	
 	lags24 = 40
 	rs24 = GetACF(x24,lags24)
@@ -1658,6 +1713,7 @@ begin
     	title = "Time-Series")
 
 	lines!(x24)
+	xlims!(5000,6000)
 	
 	ax2fg24 = Axis(fg24[2, 1],
 		title = "ACF")
@@ -1675,15 +1731,14 @@ end
 
 # ╔═╡ bf3e5cbf-6099-4bdd-966f-bcd59c3f09cf
 md"""
-- From now on we write our ARMA processes by means of a proper library.
-
 - ARMA(2,1): $\alpha_1 = 1/6, \alpha_2=1/2, \beta_1 = 1/2$.
 """
 
+# ╔═╡ f6f825e7-b8bb-429e-bb7e-d2531de5d3d4
+arma_rvs25 = arma(10000, 1., SVector(1/6,0.5),SVector(0.5));
+
 # ╔═╡ d908b9c8-d4bd-47cd-b2f1-f662f734cd89
-begin
-	arma_rvs25 = arma(1000, 1., SVector(1/6,0.5),SVector(0.5))
-	
+begin	
 	lags25 = 40
 	rs25 = GetACF(arma_rvs25,lags25)
 	rsp25 = GetPACF(arma_rvs25,lags25)
@@ -1693,6 +1748,7 @@ begin
     	title = "Time-Series")
 
 	lines!(arma_rvs25)
+	xlims!(5000,6000)
 	
 	ax2fg25 = Axis(fg25[2, 1],
 		title = "ACF")
@@ -1713,9 +1769,11 @@ md"""
 - ARMA(2,2): $\alpha_1 = -1/2, \alpha_2=1/4, \beta_1 = -1/2, \beta_2 = 1/4$.
 """
 
+# ╔═╡ 4c1101a9-68c0-434c-bbe9-35ad590884dd
+arma_rvs26 = arma(10000, 1., SVector(-0.5,0.25),SVector(-0.5,0.25));
+
 # ╔═╡ cc15941d-5cf3-4c15-9f87-dcd40d0a2eac
 begin
-	arma_rvs26 = arma(1000, 1., SVector(-0.5,0.25),SVector(-0.5,0.25))
 	
 	lags26 = 40
 	rs26 = GetACF(arma_rvs26,lags26)
@@ -1726,6 +1784,7 @@ begin
     	title = "Time-Series")
 
 	lines!(arma_rvs26)
+	xlims!(5000,6000)
 	
 	ax2fg26 = Axis(fg26[2, 1],
 		title = "ACF")
@@ -1746,9 +1805,11 @@ md"""
 - ARMA(2,2): $\alpha_1 = 1/9, \alpha_2=1/9, \beta_1 = 1/2, \beta_2 = -1/4$.
 """
 
+# ╔═╡ 1559fe1e-eff2-40e2-ab0e-5d69521695ac
+arma_rvs27 = arma(10000, 1., SVector(1/9,1/9),SVector(0.5,-0.25));
+
 # ╔═╡ 796008cd-13ed-481c-ab43-7f9998e21ebd
 begin
-	arma_rvs27 = arma(1000, 1., SVector(1/9,1/9),SVector(0.5,-0.25))
 	
 	lags27 = 40
 	rs27 = GetACF(arma_rvs27,lags27)
@@ -1759,6 +1820,7 @@ begin
     	title = "Time-Series")
 
 	lines!(arma_rvs27)
+	xlims!(5000,6000)
 	
 	ax2fg27 = Axis(fg27[2, 1],
 		title = "ACF")
@@ -2142,16 +2204,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.jl">Science case about climate data</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl">Science case about AGN and blazars</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
     <td><a href="Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>  
   </tr>
 
  </table>
@@ -2163,8 +2228,11 @@ cm"""
 md"""
 **Copyright**
 
-This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2025*.
+This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 65439bec-177b-4523-83e3-d72962ee81e6
+md"Notebook v1.0.0 - 6 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -4309,7 +4377,6 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─14a0c11f-827d-46c8-bd5f-469a029f9afe
-# ╟─2aeb4208-bc0c-4907-ab6d-da3f48210aa5
 # ╟─508fcfab-51c1-4dc5-992d-d5961517b9bf
 # ╟─9c867bf2-fc3b-4836-9de1-a81b90b4ed1c
 # ╟─fce942fc-7126-4e92-b758-30d36609117f
@@ -4364,29 +4431,30 @@ version = "4.1.0+0"
 # ╟─ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
 # ╟─9d1af19c-e1b3-48aa-9b9b-245347efd682
 # ╠═e410b2af-6665-4ddb-bb89-4b38bec8bfc2
-# ╠═2aca0524-9737-43e9-b456-9fa0b2f7939b
+# ╟─2aca0524-9737-43e9-b456-9fa0b2f7939b
 # ╟─0c8e81ce-7b48-427c-b72e-4fdad4015d51
-# ╠═63a3b6f2-a46a-4a4c-ba9e-5639714cd93d
+# ╟─63a3b6f2-a46a-4a4c-ba9e-5639714cd93d
 # ╟─d674149a-25a7-4c60-8770-e2b46cb2ed74
 # ╠═ea14bb29-f6bf-4a0c-a6b1-d38e285207ee
-# ╠═95047c44-9d05-4dc3-a50a-aa87cf9cd2c4
+# ╟─95047c44-9d05-4dc3-a50a-aa87cf9cd2c4
 # ╟─61d7c290-6d4d-4da8-a4f6-f0c2c795a4f8
 # ╠═962d9bb2-8fee-4d94-9054-a48f084127d7
-# ╠═33df98ca-16f8-4bc7-8848-494d920e60d9
+# ╟─33df98ca-16f8-4bc7-8848-494d920e60d9
 # ╟─d4d93ec8-e268-4fc9-b5ee-cdd194636659
-# ╠═9512aa2e-afaa-4ddd-aac4-826abae447ff
-# ╟─cae1a1ec-d365-4f20-b521-1d2e7ebda912
-# ╠═5abde48d-abb2-4834-b22d-8c4734cd19fc
+# ╟─9512aa2e-afaa-4ddd-aac4-826abae447ff
 # ╟─d0dc8d40-75d7-4611-aab6-d8542f82947e
+# ╟─cae1a1ec-d365-4f20-b521-1d2e7ebda912
+# ╟─5abde48d-abb2-4834-b22d-8c4734cd19fc
+# ╟─3445c6a8-6ebd-4a16-93fe-9cb798329791
 # ╟─b0ae3114-1aca-4109-922a-02c25989e407
 # ╟─95f3a029-6b56-4ac9-bf1c-1135094958d8
 # ╠═924e216e-9ba7-4906-9d70-94f1813911e7
-# ╠═30ece656-c5ba-42a6-8de2-e9827d72eabf
+# ╟─30ece656-c5ba-42a6-8de2-e9827d72eabf
 # ╟─b86d10a0-f3a0-4489-b595-64c3eafcfef2
-# ╠═8a8d5e0e-7ccf-43a2-b18b-c389971252e9
+# ╟─8a8d5e0e-7ccf-43a2-b18b-c389971252e9
 # ╟─c6bab5e0-4a61-4a6c-aa54-34e0e4f2dcdc
+# ╟─4d06a1b3-0ef5-4fcd-95bb-c2058ea3765a
 # ╟─38012afa-faf9-43ef-a443-f5256763a931
-# ╠═4d06a1b3-0ef5-4fcd-95bb-c2058ea3765a
 # ╟─2905155b-0de7-4f15-acb0-aaaf1b421c9b
 # ╟─fa1e8adf-969a-4476-81ae-b548cabcd8f6
 # ╟─0edac0fb-f52e-4a2c-b3dc-54f8237ad325
@@ -4395,31 +4463,44 @@ version = "4.1.0+0"
 # ╟─a262674e-d56a-4252-8929-3d548150955c
 # ╟─c0ca31e3-8026-46b6-aa90-ffe53b7c2305
 # ╟─44ab551f-b0cc-45cb-977e-3a4b77f15c9d
-# ╠═7ad279de-35ed-4d38-bb78-9a097f5847d9
-# ╟─a7b6b298-49de-4a5f-a095-8306d96661a8
-# ╠═973b9499-23be-4f59-a4a3-69bb3e1b2871
-# ╟─d5caf4c8-59d3-488d-9fa2-f2e75eaa5b85
-# ╠═cc23ada7-044a-4620-b312-7e3ccf2eb25f
-# ╟─b679f761-1695-4710-afef-17b63b204e18
-# ╠═86bbfeb7-ccb8-44e9-b9e5-0e7609a1d6db
+# ╟─abfe9259-4cb5-4305-8cdf-1c0f67409891
+# ╠═7447a47a-431c-4f82-83c9-e90d30108275
+# ╟─7ad279de-35ed-4d38-bb78-9a097f5847d9
+# ╟─819d1f87-acd1-493d-8c57-54acd3cdf41b
+# ╠═74352751-22ef-4cd2-b30a-9930d641aff3
+# ╟─973b9499-23be-4f59-a4a3-69bb3e1b2871
+# ╟─769641d9-5adf-4461-8435-e8bfbf80a69c
+# ╠═86f1c050-efc8-44d1-b537-dd1d0042296f
+# ╟─86bbfeb7-ccb8-44e9-b9e5-0e7609a1d6db
 # ╟─2f8bb6a9-e09d-4ff3-a158-dc00b26c0fa9
-# ╠═7bed93e6-0ee2-4374-8bc2-e4d988ad3c8c
-# ╟─4457932a-49ab-449e-bd93-240e3458272b
-# ╠═99594bae-47cf-408b-aae7-ead6e783cbd3
-# ╟─9cd4d3a6-2c2c-467c-931f-cba17568046a
-# ╠═abb69c9b-2ccf-408e-8bed-75ded62f6c34
+# ╟─25f1583f-39b8-4252-9b34-75cfc3a3ea62
+# ╠═7f68516e-19e1-494e-aa8a-5575dc337e70
+# ╟─7bed93e6-0ee2-4374-8bc2-e4d988ad3c8c
+# ╟─d5df27e2-9bcc-43e6-89c1-998594537c31
+# ╠═141379f1-59a0-4c1d-8c72-4de55c8c4c54
+# ╟─99594bae-47cf-408b-aae7-ead6e783cbd3
+# ╟─78dddbba-5f56-4a8f-b241-42c2a0273dc7
+# ╠═2c5c49c3-cf39-4e8c-920e-edf34cc62206
+# ╟─abb69c9b-2ccf-408e-8bed-75ded62f6c34
 # ╟─a7174765-5cb1-494c-9974-10010a900de3
-# ╠═07fe7c84-caa4-4d8e-a4db-f6e874ad7568
+# ╟─14667a34-9dd7-4d35-9eed-3de975ea0714
+# ╠═ada59f3e-9584-4d39-85cb-c47fb5b6fa81
+# ╟─07fe7c84-caa4-4d8e-a4db-f6e874ad7568
 # ╟─d7d97154-4a7e-4e8f-a7e2-4eea6f9d1595
-# ╠═ec56becc-5ba6-4a5c-9a30-cdfbaf823674
+# ╟─ca6973a3-d80b-4c2f-923b-68e17d57d8c4
+# ╠═13e0d3db-264e-4322-952e-d9941f81a29e
+# ╟─ec56becc-5ba6-4a5c-9a30-cdfbaf823674
 # ╟─bf3e5cbf-6099-4bdd-966f-bcd59c3f09cf
-# ╠═d908b9c8-d4bd-47cd-b2f1-f662f734cd89
+# ╠═f6f825e7-b8bb-429e-bb7e-d2531de5d3d4
+# ╟─d908b9c8-d4bd-47cd-b2f1-f662f734cd89
 # ╟─5a27d099-c133-4845-b288-f88304287f73
-# ╠═cc15941d-5cf3-4c15-9f87-dcd40d0a2eac
+# ╠═4c1101a9-68c0-434c-bbe9-35ad590884dd
+# ╟─cc15941d-5cf3-4c15-9f87-dcd40d0a2eac
 # ╟─bf84f03a-3c9f-4c6f-a886-8b40c24124b8
-# ╠═796008cd-13ed-481c-ab43-7f9998e21ebd
+# ╠═1559fe1e-eff2-40e2-ab0e-5d69521695ac
+# ╟─796008cd-13ed-481c-ab43-7f9998e21ebd
 # ╟─d94bbb24-b0fd-44d4-bedc-586941fa233c
-# ╠═c1e80404-665c-4a68-978c-1df72a158059
+# ╟─c1e80404-665c-4a68-978c-1df72a158059
 # ╟─73aecd0e-d6d0-4429-b63b-38f572115c50
 # ╟─61cade13-3747-4481-aa8a-b59ff87ca05d
 # ╠═ca1ac1dd-b580-491b-94b6-8ece8c037298
@@ -4441,5 +4522,6 @@ version = "4.1.0+0"
 # ╟─ecfe0d5e-edc1-4557-8534-93c3970f366c
 # ╟─eca5662e-1eee-46a0-82ce-ca3f5f70ae77
 # ╟─bd9d24c9-3dc1-4759-b2ea-2663c6a49678
+# ╟─65439bec-177b-4523-83e3-d72962ee81e6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
