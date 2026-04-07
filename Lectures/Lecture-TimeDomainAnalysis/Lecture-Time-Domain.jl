@@ -681,7 +681,7 @@ md"""
 """
 
 # ╔═╡ 76917ce4-5249-4cbb-bdb7-da654ce2c75d
-train[!,"#Passengers_diff"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"]);
+train[!,"#Passengers_diff1"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"]);
 
 # ╔═╡ a7c1c07b-23d7-4721-ac7d-70012483b056
 begin
@@ -693,7 +693,7 @@ begin
 	    )
 	
 	
-	lines!(train[!,:Month],train[!,"#Passengers_diff"])
+	lines!(train[!,:Month],train[!,"#Passengers_diff1"])
 	
 	fg6
 end
@@ -709,7 +709,7 @@ md"""
 """
 
 # ╔═╡ 7ecf612d-04ea-4e3b-b176-98476b443688
-train[!,"#Passengers_diff"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"],6);
+train[!,"#Passengers_diff6"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"],6);
 
 # ╔═╡ 7da9155f-27d8-48c0-93a6-13a3297fd302
 begin
@@ -721,7 +721,7 @@ begin
 	    )
 	
 	
-	lines!(train[!,:Month],train[!,"#Passengers_diff"])
+	lines!(train[!,:Month],train[!,"#Passengers_diff6"])
 	
 	fg7
 end
@@ -1334,18 +1334,19 @@ begin
 end
 
 # ╔═╡ 819d1f87-acd1-493d-8c57-54acd3cdf41b
-PlutoUI.combine() do bind
-	cm"""
-	MA(2):
-	
-	``\beta_1 =`` $(@bind beta117 NumberField(-1:0.1:1, default=0.2))
-	``\beta_2 =`` $(@bind beta217 NumberField(-1:0.1:1, default=0.5))
-	"""
-end
+cm"""
+MA(2):
+
+``\beta_1 = 0.2`` 
+
+``\beta_2 = 0.5``
+"""
 
 # ╔═╡ 74352751-22ef-4cd2-b30a-9930d641aff3
 begin
 	N17 = 10000
+	beta117 = 0.2
+	beta217 = 0.5
 	
 	d17 = Normal()
 	sigma17 = rand(d17, N17)
@@ -1388,17 +1389,16 @@ begin
 end
 
 # ╔═╡ 769641d9-5adf-4461-8435-e8bfbf80a69c
-PlutoUI.combine() do bind
-	cm"""
-	MA(10):
+cm"""
+MA(10):
 	
-	``\beta_j =`` $(@bind beta19 NumberField(-1:0.1:1, default=0.5)) for ``j=1...10``.
-	"""
-end
+``\beta_j = 0.5`` for ``j=1...10``.
+"""
 
 # ╔═╡ 86f1c050-efc8-44d1-b537-dd1d0042296f
 begin
 	N19 = 10000	
+	beta19 = 0.5
 	
 	d19 = Normal()
 	sigma19 = rand(d19, N19)
@@ -1502,19 +1502,18 @@ begin
 end
 
 # ╔═╡ d5df27e2-9bcc-43e6-89c1-998594537c31
-PlutoUI.combine() do bind
-	cm"""
-	AR(2):
+cm"""
+AR(2):
 	
-	``\alpha_1 =`` $(@bind alpha121 NumberField(-1:0.1:1, default=0.2))
-	``\alpha_2 =`` $(@bind alpha221 NumberField(-1:0.1:1, default=0.5))
-	"""
-end
+``\alpha_1 = 0.2`` 
+``\alpha_2 = 0.5`` 
+"""
 
 # ╔═╡ 141379f1-59a0-4c1d-8c72-4de55c8c4c54
 begin
 	N21 = 10000
-	
+	alpha121 = 0.2
+	alpha221 = 0.5
 	
 	d21 = Normal()
 	sigma21 = rand(d21, N21)
@@ -1557,18 +1556,18 @@ begin
 end
 
 # ╔═╡ 78dddbba-5f56-4a8f-b241-42c2a0273dc7
-PlutoUI.combine() do bind
-	cm"""
-	AR(5):
+cm"""
+AR(5):
 	
-	``\alpha_{12} =`` $(@bind alpha1222 NumberField(-1:0.1:1, default=-0.5))
-	``\alpha_{345} =`` $(@bind alpha34522 NumberField(-1:0.1:1, default=0.3))
-	"""
-end
+``\alpha_{12} = -0.5`` 
+``\alpha_{345} = 0.3`` 
+"""
 
 # ╔═╡ 2c5c49c3-cf39-4e8c-920e-edf34cc62206
 begin
 	N22 = 10000
+	alpha1222 = -0.5
+	alpha34522 = 0.3
 	
 	
 	d22 = Normal()
@@ -1616,17 +1615,16 @@ md"""
 """
 
 # ╔═╡ 14667a34-9dd7-4d35-9eed-3de975ea0714
-PlutoUI.combine() do bind
-	cm"""
-	AR(8):
+cm"""
+AR(8):
 	
-	``\alpha_j =`` $(@bind alpha23 NumberField(-1:0.1:1, default=0.1)) for ``j=1...8``.
-	"""
-end
+``\alpha_j = 0.1`` for ``j=1...8``.
+"""
 
 # ╔═╡ ada59f3e-9584-4d39-85cb-c47fb5b6fa81
 begin
 	N23 = 10000
+	alpha23 = 0.1
 	
 	
 	d23 = Normal()
@@ -1680,7 +1678,7 @@ PlutoUI.combine() do bind
 	cm"""
 	ARMA(1,1):
 	
-	``\alpha_{1} =`` $(@bind alpha124 NumberField(-1:0.1:1, default=0.5))
+	``\alpha_{1} =`` $(@bind alpha124 NumberField(-0.9:0.1:0.9, default=0.5))
 	``\beta_{1} =`` $(@bind beta124 NumberField(-1:0.1:1, default=0.5))
 	"""
 end
@@ -1907,7 +1905,7 @@ md"""
     4. Fit ARIMA(p,d,q) to the original data
     5. Check model diagnostics 
 
-- Or, even if time-consuming, a grid-search (or something more elaborated) can be a solution.
+> Nowdays, with modern computers, a grid-search (or something more elaborated and effective) if often a feasible solution.
 """
 
 # ╔═╡ 61cade13-3747-4481-aa8a-b59ff87ca05d
@@ -1917,9 +1915,9 @@ md"""
 
 - Let's go back to the airline passenger dataset.
 
-- Converting to log and differencing we got a stationary time-series.
+- Converting to log and differencing we got a stationary time-series, and we also got rid of the trend. W
 
-- Let's study the ACF and PACF of the difference time-series.
+- Let's study the ACF and PACF of the differenced time-series.
 """
 
 # ╔═╡ ca1ac1dd-b580-491b-94b6-8ece8c037298
@@ -1953,28 +1951,53 @@ md"""
 """
 
 # ╔═╡ 6bf9db61-f56c-4e91-af6b-772a5066e709
+# ╠═╡ show_logs = false
 begin
+	allbics = DataFrame(p=Int[],q=Int[],bic=Float64[])
 	bics = Dict()
 	minbc = 1e6
 	for p in 0:10
 	    for q in 0:10
-	        model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (p, 0, q), suppress_warns=true)
+	        model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (p, 0, q), suppress_warns=true, include_mean=true)
 	        try
-	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead()))
-	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic)
+	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
+	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic, minbc)
 	            if model_ARIMA.results.bic < minbc
 	                minbc = model_ARIMA.results.bic
 	                bics["BIC"] = minbc
 	                bics["p"] = p
 	                bics["q"] = q
 	            end
+				push!(allbics,[p,q,model_ARIMA.results.bic])
 	        catch DomainError
 	            print()
 	        end
 	    end
 	end
-	println(bics)
 end
+
+# ╔═╡ e7c583a2-1c61-4b0b-851d-5dcf80a0cf14
+begin
+	fig3d = Figure(size = (800, 600))
+	ax3d = Axis3(fig3d[1, 1],
+           	azimuth = 0.3π,   
+           	elevation = 0.1π,
+	        xlabel = "p", 
+	        ylabel = "q", 
+	        zlabel = "BIC")
+
+	surf = surface!(ax3d, allbics.p, allbics.q, allbics.bic, colormap = :viridis)
+	Colorbar(fig3d[1, 2], surf, label = "BIC")
+	
+	fig3d
+end
+
+# ╔═╡ 965cb065-f033-4384-a38b-0c522e3b17b9
+cm"""
+
+Best result: p = $(bics["p"]), q = $(bics["q"]) with BIC = $(round(bics["BIC"],digits=2)).
+
+"""
 
 # ╔═╡ 435071db-e81b-4b3e-ab0e-a271030749e4
 md"""
@@ -1983,8 +2006,8 @@ md"""
 
 # ╔═╡ dc5a5f74-9289-4614-b1ae-553d43c33120
 begin
-	model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (bics["p"], 0, bics["q"]), suppress_warns=true)
-	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead()))
+	model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (bics["p"], 0, bics["q"]), suppress_warns=true, include_mean=true)
+	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
 end
 
 # ╔═╡ 61d51f9c-2368-478c-9d77-90c7d9a72610
@@ -2100,9 +2123,36 @@ begin
 	fg31
 end
 
+# ╔═╡ fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
+cm"""
+- While the standard ARMA and ARIMA models are the workhorses of time series analysis, real-world data is rarely "standard." It often contains seasonal patterns, long-term dependencies, or external influences that basic models simply aren't equipped to handle.
+
+- To tackle these complexities, extended variants of the basic models designed to capture specific data behaviors do exist. 
+"""
+
+# ╔═╡ 1374c277-287f-4791-83f0-52efb7bc358c
+cm"""
+#### SARIMA (Seasonal ARIMA)
+
+- Standard ARIMA models are great at handling trends, but they fail with repeating patterna. SARIMA adds a seasonal component to the mix. It treats the seasonal part of the data as its own ARIMA process. 
+- These models are often expressed as ``ARIMA(p, d, q) \times (P, D, Q)_s``, where the uppercase letters represent the seasonal orders and ``s`` is the number of periods per season.
+
+#### ARIMAX (ARIMA with Exogenous Variables)
+
+- Sometimes, the future of a variable isn't just dictated by its own past, but by outside factors.  The X stands for Exogenous. This model includes external covariates as predictors alongside the internal lags of the time series.
+
+#### FARIMA / ARFIMA (Fractionally Integrated ARIMA)
+
+- In a standard ARIMA model, the integration parameter (``d``) is an integer. However, some processes exhibit Long Memory, where the impact of a past shock decays very slowly over time. FARIMA allows ``d`` to be a non-integer (a fraction) to take care of these cases. 
+
+#### CARMA (Continuous models)
+
+- While the models we’ve discussed so far (like SARIMA or FARIMA) operate on discrete regularly sampled time steps, the CARMA (Continuous-time Auto-Regressive Moving Average) are designed for data that exists in a continuous flow, even if our observations of it are irregular or missing.
+"""
+
 # ╔═╡ c9b352f2-016d-4d16-8053-48eedc39458d
 md"""
-- Nonstationarity is a complex issue, anyway. 
+#### ARCH models
 
 - Another form of nonstationarity occurs when the variance, rather than the local mean level, of  the time series changes during the observation. This is commonly called *volatility*, in econometric contexts.
 
@@ -2113,18 +2163,6 @@ md"""
 ```math
 {\rm Var}_{\rm ARCH(1)}(\epsilon_i) = w_t + \alpha_1 {\rm Var(\epsilon_{i-1})}
 ```
-
-- Nevertheless, the zoo of general linear processes is rich...!
-    - ARFIMA: autoregressive moving average fractionally integrated.
-    - SARIMA: multiplicative seasonal autoregressive integrated moving average model.
-    - CARFIMA: designed for irregularly sampled time series.
-    - ARMAX: where X stands for “exogenous covariate”.
-
-```math
-x_t = \sum_{i=1}^p \alpha_i x_{t-i} + \sum_{j=1}^q \beta_j w_{t-j} + \sum_{k=1}^r c_k y_{t-k}
-```
-
-- where the exogenous covariates can be any function linear in the parameters: periodic, or some deterministic trend (e.g., polynomial), or even a tabulated variables without a simple mathematical form. 
 
 """
 
@@ -2232,7 +2270,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 65439bec-177b-4523-83e3-d72962ee81e6
-md"Notebook v1.0.0 - 6 April 2026"
+md"Notebook v1.0.0 - 7 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -4503,18 +4541,22 @@ version = "4.1.0+0"
 # ╟─c1e80404-665c-4a68-978c-1df72a158059
 # ╟─73aecd0e-d6d0-4429-b63b-38f572115c50
 # ╟─61cade13-3747-4481-aa8a-b59ff87ca05d
-# ╠═ca1ac1dd-b580-491b-94b6-8ece8c037298
+# ╟─ca1ac1dd-b580-491b-94b6-8ece8c037298
 # ╟─f1e1cdde-a8b8-4ff5-9c49-6207de8ad125
 # ╠═6bf9db61-f56c-4e91-af6b-772a5066e709
+# ╟─e7c583a2-1c61-4b0b-851d-5dcf80a0cf14
+# ╟─965cb065-f033-4384-a38b-0c522e3b17b9
 # ╟─435071db-e81b-4b3e-ab0e-a271030749e4
 # ╠═dc5a5f74-9289-4614-b1ae-553d43c33120
 # ╠═61d51f9c-2368-478c-9d77-90c7d9a72610
 # ╠═1f7f1ece-0c82-426a-9e28-0ddad7878986
-# ╠═d9988b70-9001-4187-a049-f6adbbf13bcc
+# ╟─d9988b70-9001-4187-a049-f6adbbf13bcc
 # ╟─15cf410a-13ee-4638-b91a-4dc286754c8c
-# ╠═e74e9fba-8062-45b0-aea9-b7ae1a646bf3
+# ╟─e74e9fba-8062-45b0-aea9-b7ae1a646bf3
 # ╟─8d084ab0-3027-49d8-9b3b-24f06d0af830
-# ╠═e688750a-c6a9-4e08-ba7c-c1fd314405ec
+# ╟─e688750a-c6a9-4e08-ba7c-c1fd314405ec
+# ╟─fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
+# ╟─1374c277-287f-4791-83f0-52efb7bc358c
 # ╟─c9b352f2-016d-4d16-8053-48eedc39458d
 # ╟─e3234616-d59f-43bb-91b3-bd2f727c68b1
 # ╟─4a98a96f-a1b3-4144-b98a-9f65c0ca44aa

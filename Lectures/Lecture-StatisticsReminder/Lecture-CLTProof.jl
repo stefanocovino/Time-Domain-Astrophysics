@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -15,12 +15,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ 4968fd4d-b86b-4071-9b18-07aa8b8b0738
-md"""
-**This is a `pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ a9b1d316-dbcf-464d-83ab-fff7ac01f6b1
@@ -217,16 +212,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
     <td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl">Reminder of frequentist statistics</a></td>
     <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl">Reminder of frequentist statistics</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>  
   </tr>
   <tr>
     <td>html</td>
     <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Reminder of frequentist statistics</a></td>
     <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Reminder of frequentist statistics</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>  
   </tr>
  </table>
 
@@ -238,6 +236,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ f6d8b43b-f6a2-4c3c-8ac0-3817c2b90f98
+md"Notebook v1.0.0 - 7 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -553,7 +554,6 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╟─3926f03f-e9f3-4bb3-a3b7-5f0541d65d09
-# ╟─4968fd4d-b86b-4071-9b18-07aa8b8b0738
 # ╟─0ea989ec-dce0-4802-b117-413c6ee3e969
 # ╟─a9b1d316-dbcf-464d-83ab-fff7ac01f6b1
 # ╟─da8b93b1-c1b1-4d2d-bd93-00b5ea97dbf6
@@ -566,5 +566,6 @@ version = "17.7.0+0"
 # ╟─85d1de10-a1ea-4991-8d81-65d12171ecdd
 # ╟─66d96dd5-2a8a-46c3-8897-0dbed4c69986
 # ╟─a0bfbb2f-da37-4943-9791-1b4b3b534f9e
+# ╟─f6d8b43b-f6a2-4c3c-8ac0-3817c2b90f98
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

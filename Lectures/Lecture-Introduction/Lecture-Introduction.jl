@@ -98,17 +98,18 @@ md"""
 10. Time domain analysis - part I
 11. Time domain analysis - part II
 12. Science Cases - AGN and blazars
-13. Wavelet analysis and climatology science case
-14. Time of arrival analysis and paleo-climatology science case
-15. Science case: FRBs
-16. Non-parametric methods - part I
-17. Non-parametric methods - part II
-18. Singular spectrum analysis - part I
-19. Singular spectrum analysis - part II
-20. Gaussian processes - part I
-21. Gaussian processes - part II
-22. Science case: GRBs
-23. Astrostatistics: final considerations
+13. Wavelet analysis
+14. Science case about climatology
+15. Time of arrival analysis and paleo-climatology science case
+16. Science case: FRBs
+17. Non-parametric methods - part I
+18. Non-parametric methods - part II
+19. Science case: GRBs
+20. Singular spectrum analysis - part I
+21. Singular spectrum analysis - part II
+22. Gaussian processes - part I
+23. Gaussian processes - part II
+24. Astrostatistics: final considerations
 """
 
 # ╔═╡ 482cfb39-4f17-4138-b68e-317bad0b325a
@@ -341,7 +342,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 03a0396f-0fbc-42c9-88d3-85b422bb72da
-md"Notebook v1.0.0 - 6 April 2026"
+md"Notebook v1.0.1 - 7 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
