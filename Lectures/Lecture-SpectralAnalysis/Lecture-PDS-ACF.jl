@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -15,12 +15,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ ab7bbc41-1c45-4335-8b3e-6fcb91cbbbeb
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 5b27180c-8100-4d97-8de2-5a2f21d2ceeb
@@ -114,16 +109,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
     <td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl">Spectral analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl">Spectral analysis</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
     <td>html</td>
     <td><a href="../../Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.html">Spectral analysis</a></td>
     <td><a href="../../Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.html">Spectral analysis</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -134,8 +132,11 @@ cm"""
 md"""
 **Copyright**
 
-This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2025*.
+This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ b5eac1d4-78a1-4a9b-8c6c-d6c9edd468fa
+md"Notebook v1.0.0 - 8 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -451,7 +452,6 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╟─bdb342b3-a215-4f0d-9344-9c8411b0eeb7
-# ╟─ab7bbc41-1c45-4335-8b3e-6fcb91cbbbeb
 # ╟─57f2d932-3645-4d95-8e1f-d02e41676057
 # ╟─5b27180c-8100-4d97-8de2-5a2f21d2ceeb
 # ╟─5203b23c-04cc-4042-8aaa-018bde6cc449
@@ -459,5 +459,6 @@ version = "17.7.0+0"
 # ╟─414eae66-bf9b-4115-b2d5-34c2c7e29686
 # ╟─0628be70-82b7-4281-ad10-d77c0a54a015
 # ╟─5e970b87-f348-4797-bcff-249bd6e6cc4a
+# ╟─b5eac1d4-78a1-4a9b-8c6c-d6c9edd468fa
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

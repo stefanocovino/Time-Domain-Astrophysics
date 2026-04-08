@@ -31,12 +31,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ b1ea7402-3509-46f1-aefb-c2d51215062c
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 2ceeb12e-e068-4401-a921-bb45a2396424
@@ -277,6 +272,8 @@ ADFTest(dt[!,"Rate"],:constant,1)
 md"""
 - The light-curve can be considered, at least during this exercise, as stationary and therefore we go on modeling it with an ARMA model.
 
+- This essentially means that our null hypothesis is that this time-series can be described by a purely stochastic model.
+
 - First, let's look at the ACF and PACF diagnostic plots.
 """
 
@@ -325,46 +322,26 @@ end
 md"""
 - The ACF is zero after the first 7 lags, but it also shows the typical cyclic behavior of periodic phenomena, with a period of about 25 lags $\sim 2$ years that is close to the proposed (quasi-)periodicity of 2.2 years ([Achermann et al. 2015](https://ui.adsabs.harvard.edu/abs/2015ApJ...813L..41A/abstract)).
 
-- The PACF is zero after 3 lags. This might suggest 3 as AR order and 7 as MA order, altgough we prefer to look for the best solution by a grid search.
+- The PACF is zero after 3 lags. This might suggest 3 as AR order and 7 as MA order.
+
+- However, we prefer choosing the AR and MA orders by modern conmputational tools. Rather than a "brite-force" approach, with a grod search, let's try a more optimized search.
 """
 
-# ╔═╡ 26f04717-948d-4e3d-be26-e6e8c6070905
-begin
-	bics = Dict()
-	minbc = 1e6
-	for p in 0:5
-	    for q in 0:5
-	        model_ARIMA = StateSpaceModels.SARIMA(dt[!,:Rate]; order = (p, 0, q), suppress_warns=true)
-	        try
-	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead()))
-	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic)
-	            if model_ARIMA.results.bic < minbc
-	                minbc = model_ARIMA.results.bic
-	                bics["BIC"] = minbc
-	                bics["p"] = p
-	                bics["q"] = q
-	            end
-	        catch DomainError
-	            print()
-	        end
-	    end
-	end
-	println(bics)
-end
+# ╔═╡ 8e23bfe7-676d-449e-af19-dc4785d53e23
+amodel = auto_arima(dt[!,:Rate],allow_mean=true,max_p=10,max_q=10,max_d=0);
+
+# ╔═╡ 982365a4-ac3b-40d5-be65-5d03048467c3
+cm"""
+The best selected ARMA components are: AR($(amodel.order.p)) and MA($(amodel.order.q)).
+"""
 
 # ╔═╡ ef6c457b-9f04-45b7-bf31-281a39111fb6
 md"""
 - Results are indeed not so close to those inferred from the ACF/PACF analysis. Let's see some diagnostic plots.
 """
 
-# ╔═╡ b8849f80-f454-464e-881b-4b5a9f2dcbdd
-begin
-	model_ARIMA = StateSpaceModels.SARIMA(dt[!,:Rate]; order = (bics["p"], 0, bics["q"]), suppress_warns=true)
-	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead()))
-end;
-
 # ╔═╡ 3fdda80e-3360-481c-af16-0bcdd5d3e470
-kf = kalman_filter(model_ARIMA);
+kf = kalman_filter(amodel);
 
 # ╔═╡ e4f15270-d453-4fa8-a44a-25ad69898896
 begin
@@ -429,7 +406,9 @@ end
 
 # ╔═╡ 29e38a84-e43f-434a-83cf-3003a33b1079
 md"""
-- And we immediately see that we have discrepancies in particular for the high flixes. This might be due to the hint of periodicity that cannot be described by a pure stochastic model as the ARMA process we are testing.
+- And we immediately see that we have discrepancies in particular for low and the high fluxes, i.e. the variations are toom high for a pure stochastic phenomenon. 
+
+- This might also be due to the hint of periodicity that cannot be described by a pure stochastic model as the ARMA process we are testing.
 """
 
 # ╔═╡ 7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
@@ -440,8 +419,8 @@ begin
 	    title="ARMA fit",
 	    )
 	
-	lines!(model_ARIMA.system.y,label="data")
-	lines!(model_ARIMA.system.y .+ StateSpaceModels.get_innovations(kf)[:,1],alpha=0.5,label="fit")
+	lines!(amodel.system.y,label="data")
+	lines!(amodel.system.y .+ StateSpaceModels.get_innovations(kf)[:,1],alpha=0.5,label="fit")
 	
 	axislegend()
 	
@@ -482,7 +461,7 @@ begin
 	psd = periodogram(dt.Rate; fs=1/meandelta)
 	
 	freq = psd.freq[psd.freq.>0]
-	power = psd.power[psd.freq.>0]/sum(dt.eRate.^2);
+	power = 2*psd.power[psd.freq.>0]/sum(dt.eRate.^2);
 end;
 
 # ╔═╡ 8678584b-0bee-4ff0-a466-9f073847d2a1
@@ -517,7 +496,7 @@ end
 
 # ╔═╡ 974e371c-c0b2-40db-b7a9-ad19612ab76c
 md"""
-- We are going to carry out a Bayesian analysis and we need to define a proper likelihood. In this case, due to the statistics affecting a periodogram, we work with the *Whittle likelihood*.
+- We are going to carry out a Bayesian analysis and we need to define a proper likelihood. In this case, due to the statistics affecting a periodogram, we work with the [*Whittle likelihood*](https://en.wikipedia.org/wiki/Whittle_likelihood).
 """
 
 # ╔═╡ 2d72fd9b-25e4-46d0-ad3b-3f35ae4e2c09
@@ -525,6 +504,9 @@ function lnlike(theta, x, y)
     lnn,a,g = theta
     return -2.0 .* sum(y ./ model(theta,x) .+ log.(model(theta,x)))
 end
+
+# ╔═╡ ff755663-f594-4d19-9ecf-174b5163f4a5
+md"- And define a probabilistic model for the noise."
 
 # ╔═╡ fc38a1b7-51e4-4832-bfdb-e6d83af0ed27
 @model function permodel(x,y)
@@ -560,7 +542,8 @@ StatsPlots.plot(chain)
 
 # ╔═╡ eb11b179-5c4c-4b29-b90d-6fd1cf1c54b4
 md"""
-- And let's check the chain result by a classic *corner plot*!
+- The chains look fine.
+- We can also check the chain result by a classic *corner plot*!
 """
 
 # ╔═╡ c9b3afdd-b00f-4735-ab7e-862e9fcac505
@@ -602,7 +585,7 @@ begin
 	# Compute the best fit model
 	Sbest = model(theta,freq)
 	
-	# Derive a set of models based on the posterrio distribution
+	# Derive a set of models based on the posterior distribution
 	S = [model((dfc[i,:lnn],dfc[i,:a],dfc[i,:g]),freq) for i in 1:nrow(dfc)]
 	
 	# Multiply a chi2 distribution to the models and derive the simulated periodograms
@@ -641,17 +624,17 @@ begin
 	
 	axfg5 = Axis(fg5[1,1],
 	    title = "PKS2155-304",
-	    xlabel = L"Frequency (day$^{-1}$)",
+	    xlabel = "Period (day)",
 	    ylabel = "Power",
 	    xscale=log10,
 	    yscale=log10,
 	    )
 	    
 	
-	lines!(freq,power,label="data",color=:blue)
-	lines!(freq,Sbest,label="fit",color=:red)
-	lines!(freq,pp95,label="95%",color=:magenta)
-	lines!(freq,pp997,label="99.7%",color=:orange)
+	lines!(1 ./ freq,power,label="data",color=:blue)
+	lines!(1 ./ freq,Sbest,label="fit",color=:red)
+	lines!(1 ./ freq,pp95,label="95%",color=:magenta)
+	lines!(1 ./ freq,pp997,label="99.7%",color=:orange)
 	
 	axislegend()
 	
@@ -662,7 +645,11 @@ end
 
 # ╔═╡ 4f538581-25a3-4aa2-8029-ecebf4234b9e
 md"""
-- The peak in the periodogram, although of interest, does not reach the 3$\sigma$ limit threshold, and we cannot rule out the possibility it is a noise artifact. 
+- The peak in the periodogram at ~2.2 years, although of interest, does not reach the 3$\sigma$ limit threshold, and we cannot rule out the possibility it is a noise artifact. 
+
+> Please, be aware that in the literature there is a very hot debate about a possible QPO in this source!
+
+- It is true that this is the most promising case in this category.
 """
 
 # ╔═╡ 2fac4aef-b656-40f7-bfaa-88a8cadf3980
@@ -704,7 +691,7 @@ md"""
 ### Credits
 ***
 
-This notebook contains no exertnal material. 
+This notebook contains no external material. 
 """
 
 # ╔═╡ 1a698a3e-bb7e-46c9-b045-fc12d21f41ab
@@ -716,16 +703,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.jl">Lecture about time domain analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html">Lecture about time domain analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 
  </table>
@@ -737,8 +727,11 @@ cm"""
 md"""
 **Copyright**
 
-This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2024*.
+This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 59ae94e7-1c66-4e92-bee0-12b67de7ee39
+md"Notebook v1.0.0 - 8 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -3966,8 +3959,7 @@ version = "1.13.0+0"
 
 # ╔═╡ Cell order:
 # ╟─2e053d2a-7cc0-4df7-bda1-f43b7d397518
-# ╟─b1ea7402-3509-46f1-aefb-c2d51215062c
-# ╠═6567291b-91ba-45b4-b625-34e2a2b4caf6
+# ╟─6567291b-91ba-45b4-b625-34e2a2b4caf6
 # ╟─2ceeb12e-e068-4401-a921-bb45a2396424
 # ╟─cb93de12-47c8-40e8-a056-4a4f08d42d66
 # ╟─3f25cd6c-9b2d-4459-9651-7c1df7be5f2c
@@ -3978,42 +3970,43 @@ version = "1.13.0+0"
 # ╟─edfcfc7f-e288-4c9f-b11b-b4cda0553a78
 # ╟─1c3ac56a-d566-44e6-bf16-be9934724a77
 # ╟─c83c4c6c-b3c3-48a5-973f-ae68427c0972
-# ╠═f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
-# ╠═2cdbd150-ccd5-4f2a-9e49-5321070a2208
+# ╟─f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+# ╟─2cdbd150-ccd5-4f2a-9e49-5321070a2208
 # ╟─21f1efc6-2e79-4c06-862d-55b5d20966d5
 # ╠═94e01a40-8bd6-469a-b348-7aba8a6280d4
 # ╟─5a1bc2de-a335-4024-a249-fec980636cdc
 # ╟─8af78ef0-28f1-4222-bd62-1df8dfe4b931
 # ╠═dc922b83-b899-41df-ba15-32c85ad65b2b
 # ╟─70b1d915-2425-4741-9dd9-b7d60496b4ba
-# ╠═abe20ea3-6da8-433a-b58d-77ce6b9dc1fb
-# ╠═31f409e8-9c25-4b30-b768-89a4aab4546e
+# ╟─abe20ea3-6da8-433a-b58d-77ce6b9dc1fb
+# ╟─31f409e8-9c25-4b30-b768-89a4aab4546e
 # ╟─d9f29b49-fcdf-4762-b1ca-795d2ad62d67
-# ╠═26f04717-948d-4e3d-be26-e6e8c6070905
+# ╠═8e23bfe7-676d-449e-af19-dc4785d53e23
+# ╟─982365a4-ac3b-40d5-be65-5d03048467c3
 # ╟─ef6c457b-9f04-45b7-bf31-281a39111fb6
-# ╠═b8849f80-f454-464e-881b-4b5a9f2dcbdd
 # ╠═3fdda80e-3360-481c-af16-0bcdd5d3e470
 # ╠═e4f15270-d453-4fa8-a44a-25ad69898896
-# ╠═2e85e5c4-796e-47ad-8d03-6823889e6403
+# ╟─2e85e5c4-796e-47ad-8d03-6823889e6403
 # ╟─29e38a84-e43f-434a-83cf-3003a33b1079
-# ╠═7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
+# ╟─7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
 # ╟─604dab44-6d5f-49e3-a2c1-669a947ac5ea
 # ╟─a862c4a2-0a3c-432d-86ab-49c9857554b3
 # ╠═15fd10c7-c163-4c4c-a1a7-993ec5185843
 # ╟─83fa92c8-643c-408c-9d05-bc8d744e1e1a
 # ╟─520a01ff-dfca-405a-8cff-4124f0bc0792
 # ╠═be5706a4-0325-45ed-b1b1-bab78d6485e7
-# ╠═8678584b-0bee-4ff0-a466-9f073847d2a1
+# ╟─8678584b-0bee-4ff0-a466-9f073847d2a1
 # ╟─a8aa2b22-1529-48da-beb0-b51cce0ae2aa
 # ╠═2c1416c7-a866-4742-a424-233eca091657
 # ╟─974e371c-c0b2-40db-b7a9-ad19612ab76c
 # ╠═2d72fd9b-25e4-46d0-ad3b-3f35ae4e2c09
+# ╟─ff755663-f594-4d19-9ecf-174b5163f4a5
 # ╠═fc38a1b7-51e4-4832-bfdb-e6d83af0ed27
 # ╟─1d86c6a4-36ab-455a-a6b8-618fe8e36665
 # ╠═47a41ecc-faeb-45f7-a856-03c1d5bb917b
 # ╠═2abc083b-f39f-4610-9c40-cfbfb73982a3
 # ╟─eb11b179-5c4c-4b29-b90d-6fd1cf1c54b4
-# ╠═c9b3afdd-b00f-4735-ab7e-862e9fcac505
+# ╟─c9b3afdd-b00f-4735-ab7e-862e9fcac505
 # ╟─39235756-f5b9-4e0d-a47b-64235767ca4c
 # ╠═593ff4f2-6fb9-4031-8a5b-d7c83838ecf7
 # ╟─25258185-5a00-4faa-ad78-fdb2e770909a
@@ -4021,7 +4014,7 @@ version = "1.13.0+0"
 # ╠═a3d22608-bb4f-49db-bc4d-9086a2cf192e
 # ╠═f7e7a22c-6ef0-4910-9deb-4901aa917c99
 # ╟─3185c0e0-edcb-46b0-9479-de6d84ce08c0
-# ╠═e8829c5d-2cf7-4303-9ad4-1c457ca734bd
+# ╟─e8829c5d-2cf7-4303-9ad4-1c457ca734bd
 # ╟─4f538581-25a3-4aa2-8029-ecebf4234b9e
 # ╟─2fac4aef-b656-40f7-bfaa-88a8cadf3980
 # ╟─d66e12db-ce72-41a6-8207-2533bee71604
@@ -4029,5 +4022,6 @@ version = "1.13.0+0"
 # ╟─fb3021c6-b871-47e2-acf2-4b4f31ae18a2
 # ╟─1a698a3e-bb7e-46c9-b045-fc12d21f41ab
 # ╟─5f3ce6b3-4df7-4928-b01e-9a4e4849f673
+# ╟─59ae94e7-1c66-4e92-bee0-12b67de7ee39
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
