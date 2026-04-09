@@ -15,12 +15,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ ec67de24-d88a-46fa-ae46-c0cd7b797adc
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
@@ -33,7 +28,7 @@ $(LocalResource("Pics/TimeDomainBanner.jpg"))
 
 # ╔═╡ 404060d3-23ec-400b-84cf-779e63b90293
 md"""
-# Baeysian view of the LS Periodogram
+# Bayesian view of the LS Periodogram
 ***
 
 - What we want to be able to do is to detect variability and measure the period in the face of both noisy and incomplete data. Instead we'll use Fourier decomposition to get a more useful tool for actual data analysis.
@@ -247,16 +242,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl">Irregular sampling</a></td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl">Irregular sampling</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="../../Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Irregular sampling</a></td>
     <td><a href="../../Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Irregular sampling</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -269,6 +267,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 9dd5bbad-6308-46ff-85f0-8df3d295158c
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -584,7 +585,6 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╟─4d477519-c44f-434c-b7e0-8daaa5009358
-# ╟─ec67de24-d88a-46fa-ae46-c0cd7b797adc
 # ╟─6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 # ╟─3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
 # ╟─5029a214-0841-40fb-b397-4a2e1047bfb7
@@ -601,5 +601,6 @@ version = "17.7.0+0"
 # ╟─232d90be-8b74-4158-a32a-a69d5122fc80
 # ╟─b36fd613-95c8-44bf-876d-4eb345c26f08
 # ╟─206474b8-0811-4785-8a71-acdcfd20b76c
+# ╟─9dd5bbad-6308-46ff-85f0-8df3d295158c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

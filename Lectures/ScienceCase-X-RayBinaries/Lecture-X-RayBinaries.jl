@@ -25,12 +25,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ 8090d68e-690f-44c5-91ff-424b5a7f584d
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 73c52bd4-35d3-4176-b94a-46b4cfb9ba61
@@ -470,15 +465,18 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl">Science case about Sunspot number</a></td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl">Lecture about irregular sampling</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
 	<td>html</td>
     <td><a href="../../Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.html">Science case about Sunspot number</a></td>
     <td><a href="../../Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Lecture about irregular sampling</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -492,6 +490,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 05a76efe-66af-4a23-b09e-741d10927d15
+md"Notebook v1.0.0 - 8 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2329,7 +2330,6 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─eab8931d-6c92-4125-9fa4-d77e4f88e245
-# ╟─8090d68e-690f-44c5-91ff-424b5a7f584d
 # ╟─73c52bd4-35d3-4176-b94a-46b4cfb9ba61
 # ╟─0bf5e933-da14-4023-b11a-dccbc5ee80c1
 # ╟─93e2f620-df83-4fc2-9199-8d320ce07551
@@ -2370,5 +2370,6 @@ version = "4.1.0+0"
 # ╟─f74f9d82-6079-45af-9798-e4e0ad9600ee
 # ╟─545551de-0e43-4fee-9870-ac595f5cbf19
 # ╟─8382d0c7-1e8b-41b0-a3e5-9a2514ad355e
+# ╟─05a76efe-66af-4a23-b09e-741d10927d15
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

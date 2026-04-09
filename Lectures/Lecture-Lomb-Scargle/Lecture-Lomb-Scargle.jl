@@ -35,12 +35,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ 53a01399-1f0b-4fbb-9966-97124e9eff42
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 8f9cd30e-5598-4e1b-b379-1473232ea867
@@ -1167,16 +1162,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl">Science case: X-ray binariess</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-VariableStars/Lecture-VariableStars.jl">Science case about variable stars</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="../../Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.html">Science case: X-ray binariess</a></td>
     <td><a href="../../Lectures/ScienceCase-VariableStars/Lecture-VariableStars.html">Science case about variable stars</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -1188,6 +1186,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 9a3d8f41-bc2b-4cef-a8b5-f4bec18c2aff
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2989,7 +2990,6 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─ff837227-c0bc-433c-b462-9e18ff3d947b
-# ╟─53a01399-1f0b-4fbb-9966-97124e9eff42
 # ╟─93f1b40e-8990-405d-bba1-9f98abd054ca
 # ╟─8f9cd30e-5598-4e1b-b379-1473232ea867
 # ╟─f7100fe5-2cfd-448d-abcc-66a623a8f11f
@@ -3048,5 +3048,6 @@ version = "4.1.0+0"
 # ╟─427b330c-e92a-4be3-8db2-4373f91f4d0e
 # ╟─6d25216d-ab50-4ce2-993b-84ce3070eb4e
 # ╟─aa791077-751f-4542-8dc3-6cbb392c2302
+# ╟─9a3d8f41-bc2b-4cef-a8b5-f4bec18c2aff
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

@@ -36,12 +36,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ 8353da7d-8182-4a2a-b635-3d9088b3cd24
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 7ee698e0-89bc-4d51-b8d8-405a3b67c441
@@ -601,16 +596,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.jl">Lecture about irregular sampling</a></td>
     <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.jl">Lecture about wavelet analysis</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Lecture about irregular sampling</a></td>
     <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html">Lecture about wavelet analysis</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -623,6 +621,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ e3d718d2-f04b-4cab-a391-10976a175391
+md"Notebook v1.0.0 - 8 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2470,7 +2471,6 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─202d87bd-198a-4394-87d1-a4121daea4cf
-# ╟─8353da7d-8182-4a2a-b635-3d9088b3cd24
 # ╟─d5a4a4fc-c52b-42c7-ac4e-387ac95f848b
 # ╟─7ee698e0-89bc-4d51-b8d8-405a3b67c441
 # ╟─fe157ea7-b7c5-4d46-bf1e-a7f69aa8edc3
@@ -2518,5 +2518,6 @@ version = "4.1.0+0"
 # ╟─a4ad52ac-73d6-4e4e-9593-dfbcbb9ea800
 # ╟─b9c07a7b-0c1c-4b13-9cc3-812964e93ef5
 # ╟─edde2429-3894-42d2-b1c7-9ed32c084600
+# ╟─e3d718d2-f04b-4cab-a391-10976a175391
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

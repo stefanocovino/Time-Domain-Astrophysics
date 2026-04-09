@@ -436,7 +436,7 @@ end
 md"""
 - A ~$(abs(trange[findmax(ccr)[2]])) day delay appears, that is quite reasonable. 
 
-- Of course, a much more meaningful analysis would have required to separate the infected peole basing upon age, sex, etc.
+- Of course, a much more meaningful analysis would have required to separate the infected people basing upon age, sex, etc.
 """
 
 # ╔═╡ 06f77be0-51c6-4ca2-82b1-eaa69d9481b7
@@ -446,7 +446,7 @@ md"""
 
 - The former plot might suggest some sort of quasi-periodicity of the outbreak. 
 
-- Let's see whether a Lomb-Scargle analysis produce interestibg results:
+- Let's see whether a Lomb-Scargle analysis produce interesting results:
 """
 
 # ╔═╡ b1f35602-c627-41a7-8754-6634d5eff5a7
@@ -4437,7 +4437,7 @@ version = "4.1.0+0"
 # ╠═f8b03f2b-a241-4d77-8fc9-4c24a4c8ef90
 # ╟─20d1925b-ddb8-49ec-86a2-98f2efac3532
 # ╟─12225d55-9c0a-482c-890b-8ca5f8139c5a
-# ╠═db5d7b3e-66da-4498-a924-2f9b999fda56
+# ╟─db5d7b3e-66da-4498-a924-2f9b999fda56
 # ╟─06a37524-c82e-4f68-8529-89759cdda2bd
 # ╟─06f77be0-51c6-4ca2-82b1-eaa69d9481b7
 # ╟─b1f35602-c627-41a7-8754-6634d5eff5a7
