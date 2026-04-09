@@ -17,13 +17,11 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
-# ╔═╡ 12200cd2-5e1e-4d96-9284-60fb950fd70a
-md"""
-**This is a `Pluto` notebook**
-"""
+# ╔═╡ 66ed7167-476c-41fd-aa51-b5e411cd0d13
+TableOfContents()
 
 # ╔═╡ a81e5916-c0e7-410d-8c6e-917303ab087a
 md"""
@@ -36,7 +34,7 @@ md"""
 
 ***
 
-- So far, we have assumed that the our data are constituted by a set of $N$ data points $(t_j,y_j), j = 1,...,N$, possibly with known errors for $y$.
+- So far, we have assumed that the our data are constituted by a set of $N$ data points $(t_j,y_j), j = 1,...,N$, possibly with known uncertainties.
 
 - We can anyway think to different datasets. For instance, at X-ray and shorter wavelengths, individual photons are detected and background contamination is often negligible. 
     - In such cases, the data set consists of the arrival times of individual photons $t_j, j=1,…,N$, or, in principle and more generally, the time of occurrence of a given phenomenon.
@@ -44,6 +42,9 @@ md"""
 - Given such a data set, how do we search for a periodic signal, and more generally, how do we test for any type of variability?
 
 """
+
+# ╔═╡ edb27fc5-6c41-4fb5-b1c5-9f5a1a96aa83
+cm"- Even well beyond astronomy, dealing with these kind of datasets presents problems of great interest."
 
 # ╔═╡ 0e4c318a-511c-4646-9b33-634e5cb87c6d
 cm"""
@@ -95,22 +96,22 @@ cm"""
 ### Exercize: DO-climate- events
 ***
 
-- In the paper ([Ditlevsen et al. 2006](https://ui.adsabs.harvard.edu/abs/2006AGUFMGC24A..07D/abstract)), a possible periodicity of about 1500 years for the Dansgaard-Oeschger (DO) events,observed in the Greenland ice cores is discussed.
+- In a paper by [Ditlevsen et al. 2006](https://ui.adsabs.harvard.edu/abs/2006AGUFMGC24A..07D/abstract), a possible periodicity of about 1500 years for the Dansgaard-Oeschger (DO) events, observed in the Greenland ice cores is discussed.
 
 - According to Wikipedia, [Dansgaard–Oeschger events](https://en.wikipedia.org/wiki/Dansgaard%E2%80%93Oeschger_event) are rapid climate fluctuations that occurred during the last glacial period. Some scientists say that the events occur quasi-periodically with a recurrence time being a multiple of 1,470 years, but this is debated.
 
 $(LocalResource("Pics/doevents.png"))
 
-- The δ<sup>18</sup>O isotope recors from NGRIP and GISP on their stratigraphic time scale. The vertical bars are separated by 1470 years. The analysis focus on the well defined fast onsets of DO events, which are transitions from the stadial to the interstadial states. Ages are b2k=BP+50 years.
+- The δ<sup>18</sup>O isotope records from NGRIP and GISP on their stratigraphic time scale. The vertical bars are separated by 1470 years. The analysis focus on the well defined fast onsets of DO events, which are transitions from the stadial to the interstadial states. Ages are b2k=BP+50 years.
 
 - B.P. (Before the Present) is the number of years before the present. Because the present changes every year, archaeologists, by convention, use A.D. 1950 as their reference. So, 2000 B.P. is the equivalent of 50 B.C.
 
-- In geochemistry, paleoclimatology and paleoceanography δ<sup>18</sup>O or delta-O-18 is a measure of the ratio of stable isotopes oxygen-18 (<sup>18</sup>O) and oxygen-16 (<sup>16</sup>O). It is commonly used as a measure of the temperature of precipitation, as a measure of groundwater/mineral interactions, and as an indicator of processes that show isotopic fractionation, like methanogenesis. In paleosciences, <sup>18</sup>O:<sup>16</sup>O data from corals, foraminifera and ice cores are used as a proxy for temperature.
+- In geochemistry, paleoclimatology and paleoceanography δ<sup>18</sup>O, or delta-O-18, is a measure of the ratio of stable isotopes oxygen-18 (<sup>18</sup>O) and oxygen-16 (<sup>16</sup>O). It is commonly used as a measure of the temperature of precipitation, as a measure of groundwater/mineral interactions, and as an indicator of processes that show isotopic fractionation, like methanogenesis. In paleosciences, <sup>18</sup>O:<sup>16</sup>O data from corals, foraminifera and ice cores are used as a proxy for temperature.
 """
 
 # ╔═╡ b5dc35e4-0f85-468c-8f59-4ac0b9b00b3e
 md"""
-- Identifiying a DO event is not an easy task, and there are discussions about the actual definition of what a "rapid fluctuation" is. Of course we do not enter in this discussion, and adopt the list reported by [Rahmstorf (2003)](https://ui.adsabs.harvard.edu/abs/2003GeoRL..30.1510R/abstract).
+- Identifiying a DO event is not an easy task, and there are discussions about the actual definition of what a "rapid fluctuation" is. Of course, we do not enter in this discussion, and adopt the list reported by [Rahmstorf (2003)](https://ui.adsabs.harvard.edu/abs/2003GeoRL..30.1510R/abstract).
 """
 
 # ╔═╡ 93f9b75c-bd43-4229-9ddd-faba108afe65
@@ -187,11 +188,11 @@ Periodogram maximum $(latexify(pmax,fmt="%.1f")) at period $(latexify(per[pidx],
 
 Local FAP $(latexify(100*lfap,fmt="%.2f"))% and global FAP $(latexify(100*gfap,fmt="%.2f"))%	   
 			   
-			   """)
+""")
 
 # ╔═╡ f184d0dc-5034-45ed-9253-daff25eaa259
 md"""
-- So that we have that the maximum is for period $P \sim 1500$ years, the local significance (given the assumptions discussed above) is $\sim 99\%$, while the global significance is $\sim 94\%$.
+- Thus, we have a maximum for a period $P \sim 1500$ years, its local significance (given the assumptions discussed above) is $\sim 99\%$, while the global significance is $\sim 94\%$.
 
 > Too low for a firm claim.
 """
@@ -265,9 +266,11 @@ md"""
 ## The Gregory & Loredo algorithm
 ***
 
-- Let’s divide the time interval $T = t_N − t_1$  into many arbitrarily small steps, $Δt$, so that each interval contains either 1 or 0 detections.
+- In 1992 [Gregory & Loredo]((https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract)) pusblihed a seminal paper describibg a fully Bayesian procedure to analyse "time of arrival" data. We give here only a short description of the algorithm.
 
-- Given the event rate $r(t)$, then the expectation value for the number of events during $Δt$ is:
+- Let’s divide the time interval covering our observations,$T = t_N − t_1$, into many arbitrarily small steps, $Δt$, so that each interval contains either 1 or 0 detections.
+
+- Given an event rate, $r(t)$, the expectation value for the number of events during $Δt$ is:
 
 ```math
 \mu(t) = r(t) \Delta t
@@ -285,7 +288,7 @@ p(0) = e^{r(t) \Delta t}
 p(1) = r(t) \Delta t\ e^{r(t) \Delta t}
 ```
 
-- We can now compute the likelihood:
+- We can now compute the total likelihood, i.e. computing the probability of having observed a given sequence of events as:
 
 ```math
 p(D | r,I) = (\Delta t)^N e^{-\int_{(T)} r(t) dt} \prod_{j=1}^N r(t_j)
@@ -347,16 +350,19 @@ cm"""
     <td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl">Science case about AGN and Blazars</a></td>
     <td><a href="./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl">Science case about FRBs</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and Blazars</a></td>
     <td><a href="Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -368,6 +374,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ ffe762a5-77a9-4745-8579-66576b3fc8e6
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2032,10 +2041,11 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─72a2571d-dc92-41d6-b73b-ba9e985ca4f1
-# ╟─12200cd2-5e1e-4d96-9284-60fb950fd70a
 # ╟─3c2986d8-2379-4cd5-a747-435a5180076f
+# ╟─66ed7167-476c-41fd-aa51-b5e411cd0d13
 # ╟─a81e5916-c0e7-410d-8c6e-917303ab087a
 # ╟─17903372-3749-4bfc-9519-7181bc0539f1
+# ╟─edb27fc5-6c41-4fb5-b1c5-9f5a1a96aa83
 # ╟─0e4c318a-511c-4646-9b33-634e5cb87c6d
 # ╟─39c8c2cb-e6f6-4d74-8792-ba96e057744a
 # ╟─b5dc35e4-0f85-468c-8f59-4ac0b9b00b3e
@@ -2044,7 +2054,7 @@ version = "4.1.0+0"
 # ╠═93d67ed4-3811-414d-a86f-6e951d5e3dbf
 # ╟─14175fbe-5aea-4fe0-b9b1-f99049d9cdde
 # ╠═69256ec4-c8b2-4110-896f-ec8bfa01d662
-# ╠═3cf771fc-30d2-4ded-b17e-f6b66a35d218
+# ╟─3cf771fc-30d2-4ded-b17e-f6b66a35d218
 # ╟─3b121627-05b3-4238-9901-441182885848
 # ╠═961dae0a-3bda-4fa3-8197-ca7fafda3ca6
 # ╟─81184cdc-c7e8-4610-8f84-e27274d7ac4e
@@ -2058,5 +2068,6 @@ version = "4.1.0+0"
 # ╟─7661198f-10bc-4448-be6b-9f4fd1a16f3c
 # ╟─aeaad396-5e2a-4ec5-8b05-e160e5712f35
 # ╟─7aecb81a-a226-4133-9182-53e159f5fc43
+# ╟─ffe762a5-77a9-4745-8579-66576b3fc8e6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

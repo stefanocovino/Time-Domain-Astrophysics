@@ -18,12 +18,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ de92ed35-d7b6-40f9-a642-d9a819804c85
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ c0c5e6e6-de5f-4973-8dfa-6bed30c474a4
@@ -549,16 +544,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl">Science case about FRBs</a></td>
     <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
     <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -574,6 +572,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2213,7 +2214,6 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─0118270a-090b-4237-9002-bd68b608a307
-# ╟─de92ed35-d7b6-40f9-a642-d9a819804c85
 # ╟─d2361176-db34-450c-8721-ed4391b90e9c
 # ╟─c0c5e6e6-de5f-4973-8dfa-6bed30c474a4
 # ╟─f40ad72a-b6fd-4024-ab09-de1b6e31501b
@@ -2241,5 +2241,6 @@ version = "4.1.0+0"
 # ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b
 # ╟─241907cb-1fb0-4963-8bb9-7894136e43de
 # ╟─d3b81af7-b85b-4212-82a2-0f97ec31a484
+# ╟─3967e418-1ec7-418e-979e-b7b43577c953
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

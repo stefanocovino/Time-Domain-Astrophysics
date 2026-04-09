@@ -30,12 +30,7 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
-"""
-
-# ╔═╡ ec67de24-d88a-46fa-ae46-c0cd7b797adc
-md"""
-**This is a `Pluto` notebook**
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
 # ╔═╡ 3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
@@ -51,18 +46,10 @@ md"""
 # Non-parametric periodograms 
 ***
 
-We computed a few different periodograms based on non-parametric methods as implemented in the [P4J library](https://github.com/phuijse/P4J) by [Pablo Huijse](mailto:pablo.huijse0gmail.com) et al.
-
-"""
-
-# ╔═╡ 72cf6fcf-2e2f-4dee-994b-ce2bfef51802
-md"""
-## Generating a simple synthetic light curve
-***
-
 - Let's work with a simple irregulary sampled time series using a harmonic model composed of three sine waves. The fundamental frequency is "$2.0$" and the observation lasts "$100.0$" inverse units of the frequency, with $30$ points.
     
 - And let's give a look at the light-curve and at the folded version.
+
 """
 
 # ╔═╡ cc40f6c0-ba42-4788-ab17-9142134f9479
@@ -408,16 +395,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NnParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
 <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NnParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
 
@@ -430,6 +420,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 98c10d5b-e47a-4973-96a1-2b85d91570bb
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2416,13 +2409,11 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─4d477519-c44f-434c-b7e0-8daaa5009358
-# ╟─ec67de24-d88a-46fa-ae46-c0cd7b797adc
 # ╟─6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 # ╟─4be6207e-2e3f-41fb-9f52-b0014970a1cd
 # ╟─3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
 # ╟─5029a214-0841-40fb-b397-4a2e1047bfb7
 # ╟─404060d3-23ec-400b-84cf-779e63b90293
-# ╟─72cf6fcf-2e2f-4dee-994b-ce2bfef51802
 # ╟─cc40f6c0-ba42-4788-ab17-9142134f9479
 # ╟─143a4faa-7b08-4a94-a3c8-d78691b3ba7a
 # ╟─36fc3042-928c-4e65-b841-2419f37a0ea0
@@ -2458,5 +2449,6 @@ version = "4.1.0+0"
 # ╟─2d596c28-74bc-4ff8-a030-fbac18dbceb0
 # ╟─b36fd613-95c8-44bf-876d-4eb345c26f08
 # ╟─206474b8-0811-4785-8a71-acdcfd20b76c
+# ╟─98c10d5b-e47a-4973-96a1-2b85d91570bb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

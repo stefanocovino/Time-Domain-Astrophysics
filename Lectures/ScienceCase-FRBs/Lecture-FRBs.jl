@@ -19,13 +19,11 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
-# ╔═╡ 12200cd2-5e1e-4d96-9284-60fb950fd70a
-md"""
-**This is a `Pluto` notebook**
-"""
+# ╔═╡ 9712130c-29f2-471b-abdb-91464a13da74
+TableOfContents()
 
 # ╔═╡ a81e5916-c0e7-410d-8c6e-917303ab087a
 md"""
@@ -151,8 +149,8 @@ end
 # ╔═╡ a3391b24-fec0-4d83-91af-f2a1debd61e3
 md"""
 
-- The function *gregory_loredo" is implementing the [Gregory & Lorendo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm.
-    - It computes the likelihood of a set of arrival times originating  from a periodic system rather than constant rate (poisson) background noise.
+- We apply the [Gregory & Lorendo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm.
+    - It computes the likelihood of a set of arrival times originating from a periodic system rather than constant rate (poisson) background noise.
 
 - Let's check how the arrival times are distributed:
 
@@ -376,16 +374,19 @@ cm"""
     <td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
     <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
 
@@ -398,6 +399,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 07209cd9-afe1-4b61-804a-f5a69f6344d4
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2141,8 +2145,8 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─72a2571d-dc92-41d6-b73b-ba9e985ca4f1
-# ╟─12200cd2-5e1e-4d96-9284-60fb950fd70a
-# ╠═3c2986d8-2379-4cd5-a747-435a5180076f
+# ╟─3c2986d8-2379-4cd5-a747-435a5180076f
+# ╟─9712130c-29f2-471b-abdb-91464a13da74
 # ╟─a81e5916-c0e7-410d-8c6e-917303ab087a
 # ╟─17903372-3749-4bfc-9519-7181bc0539f1
 # ╟─b5dc35e4-0f85-468c-8f59-4ac0b9b00b3e
@@ -2155,7 +2159,7 @@ version = "4.1.0+0"
 # ╟─d6f0264d-a2b1-4644-9243-466fe56c27b7
 # ╠═b829c2ea-b842-4475-b3cc-c5c390a0fa11
 # ╟─a3391b24-fec0-4d83-91af-f2a1debd61e3
-# ╠═5aefa822-0b0f-4bd6-ace3-79cec12d21fa
+# ╟─5aefa822-0b0f-4bd6-ace3-79cec12d21fa
 # ╟─e781f658-5f64-4215-bef4-f9e64d2c8baa
 # ╟─23b259b5-e0ea-406d-92c0-aa39cd3c5709
 # ╟─a34bf1e7-6203-4ce2-b447-3e207e43b9d7
@@ -2190,5 +2194,6 @@ version = "4.1.0+0"
 # ╟─7661198f-10bc-4448-be6b-9f4fd1a16f3c
 # ╟─aeaad396-5e2a-4ec5-8b05-e160e5712f35
 # ╟─7aecb81a-a226-4133-9182-53e159f5fc43
+# ╟─07209cd9-afe1-4b61-804a-f5a69f6344d4
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

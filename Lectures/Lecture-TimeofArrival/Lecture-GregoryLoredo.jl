@@ -16,13 +16,11 @@ md"""
 **What is this?**
 
 
-*This jupyter notebook is part of a collection of notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
+*This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
-# ╔═╡ 12200cd2-5e1e-4d96-9284-60fb950fd70a
-md"""
-**This is a `Pluto` notebook**
-"""
+# ╔═╡ ce314e5e-7cb6-40dd-afb4-c471cbb4c16b
+TableOfContents()
 
 # ╔═╡ a81e5916-c0e7-410d-8c6e-917303ab087a
 md"""
@@ -532,16 +530,19 @@ cm"""
 	<td></td>
     <td>Previous lecture</td>
     <td>Next lecture</td>
+	<td>Course Summary</td>	
   </tr>
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival analysis</a></td>
     <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.jl">Lecture about time of arrival analysis</a></td>
+	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
     <td><a href="Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
+	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 
  </table>
@@ -554,6 +555,9 @@ md"""
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
+
+# ╔═╡ 89ad2577-048e-42c8-b145-0890836a061b
+md"Notebook v1.0.0 - 9 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2192,8 +2196,8 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─72a2571d-dc92-41d6-b73b-ba9e985ca4f1
-# ╟─12200cd2-5e1e-4d96-9284-60fb950fd70a
 # ╟─3c2986d8-2379-4cd5-a747-435a5180076f
+# ╟─ce314e5e-7cb6-40dd-afb4-c471cbb4c16b
 # ╟─a81e5916-c0e7-410d-8c6e-917303ab087a
 # ╟─17903372-3749-4bfc-9519-7181bc0539f1
 # ╟─0e4c318a-511c-4646-9b33-634e5cb87c6d
@@ -2215,5 +2219,6 @@ version = "4.1.0+0"
 # ╟─c7fc2cd6-6715-46d7-a9e0-c6e0bb7b13eb
 # ╟─aeaad396-5e2a-4ec5-8b05-e160e5712f35
 # ╟─7aecb81a-a226-4133-9182-53e159f5fc43
+# ╟─89ad2577-048e-42c8-b145-0890836a061b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
