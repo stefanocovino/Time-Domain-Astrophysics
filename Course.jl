@@ -68,7 +68,7 @@ md"""
 | 15. Science case: GRBs | [notebook](./open?path=Lectures/ScienceCase-GRBs/Lecture-GRBs.jl) | [html](Lectures/ScienceCase-GRBs/Lecture-GRBs.html) |
 | 16. Lecture: Singular Spectrum Analysis | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html) |
 | 17. Science case: Motion sensor data | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html) |
-| 18. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl) | [html](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html) | 
+| 18. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html) | 
 | 19. Science case: CO₂ content in atmosphere | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-CO2.html) |
 | 20. Lecture: Astrostatistics Future | [notebook](./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl) | [html](Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html) |
 
