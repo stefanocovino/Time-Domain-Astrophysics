@@ -554,8 +554,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
-    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
+    <td><a href="../../Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
+    <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>

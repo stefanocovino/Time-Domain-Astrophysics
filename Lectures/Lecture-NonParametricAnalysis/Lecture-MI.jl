@@ -282,8 +282,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
-<td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+    <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+<td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
