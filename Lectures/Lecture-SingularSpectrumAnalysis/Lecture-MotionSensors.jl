@@ -542,8 +542,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html">Lecture about singular spectrum analysis</a></td>
-<td><a href="Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html">Lecture about Gaussian processes</a></td>
+    <td><a href="../../Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html">Lecture about singular spectrum analysis</a></td>
+<td><a href="../../Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html">Lecture about Gaussian processes</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>

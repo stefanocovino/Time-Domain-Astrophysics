@@ -1536,8 +1536,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/Lecture-NonParametricPeriodograms/Lecture-NnParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
-<td><a href="Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html">Science case about motion sensor data</a></td>
+    <td><a href="../../Lectures/Lecture-NonParametricPeriodograms/Lecture-NnParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
+<td><a href="../../Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html">Science case about motion sensor data</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
