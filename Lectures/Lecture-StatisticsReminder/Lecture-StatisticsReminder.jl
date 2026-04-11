@@ -1312,7 +1312,7 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../../Lecture-Introduction/Lecture-Introduction.html">Introduction</a></td>
+    <td><a href="../../Lectures/Lecture-Introduction/Lecture-Introduction.html">Introduction</a></td>
     <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.html">Reminder of Bayesian statistics</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>  
   </tr>
@@ -1365,7 +1365,7 @@ PlutoUI = "~0.7.79"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "37b347e7bc9c94ea103f5be39104d1457a6cb049"
 
