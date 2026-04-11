@@ -206,7 +206,7 @@ md"""
 
 # ╔═╡ 56081488-4ade-436a-991e-d7138368edf1
 md""" 
-> How to compute the Fourier Transform in a few simple cases can be found [here](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-FT.jl).
+> How to compute the Fourier Transform in a few simple cases can be found here ([notebook](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-FT.jl), [html](../../Lectures/Lecture-SpectralAnalysis/Lecture-FT.html)).
 """
 
 # ╔═╡ 6d88e888-8f08-47ab-8906-c7b4b86b2588
@@ -256,7 +256,7 @@ A(t) = \int\limits_{-\infty}^{+\infty} f(\tau) f(t+\tau) d\tau \Longleftrightarr
 \int\limits_{-\infty}^{+\infty} |f(t)|^2 dt = {1\over 2\pi} \int\limits_{-\infty}^{+\infty} |f(\omega)|^2 d\omega
 ```
 
-> For the interested readers, a proof that PDS and ACF are Fourier duals can be found [here](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-PDS-ACF.jl).
+> For the interested readers, a proof that PDS and ACF are Fourier duals can be found here ([notebook](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-PDS-ACF.jl), [html](../../Lectures/Lecture-SpectralAnalysis/Lecture-PDS-ACF.html)).
 
 """
 
@@ -1381,7 +1381,7 @@ PlutoUI = "~0.7.79"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "a6abc2fde11c66c8cd35d8fa95d1ecc3cd7242c2"
 
