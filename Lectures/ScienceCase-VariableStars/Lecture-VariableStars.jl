@@ -606,8 +606,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="./open?path=Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Lecture about irregular sampling</a></td>
-    <td><a href="./open?path=Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html">Lecture about wavelet analysis</a></td>
+    <td><a href="../../Lectures/Lecture-Lomb-Scargle/Lecture-Lomb-Scargle.html">Lecture about irregular sampling</a></td>
+    <td><a href="../../Lectures/Lecture-WaveletAnalysis/Lecture-Wavelet-Analysis.html">Lecture about wavelet analysis</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
