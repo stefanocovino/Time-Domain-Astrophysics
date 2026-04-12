@@ -2252,8 +2252,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
-    <td><a href="Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
+    <td><a href="../../Lectures/Lecture-WaveletAnalysis/Lecture-ElNino.html">Science case about climate data</a></td>
+    <td><a href="../../Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html">Science case about AGN and blazars</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>  
   </tr>
 
@@ -2308,7 +2308,7 @@ StatsBase = "~0.33.21"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "cb3d88634e622d0291ebdfbbee03c92f1781adaa"
 
