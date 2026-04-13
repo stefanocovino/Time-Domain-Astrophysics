@@ -711,7 +711,7 @@ begin
 end
 
 # ╔═╡ f1bc344e-ac85-4815-928f-61f5f48c18a9
-ADFTest(filter(!ismissing, passengereasonal),:none,airlag)
+ADFTest(Float64.(filter(!ismissing, passengereasonal)),:none,1)
 
 # ╔═╡ cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
 md"""
@@ -1884,10 +1884,13 @@ md"""
 - Let's study the ACF and PACF of the differenced time-series.
 """
 
+# ╔═╡ 2100fba7-c85d-4c8e-b9ba-158dc9032da8
+passengereasonalfn = train[!,"Passengers_log"] - ShiftedArrays.lag(train[!,"Passengers_log"],12);
+
 # ╔═╡ ca1ac1dd-b580-491b-94b6-8ece8c037298
 begin
-	tracf = GetACF(dropmissing(train)[!,"Passengers_log_diff"],30)
-	trpacf = GetPACF(dropmissing(train)[!,"Passengers_log_diff"],30)
+	tracf = GetACF(Float64.(filter(!ismissing, passengereasonalfn)),30)
+	trpacf = GetPACF(Float64.(filter(!ismissing, passengereasonalfn)),30)
 	
 	fg29 = Figure()
 	ax1fg29 = Axis(fg29[1, 1],
@@ -1922,7 +1925,7 @@ begin
 	minbc = 1e6
 	for p in 0:10
 	    for q in 0:10
-	        model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonal)); order = (p, 0, q), suppress_warns=true, include_mean=true)
+	        model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonalfn)); order = (p, 0, q), suppress_warns=true, include_mean=true)
 	        try
 	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
 	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic, minbc)
@@ -1970,7 +1973,7 @@ md"""
 
 # ╔═╡ dc5a5f74-9289-4614-b1ae-553d43c33120
 begin
-	model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonal)); order = (bics["p"], 0, bics["q"]), suppress_warns=true, include_mean=true)
+	model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonalfn)); order = (bics["p"], 0, bics["q"]), suppress_warns=true, include_mean=true)
 	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
 end
 
@@ -2068,7 +2071,7 @@ md"""
 
 # ╔═╡ e688750a-c6a9-4e08-ba7c-c1fd314405ec
 begin
-	origdata = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ Float64.(filter(!ismissing, passengereasonal))
+	origdata = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ Float64.(filter(!ismissing, passengereasonalfn))
 	arimamodel = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ StateSpaceModels.get_innovations(kf)[:,1] .+ model_ARIMA.system.y
 	#origdata = train['#Passengers_log'].shift(6) + train['#Passengers_log_diff']
 	#arimamodel = train['#Passengers_log'].shift(6) + results_ARIMA.predict(0,typ='levels')
@@ -4423,7 +4426,7 @@ version = "4.1.0+0"
 # ╟─d2115648-6981-438e-b528-ecfc32e7e49e
 # ╠═87cffbaa-7f0f-452e-8783-7c621ac12833
 # ╟─6b8a241e-6cec-4cfa-856a-3f12c6d35453
-# ╠═f1bc344e-ac85-4815-928f-61f5f48c18a9
+# ╟─f1bc344e-ac85-4815-928f-61f5f48c18a9
 # ╟─cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
 # ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
 # ╟─381bc481-5c7e-4d9a-80c9-8f245718718d
@@ -4502,6 +4505,7 @@ version = "4.1.0+0"
 # ╟─c1e80404-665c-4a68-978c-1df72a158059
 # ╟─73aecd0e-d6d0-4429-b63b-38f572115c50
 # ╟─61cade13-3747-4481-aa8a-b59ff87ca05d
+# ╟─2100fba7-c85d-4c8e-b9ba-158dc9032da8
 # ╟─ca1ac1dd-b580-491b-94b6-8ece8c037298
 # ╟─f1e1cdde-a8b8-4ff5-9c49-6207de8ad125
 # ╠═6bf9db61-f56c-4e91-af6b-772a5066e709
