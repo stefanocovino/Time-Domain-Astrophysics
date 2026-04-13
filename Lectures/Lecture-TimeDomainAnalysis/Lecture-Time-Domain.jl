@@ -24,6 +24,7 @@ begin
 	using CSV
 	using DataFrames
 	using Distributions
+	using Downloads
 	using HypothesisTests
 	using LombScargle
 	using PlutoUI
@@ -572,9 +573,11 @@ md"""
     - This is a simple yet interesting dataset for this kind of exercise. 
 """
 
-# ╔═╡ 9057a011-76b9-475a-906c-81afd18e99ce
+# ╔═╡ e05c7cc3-d9c5-40b3-b60a-364b391d9da1
 begin
-	train = DataFrame(CSV.File("AirPassengers.csv"))
+	url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/airline-passengers.csv"
+	
+	train = CSV.File(Downloads.download(url)) |> DataFrame
 	first(train,5)
 end
 
@@ -595,7 +598,7 @@ begin
 	    )
 	
 	
-	lines!(train[!,:Month],train[!,"#Passengers"])
+	lines!(train[!,:Month],train[!,"Passengers"])
 	
 	#xlims!(1,10)
 	
@@ -646,7 +649,7 @@ y_t = a^n*y_{t-n} + \sum ε_{t-i}*a^i
 """
 
 # ╔═╡ f0996cba-03af-4247-99f7-d148c6e737a0
-ADFTest(train[!,"#Passengers"],:none,1)
+ADFTest(train[!,"Passengers"],:none,1)
 
 # ╔═╡ 0f220d9a-ffe5-4d84-ba4b-a65c5dbf4404
 md"""
@@ -680,51 +683,43 @@ md"""
 - Let's apply a differentiation on our series and plotting the results:
 """
 
-# ╔═╡ 76917ce4-5249-4cbb-bdb7-da654ce2c75d
-train[!,"#Passengers_diff1"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"]);
+# ╔═╡ d2115648-6981-438e-b528-ecfc32e7e49e
+cm"""
 
-# ╔═╡ a7c1c07b-23d7-4721-ac7d-70012483b056
+Lag for difference: $(@bind airlag NumberField(1:15, default=1))
+"""
+
+# ╔═╡ 87cffbaa-7f0f-452e-8783-7c621ac12833
 begin
-	fg6 = Figure()
+	train[!,"Passengers_log"] = log.(train[!,"Passengers"])
+	passengereasonal = train[!,"Passengers_log"] - ShiftedArrays.lag(train[!,"Passengers_log"],airlag)
+end;
+
+# ╔═╡ 6b8a241e-6cec-4cfa-856a-3f12c6d35453
+begin
+	fglag = Figure()
 	
-	ax1fg6 = Axis(fg6[1, 1],
+	ax1fglag = Axis(fglag[1, 1],
 	    xlabel="Time",
 	    ylabel="N",
 	    )
 	
 	
-	lines!(train[!,:Month],train[!,"#Passengers_diff1"])
+	lines!(train[!,:Month],passengereasonal)
 	
-	fg6
+	fglag
 end
+
+# ╔═╡ f1bc344e-ac85-4815-928f-61f5f48c18a9
+ADFTest(filter(!ismissing, passengereasonal),:none,airlag)
 
 # ╔═╡ cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
 md"""
-- The average now seems to be fairly constant, but variance and probably covariance are not.
-
-- It is possible to compute te differece with longer lags than 1. This is often called *seasonal differencing*.
+- With just lag 1 the trend is removed. However, it is possible to compute the difference with longer lags. This is often called *seasonal differencing*.
 
 - In seasonal differencing, instead of calculating the difference between consecutive values, we calculate the difference between an observation and a previous observation from the same "season": y$_t$‘ = y$_t$ – y$_{(t-n)}$.
 
 """
-
-# ╔═╡ 7ecf612d-04ea-4e3b-b176-98476b443688
-train[!,"#Passengers_diff6"] = train[!,"#Passengers"] - ShiftedArrays.lag(train[!,"#Passengers"],6);
-
-# ╔═╡ 7da9155f-27d8-48c0-93a6-13a3297fd302
-begin
-	fg7 = Figure()
-	
-	ax1fg7 = Axis(fg7[1, 1],
-	    xlabel="Time",
-	    ylabel="N",
-	    )
-	
-	
-	lines!(train[!,:Month],train[!,"#Passengers_diff6"])
-	
-	fg7
-end
 
 # ╔═╡ 72700334-0d07-4486-ba3f-46fe0cfacb4f
 md"""
@@ -734,37 +729,6 @@ md"""
 
 - Transformations are used to stabilize the non-constant variance of a series. Common transformation methods include power transforms, square roots, and log transforms. 
 """
-
-# ╔═╡ 6021c695-2cd9-499c-bbbf-7d86b5a6b347
-begin
-	train[!,"#Passengers_log"] = log.(train[!,"#Passengers"])
-	train[!,"#Passengers_log_diff"] = train[!,"#Passengers_log"] - ShiftedArrays.lag(train[!,"#Passengers_log"],6)
-end;
-
-# ╔═╡ 3d013635-b4ac-49ec-85f6-93c26cf7539c
-begin
-	fg8 = Figure()
-	
-	ax1fg8 = Axis(fg8[1, 1],
-	    xlabel="Time",
-	    ylabel="N",
-	    )
-	
-	
-	lines!(train[!,:Month],train[!,"#Passengers_log_diff"])
-	
-	fg8
-end
-
-# ╔═╡ c81ad1a5-b4ed-4056-a161-eab4f9e981d9
-md"""
-- The improvement seems to be significant over the previous plots. Let's apply the ADF stationarity test.
-
-- In principle, a seasonality with one year (12 months) period could be preferred here. But we see that even a 6 month period does a good job in making the time-series stationary.
-"""
-
-# ╔═╡ f1bc344e-ac85-4815-928f-61f5f48c18a9
-ADFTest(dropmissing(train)[!,"#Passengers_log_diff"],:none,1)
 
 # ╔═╡ 381bc481-5c7e-4d9a-80c9-8f245718718d
 md"""
@@ -1922,8 +1886,8 @@ md"""
 
 # ╔═╡ ca1ac1dd-b580-491b-94b6-8ece8c037298
 begin
-	tracf = GetACF(dropmissing(train)[!,"#Passengers_log_diff"],30)
-	trpacf = GetPACF(dropmissing(train)[!,"#Passengers_log_diff"],30)
+	tracf = GetACF(dropmissing(train)[!,"Passengers_log_diff"],30)
+	trpacf = GetPACF(dropmissing(train)[!,"Passengers_log_diff"],30)
 	
 	fg29 = Figure()
 	ax1fg29 = Axis(fg29[1, 1],
@@ -1958,7 +1922,7 @@ begin
 	minbc = 1e6
 	for p in 0:10
 	    for q in 0:10
-	        model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (p, 0, q), suppress_warns=true, include_mean=true)
+	        model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonal)); order = (p, 0, q), suppress_warns=true, include_mean=true)
 	        try
 	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
 	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic, minbc)
@@ -1980,8 +1944,8 @@ end
 begin
 	fig3d = Figure(size = (800, 600))
 	ax3d = Axis3(fig3d[1, 1],
-           	azimuth = 0.3π,   
-           	elevation = 0.1π,
+           	azimuth = 0.8π,   
+           	elevation = 0.05π,
 	        xlabel = "p", 
 	        ylabel = "q", 
 	        zlabel = "BIC")
@@ -2001,12 +1965,12 @@ Best result: p = $(bics["p"]), q = $(bics["q"]) with BIC = $(round(bics["BIC"],d
 
 # ╔═╡ 435071db-e81b-4b3e-ab0e-a271030749e4
 md"""
-- All in all, the grid search did not provide results so different wrt to those suggested by the ACF/PACF plots.
+- All in all, grid search provides quite different results wrt to those suggested by the ACF/PACF plots.
 """
 
 # ╔═╡ dc5a5f74-9289-4614-b1ae-553d43c33120
 begin
-	model_ARIMA = StateSpaceModels.SARIMA(collect(skipmissing(train[!,"#Passengers_log_diff"])); order = (bics["p"], 0, bics["q"]), suppress_warns=true, include_mean=true)
+	model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonal)); order = (bics["p"], 0, bics["q"]), suppress_warns=true, include_mean=true)
 	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
 end
 
@@ -2104,8 +2068,8 @@ md"""
 
 # ╔═╡ e688750a-c6a9-4e08-ba7c-c1fd314405ec
 begin
-	origdata = collect(skipmissing(ShiftedArrays.lag(train[!,"#Passengers_log"],6))) .+ collect(skipmissing(train[!,"#Passengers_log_diff"]))
-	arimamodel = collect(skipmissing(ShiftedArrays.lag(train[!,"#Passengers_log"],6))) .+ StateSpaceModels.get_innovations(kf)[:,1] .+ model_ARIMA.system.y
+	origdata = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ Float64.(filter(!ismissing, passengereasonal))
+	arimamodel = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ StateSpaceModels.get_innovations(kf)[:,1] .+ model_ARIMA.system.y
 	#origdata = train['#Passengers_log'].shift(6) + train['#Passengers_log_diff']
 	#arimamodel = train['#Passengers_log'].shift(6) + results_ARIMA.predict(0,typ='levels')
 	
@@ -2281,6 +2245,7 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
@@ -2310,7 +2275,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "cb3d88634e622d0291ebdfbbee03c92f1781adaa"
+project_hash = "122ef95ce983330ed0ae92db8ff2b7b2c248a5a2"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -4447,24 +4412,20 @@ version = "4.1.0+0"
 # ╟─f34215b4-91fd-4175-96f1-524097ec7160
 # ╟─45f962f9-79be-492a-8add-737fc73925c2
 # ╟─5c1eff4e-8079-4568-a792-7528465db277
-# ╠═9057a011-76b9-475a-906c-81afd18e99ce
+# ╠═e05c7cc3-d9c5-40b3-b60a-364b391d9da1
 # ╟─3da138ae-cd0b-4f7b-ab5a-319d4f65dee2
-# ╠═25a8201f-402b-4868-9cd6-262a03b980fb
+# ╟─25a8201f-402b-4868-9cd6-262a03b980fb
 # ╟─698e9cc6-9de5-4ca6-b425-5bb038b08b2b
 # ╠═f0996cba-03af-4247-99f7-d148c6e737a0
 # ╟─0f220d9a-ffe5-4d84-ba4b-a65c5dbf4404
 # ╟─59175381-65a4-45e7-ae85-a00467c4d181
 # ╟─9a8ac940-8a2c-4d5a-809f-bbdb1dba12dc
-# ╠═76917ce4-5249-4cbb-bdb7-da654ce2c75d
-# ╟─a7c1c07b-23d7-4721-ac7d-70012483b056
-# ╟─cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
-# ╠═7ecf612d-04ea-4e3b-b176-98476b443688
-# ╟─7da9155f-27d8-48c0-93a6-13a3297fd302
-# ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
-# ╠═6021c695-2cd9-499c-bbbf-7d86b5a6b347
-# ╟─3d013635-b4ac-49ec-85f6-93c26cf7539c
-# ╟─c81ad1a5-b4ed-4056-a161-eab4f9e981d9
+# ╟─d2115648-6981-438e-b528-ecfc32e7e49e
+# ╠═87cffbaa-7f0f-452e-8783-7c621ac12833
+# ╟─6b8a241e-6cec-4cfa-856a-3f12c6d35453
 # ╠═f1bc344e-ac85-4815-928f-61f5f48c18a9
+# ╟─cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
+# ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
 # ╟─381bc481-5c7e-4d9a-80c9-8f245718718d
 # ╟─ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
 # ╟─9d1af19c-e1b3-48aa-9b9b-245347efd682
