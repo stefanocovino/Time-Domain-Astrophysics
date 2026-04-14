@@ -28,6 +28,7 @@ begin
 	using HypothesisTests
 	using LombScargle
 	using PlutoUI
+	using PlutoTeachingTools
 	using ShiftedArrays
 	using StateSpaceModels
 	using Statistics
@@ -535,6 +536,9 @@ $(LocalResource("Pics/truestationary.png"))
 - Most statistical models require the series to be stationary to make effective and precise predictions.
 """
 
+# ╔═╡ 4a135f48-2717-4dff-b45b-f11bdf64644f
+tip(md"Important definition!")
+
 # ╔═╡ 45f962f9-79be-492a-8add-737fc73925c2
 cm"""
 - Let's now try to define "stationarity" in a more formal way.
@@ -607,13 +611,19 @@ begin
 	fg5
 end
 
-# ╔═╡ 698e9cc6-9de5-4ca6-b425-5bb038b08b2b
+# ╔═╡ dab87100-21fd-4e5c-b519-0a866aa13418
 cm"""
 - We see that there a clear trend, i.e. the mean is varying.
 
 - It is anyway useulf to look for more formal tests.
+"""
 
+# ╔═╡ d71eb1e9-e4e4-46d7-9296-54e283377cca
+warning_box(md"A more formal concept!")
 
+# ╔═╡ 698e9cc6-9de5-4ca6-b425-5bb038b08b2b
+
+cm"""
 ##### Statistical tests
 ***
 
@@ -755,9 +765,11 @@ md"""
 - This kind of matrix is also a “Toeplitz” matrix (it has useful properties for massive computations).
 """
 
+# ╔═╡ bc60b1c1-a888-4f6a-ac2e-14601c2cac54
+tip(md"Let’s now study some simple linear process of interest.")
+
 # ╔═╡ 9d1af19c-e1b3-48aa-9b9b-245347efd682
 cm"""
-- Let's now study some simple linear process of interest.
 
 ### White Noise
 ***
@@ -815,7 +827,7 @@ end
 
 # ╔═╡ d674149a-25a7-4c60-8770-e2b46cb2ed74
 cm"""
-### Random walk (with drift)
+### Random walk (with or without drift)
 ***
 
 - A random walk, with drift, can be defined as:
@@ -844,10 +856,21 @@ x_t = \delta + x_{t-1} + w_t
 - And a random walk with drift (``\delta=0.1``) can be:
 """
 
+# ╔═╡ 776c989f-3725-44d6-8f8c-b23902cbd971
+cm"""
+
+With drift? $(@bind driftvl CheckBox(default=true))
+
+"""
+
 # ╔═╡ ea14bb29-f6bf-4a0c-a6b1-d38e285207ee
 begin
 	N10 = 10000
-	delta10 = 0.1
+	if driftvl
+		delta10 = 0.1
+	else
+		delta10 = 0.
+	end
 	
 	d10 = Normal()
 	sigma10 = rand(d10, N10)
@@ -1119,6 +1142,9 @@ x_t = w_t + θ_1 w_{t−1} + ... + φ_p w_{t−q}
 x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + w_t + θ_1 w_{t−1} + ... + φ_p w_{t−q}
 ```
 """
+
+# ╔═╡ c85069d2-8890-4f3c-ae1c-dc41872f7ec5
+tip(cm"Here we introduce an important tool!")
 
 # ╔═╡ 0edac0fb-f52e-4a2c-b3dc-54f8237ad325
 md"""
@@ -2251,6 +2277,7 @@ Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 ShiftedArrays = "1277b4bf-5013-50f5-be3d-901d8477a67a"
 StateSpaceModels = "99342f36-827c-5390-97c9-d7f9ee765c78"
@@ -2266,6 +2293,7 @@ DataFrames = "~1.8.1"
 Distributions = "~0.25.123"
 HypothesisTests = "~0.11.6"
 LombScargle = "~1.0.3"
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.79"
 ShiftedArrays = "~1.0.0"
 StateSpaceModels = "~0.6.7"
@@ -2278,7 +2306,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "122ef95ce983330ed0ae92db8ff2b7b2c248a5a2"
+project_hash = "f5b7bc15cae82d1c87e38378eceb3364f93da69a"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -2969,6 +2997,12 @@ git-tree-sha1 = "45288942190db7c5f760f59c04495064eedf9340"
 uuid = "b0724c58-0f36-5564-988d-3bb0596ebc4a"
 version = "0.22.4+0"
 
+[[deps.Ghostscript_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "38044a04637976140074d0b0621c1edf0eb531fd"
+uuid = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
+version = "9.55.1+0"
+
 [[deps.Giflib_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "6570366d757b50fabae9f4315ad74d2e40c0560a"
@@ -3272,6 +3306,24 @@ version = "2.10.3+0"
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
+
+[[deps.Latexify]]
+deps = ["Format", "Ghostscript_jll", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "44f93c47f9cd6c7e431f2f2091fcba8f01cd7e8f"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.10"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SparseArraysExt = "SparseArrays"
+    SymEngineExt = "SymEngine"
+    TectonicExt = "tectonic_jll"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+    tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -3677,6 +3729,12 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -4175,6 +4233,7 @@ deps = ["Dates", "LinearAlgebra", "Random"]
 git-tree-sha1 = "57e1b2c9de4bd6f40ecb9de4ac1797b81970d008"
 uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
 version = "1.28.0"
+weakdeps = ["ConstructionBase", "ForwardDiff", "InverseFunctions", "LaTeXStrings", "Latexify", "NaNMath", "Printf"]
 
     [deps.Unitful.extensions]
     ConstructionBaseUnitfulExt = "ConstructionBase"
@@ -4183,15 +4242,6 @@ version = "1.28.0"
     LatexifyExt = ["Latexify", "LaTeXStrings"]
     NaNMathExt = "NaNMath"
     PrintfExt = "Printf"
-
-    [deps.Unitful.weakdeps]
-    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
-    LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-    Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-    NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
-    Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[deps.WeakRefStrings]]
 deps = ["DataAPI", "InlineStrings", "Parsers"]
@@ -4413,11 +4463,14 @@ version = "4.1.0+0"
 # ╟─08a6a975-b496-4d19-8e8b-5df7aae43ad9
 # ╟─2acb3d30-1b38-4255-b955-a0db9f77be72
 # ╟─f34215b4-91fd-4175-96f1-524097ec7160
+# ╟─4a135f48-2717-4dff-b45b-f11bdf64644f
 # ╟─45f962f9-79be-492a-8add-737fc73925c2
 # ╟─5c1eff4e-8079-4568-a792-7528465db277
 # ╠═e05c7cc3-d9c5-40b3-b60a-364b391d9da1
 # ╟─3da138ae-cd0b-4f7b-ab5a-319d4f65dee2
 # ╟─25a8201f-402b-4868-9cd6-262a03b980fb
+# ╟─dab87100-21fd-4e5c-b519-0a866aa13418
+# ╟─d71eb1e9-e4e4-46d7-9296-54e283377cca
 # ╟─698e9cc6-9de5-4ca6-b425-5bb038b08b2b
 # ╠═f0996cba-03af-4247-99f7-d148c6e737a0
 # ╟─0f220d9a-ffe5-4d84-ba4b-a65c5dbf4404
@@ -4431,6 +4484,7 @@ version = "4.1.0+0"
 # ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
 # ╟─381bc481-5c7e-4d9a-80c9-8f245718718d
 # ╟─ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
+# ╟─bc60b1c1-a888-4f6a-ac2e-14601c2cac54
 # ╟─9d1af19c-e1b3-48aa-9b9b-245347efd682
 # ╠═e410b2af-6665-4ddb-bb89-4b38bec8bfc2
 # ╟─2aca0524-9737-43e9-b456-9fa0b2f7939b
@@ -4438,6 +4492,7 @@ version = "4.1.0+0"
 # ╟─63a3b6f2-a46a-4a4c-ba9e-5639714cd93d
 # ╟─d674149a-25a7-4c60-8770-e2b46cb2ed74
 # ╠═ea14bb29-f6bf-4a0c-a6b1-d38e285207ee
+# ╟─776c989f-3725-44d6-8f8c-b23902cbd971
 # ╟─95047c44-9d05-4dc3-a50a-aa87cf9cd2c4
 # ╟─61d7c290-6d4d-4da8-a4f6-f0c2c795a4f8
 # ╠═962d9bb2-8fee-4d94-9054-a48f084127d7
@@ -4459,6 +4514,7 @@ version = "4.1.0+0"
 # ╟─38012afa-faf9-43ef-a443-f5256763a931
 # ╟─2905155b-0de7-4f15-acb0-aaaf1b421c9b
 # ╟─fa1e8adf-969a-4476-81ae-b548cabcd8f6
+# ╟─c85069d2-8890-4f3c-ae1c-dc41872f7ec5
 # ╟─0edac0fb-f52e-4a2c-b3dc-54f8237ad325
 # ╟─2eb45539-ef03-4f6d-86be-52a1e9228088
 # ╟─db519b68-35a3-4396-a302-e0bd804985c1
