@@ -1854,13 +1854,13 @@ cm"""
 
 $(LocalResource("Pics/acfpacf.png"))
 
-- For instance, let's compare AR(1) with ``\alpha_1 = 0.6`` to ARMA(1,1) with ``\alpha_1 = 1/2, \beta_1 = 1/2``. 
+- For instance, let's compare AR(1) with ``\alpha_1 = 0.6`` to ARMA(1,1) with ``\alpha_1 = 1/2, \beta_1 = 2/5``. 
 """
 
 # ╔═╡ c1e80404-665c-4a68-978c-1df72a158059
 begin
 	
-	arma_t = arma(10000, 1., SVector(0.5),SVector(0.5))
+	arma_t = arma(10000, 1., SVector(0.5),SVector(0.4))
 	ar_t = arma(10000, 1., SVector(0.6),nothing)
 	
 	armaacf = GetACF(arma_t,20)

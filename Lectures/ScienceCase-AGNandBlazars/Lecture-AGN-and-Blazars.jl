@@ -19,6 +19,7 @@ begin
 	using Optim
 	using PairPlots
 	using PlutoUI
+	using PlutoTeachingTools
 	using Statistics
 	using StateSpaceModels
 	using StatsBase
@@ -33,6 +34,9 @@ md"""
 
 *This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
+
+# ╔═╡ 401c979e-b100-434a-8bc5-1c7e87ad81b0
+TableOfContents()
 
 # ╔═╡ 2ceeb12e-e068-4401-a921-bb45a2396424
 # ╠═╡ show_logs = false
@@ -106,10 +110,13 @@ md"""
 $(LocalResource("Pics/mrk421tev.png"))
 """
 
+# ╔═╡ b208ae73-2de3-442e-a790-81c2019414b7
+tip(cm"A simple, yet powerful, argument:")
+
 # ╔═╡ a8f9e126-1730-4f30-8d70-9b454f56ff39
 # ╠═╡ show_logs = false
 md"""
-- Light travel time argument: a source that varies significantly in time t must have size  $R < ct$, where $c$ is the speed of light.
+- A source that varies significantly in time t must have size  $R < ct$, where $c$ is the speed of light.
 
 $(LocalResource("Pics/compactsource.png"))
 """
@@ -129,8 +136,8 @@ l \le \frac{c \Delta t \delta}{1+z}
 
 - where $c$ is the speed of light, $\Delta t$ the variability time, $\delta$ the Doppler factor and $z$ the source redshift. 
 
-- The Doppler factor is $\delta = \frac{1}{\Gamma (1-\beta \cos \theta)} = \frac{\sqrt{1-\beta2}}{1-\beta \cos \theta}$, where $\Gamma$ is the Loremtz factor, $\beta$ the source speed in units of the speed of light, and $\theta$ the angle of motion wrt the line of sight.
-    - For this source $z = 0.030$, $\theta \approx 0^\circ$ and $\beta > 0.98$ so that $\delta \sim 10$ and, finally, $l \le 3 \times 10^{15}$ cm = 203 AU.
+- The Doppler factor is $\delta = \frac{1}{\Gamma (1-\beta \cos \theta)} = \frac{\sqrt{1-\beta2}}{1-\beta \cos \theta}$, where $\Gamma$ is the Lorentz factor, $\beta$ the source speed in units of the speed of light, and $\theta$ the angle of motion wrt the line of sight.
+    - For this source: $z = 0.030$, $\theta \approx 0^\circ$ and $\beta > 0.98$ so that $\delta \sim 10$ and, finally, $l \le 3 \times 10^{15}$ cm = 203 AU.
 """
 
 # ╔═╡ 3586aabc-e618-4247-827b-777224115314
@@ -188,7 +195,7 @@ md"""
 - These sorces are often monitored since decades with with multi-band light curves.
     - This is, for instance, the dataset obtained by the [INAF](http://www.inaf.it/en?set_language=en) [REM telescope](https://en.wikipedia.org/wiki/Rapid_Eye_Mount_telescope) for [PKS2155-304](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=PKS+2155-304&submit=SIMBAD+search):
    
-$(LocalResource("Pics/pks2155-304-rem.jpg"))
+$(LocalResource("Pics/pks2155-304-rem.jpg",  :width => 400))
 """
 
 # ╔═╡ 1c3ac56a-d566-44e6-bf16-be9934724a77
@@ -211,22 +218,21 @@ md"""
 #### Exercise: [PG1553+113](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=PG+1553%2B113) claimed periodicity
 ***
 
-- We analyse data obtained by the [Fermi satellite](https://fermi.gsfc.nasa.gov/) with the [LAT](https://fermi.gsfc.nasa.gov/science/instruments/lat.html) instrument. Data can be downloaded [here](https://fermi.gsfc.nasa.gov/ssc/data/access/).
+- We analyse data obtained by the [Fermi satellite](https://fermi.gsfc.nasa.gov/) with the [LAT](https://fermi.gsfc.nasa.gov/science/instruments/lat.html) instrument. Data can be downloaded [here](https://fermi.gsfc.nasa.gov/ssc/data/access/lat/LightCurveRepository/source.html?source_name=4FGL_J1555.7+1111).
 
 - Let's see the light-curve:
 """
 
-# ╔═╡ f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+# ╔═╡ 6a0b912f-b531-4ef2-a0bb-8a0d30aed6fc
 begin
-	dt = DataFrame(CSV.File("4FGLJ1555 7p1111.txt",select=[1,2,3],comment="#"))
-	rename!(dt,["MJD","Rate","eRate"])
-	dt[!,:Rate] =  dt[!,:Rate] * 1e7
-	dt[!,:eRate] =  dt[!,:eRate] * 1e7
+	dt[!,:MJD] = dt[!,"Julian Date"] .- 2400000.5
+	dt[!,:Rate] =  dt[!,"Photon Flux [0.1-100 GeV](photons cm-2 s-1)"] * 1e7
+	dt[!,:eRate] = dt[!,"Photon Flux Error(photons cm-2 s-1)"] * 1e7
 end;
 
 # ╔═╡ 2cdbd150-ccd5-4f2a-9e49-5321070a2208
 begin
-	fg1 = Figure()
+	fg1 = Figure(size=(800,500))
 	
 	axfg1 =  Axis(fg1[1,1],
 	    xlabel="Time (MJD)",
@@ -236,7 +242,7 @@ begin
 	CairoMakie.scatter!(dt[!,:MJD],dt[!,:Rate],label="Fermi data for PG1553+113")
 	CairoMakie.errorbars!(dt[!,:MJD],dt[!,:Rate],dt[!,:eRate])
 	
-	axislegend()
+	axislegend(position=:lt)
 	
 	fg1
 end
@@ -731,7 +737,24 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 59ae94e7-1c66-4e92-bee0-12b67de7ee39
-md"Notebook v1.0.0 - 8 April 2026"
+md"Notebook v1.0.0 - 16 April 2026"
+
+# ╔═╡ f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	dt = DataFrame(CSV.File("4FGLJ1555 7p1111.txt",select=[1,2,3],comment="#"))
+	rename!(dt,["MJD","Rate","eRate"])
+	dt[!,:Rate] =  dt[!,:Rate] * 1e7
+	dt[!,:eRate] =  dt[!,:eRate] * 1e7
+end;
+  ╠═╡ =#
+
+# ╔═╡ a042ce06-7415-488b-a964-007873619351
+begin
+	dt = DataFrame(CSV.File("4FGL_J1555.7+1111_monthly_16_04_2026.csv"))
+	first(dt,5)
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -748,6 +771,7 @@ HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 PairPlots = "43a3c2be-4208-490b-832a-a21dcd55d7da"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StateSpaceModels = "99342f36-827c-5390-97c9-d7f9ee765c78"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -768,6 +792,7 @@ HypothesisTests = "~0.11.6"
 Latexify = "~0.16.10"
 Optim = "~1.13.3"
 PairPlots = "~3.0.3"
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 StateSpaceModels = "~0.7.2"
 StatsBase = "~0.34.10"
@@ -781,7 +806,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "ec1f72c121e0bf9960f95033d2b6ed67a058fb18"
+project_hash = "4042a91f5b2d2000f96503423859b4d52207634d"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -2768,6 +2793,12 @@ version = "1.41.6"
     ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
@@ -3960,17 +3991,21 @@ version = "1.13.0+0"
 # ╔═╡ Cell order:
 # ╟─2e053d2a-7cc0-4df7-bda1-f43b7d397518
 # ╟─6567291b-91ba-45b4-b625-34e2a2b4caf6
+# ╟─401c979e-b100-434a-8bc5-1c7e87ad81b0
 # ╟─2ceeb12e-e068-4401-a921-bb45a2396424
 # ╟─cb93de12-47c8-40e8-a056-4a4f08d42d66
 # ╟─3f25cd6c-9b2d-4459-9651-7c1df7be5f2c
 # ╟─345f1ef8-e930-453a-aac0-c44cffb76d44
+# ╟─b208ae73-2de3-442e-a790-81c2019414b7
 # ╟─a8f9e126-1730-4f30-8d70-9b454f56ff39
 # ╟─7e8db3bd-fac0-44a3-b4f3-5246cc2eda89
 # ╟─3586aabc-e618-4247-827b-777224115314
 # ╟─edfcfc7f-e288-4c9f-b11b-b4cda0553a78
 # ╟─1c3ac56a-d566-44e6-bf16-be9934724a77
 # ╟─c83c4c6c-b3c3-48a5-973f-ae68427c0972
-# ╟─f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+# ╠═a042ce06-7415-488b-a964-007873619351
+# ╠═6a0b912f-b531-4ef2-a0bb-8a0d30aed6fc
+# ╠═f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
 # ╟─2cdbd150-ccd5-4f2a-9e49-5321070a2208
 # ╟─21f1efc6-2e79-4c06-862d-55b5d20966d5
 # ╠═94e01a40-8bd6-469a-b348-7aba8a6280d4
