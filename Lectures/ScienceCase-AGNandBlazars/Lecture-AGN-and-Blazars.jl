@@ -324,15 +324,15 @@ md"""
 
 - The PACF is zero after 3 lags. This might suggest 3 as AR order and 7 as MA order.
 
-- However, we prefer choosing the AR and MA orders by modern conmputational tools. Rather than a "brite-force" approach, with a grod search, let's try a more optimized search.
+- However, we prefer choosing the AR and MA orders by modern computational tools. Rather than a "brute-force" approach, with a grid search, let's try a more optimized search.
 """
 
 # ╔═╡ 8e23bfe7-676d-449e-af19-dc4785d53e23
-amodel = auto_arima(dt[!,:Rate],allow_mean=true,max_p=10,max_q=10,max_d=0);
+amodel = auto_arima(dt[!,:Rate],allow_mean=true);
 
 # ╔═╡ 982365a4-ac3b-40d5-be65-5d03048467c3
 cm"""
-The best selected ARMA components are: AR($(amodel.order.p)) and MA($(amodel.order.q)).
+The best selected ARMA components are: AR($(amodel.order.p)), MA($(amodel.order.q)) with $(amodel.order.d) differentiations. No seasonal components are selected.
 """
 
 # ╔═╡ ef6c457b-9f04-45b7-bf31-281a39111fb6
@@ -429,7 +429,7 @@ end
 
 # ╔═╡ 604dab44-6d5f-49e3-a2c1-669a947ac5ea
 md"""
-- The ARMA model is indeed rather effective in gettig the variability of the data, but it fails to reproduce the extent of the variability, in particular at the highest or lowest fluxes.
+- The ARMA model is indeed rather effective in getting the variability of the data, but it fails to reproduce the extent of the variability, in particular at the highest or lowest fluxes.
 
 - We then try to apply a more sophisticated analysis, based on a procedure described by [Vaughan (2010)](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract).
 """
@@ -779,7 +779,7 @@ Turing = "~0.42.2"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "ec1f72c121e0bf9960f95033d2b6ed67a058fb18"
 

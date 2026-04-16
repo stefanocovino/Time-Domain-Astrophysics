@@ -241,6 +241,9 @@ z(t) = \frac{1}{2} \ln \left( \frac{1+{\rm DCF}(\tau)}{1-{\rm DCF}(\tau)} \right
 
 
 
+# ╔═╡ ead0056c-babd-4d6e-94c5-16e7bada50d7
+tip(cm"This is a very intriguing topic. I just mention it in passing.")
+
 # ╔═╡ 56fb0117-2dc3-41c0-aba9-405cd48ff72b
 cm"""
 
@@ -594,7 +597,7 @@ md"""
 
 # ╔═╡ 25a8201f-402b-4868-9cd6-262a03b980fb
 begin
-	fg5 = Figure()
+	fg5 = Figure(size=(800,400))
 	
 	ax1fg5 = Axis(fg5[1, 1],
 	    xlabel="Time",
@@ -602,11 +605,21 @@ begin
 	    )
 	
 	
-	lines!(train[!,:Month],train[!,"Passengers"])
+	lines!(train[!,:Month],train[!,"Passengers"],label="linear")
+
+	axislegend(position=:lt)
+
+	ax2fg5 = Axis(fg5[1, 2],
+	    xlabel="Time",
+	    ylabel="N",
+	    )
+	
+	
+	lines!(train[!,:Month],log.(train[!,"Passengers"]),label="log")
 	
 	#xlims!(1,10)
 	
-	#axislegend(position=:lt)
+	axislegend(position=:lt)
 	
 	fg5
 end
@@ -696,7 +709,7 @@ md"""
 # ╔═╡ d2115648-6981-438e-b528-ecfc32e7e49e
 cm"""
 
-Lag for difference: $(@bind airlag NumberField(1:15, default=1))
+Lag for difference: $(lnf = @bind airlag NumberField(1:15, default=1))
 """
 
 # ╔═╡ 87cffbaa-7f0f-452e-8783-7c621ac12833
@@ -733,16 +746,10 @@ md"""
 
 # ╔═╡ 72700334-0d07-4486-ba3f-46fe0cfacb4f
 md"""
-- The curve is now cleaner, yet still far from being, even visually, stationary.
+- A lag of 12 months shows us the residuals after that the rend is removed. The resulting curve is not really stationary.
 
-- As an alternative to differencing, it is also possible to transform the data. 
+- We will go back to this time-series later.
 
-- Transformations are used to stabilize the non-constant variance of a series. Common transformation methods include power transforms, square roots, and log transforms. 
-"""
-
-# ╔═╡ 381bc481-5c7e-4d9a-80c9-8f245718718d
-md"""
-- Now the criterion is reasonably satisfied. The difference of the log-transformed original time-series is stationary.
 """
 
 # ╔═╡ ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
@@ -1113,6 +1120,9 @@ $(LocalResource("Pics/test2.jpg"))
 > As we have seen, the ACF is a powerful diagnostics but often we have ambiguous situations. The application of the PACF will help us to solve these ambiguities, as we are going to see later.
 """
 
+# ╔═╡ c85069d2-8890-4f3c-ae1c-dc41872f7ec5
+tip(cm"Here we introduce an important tool!")
+
 # ╔═╡ fa1e8adf-969a-4476-81ae-b548cabcd8f6
 md"""
 #### The Autoregressive Moving Average scheme
@@ -1143,9 +1153,6 @@ x_t = φ_1 x_{t−1} + ... + φ_p x_{t−p} + w_t + θ_1 w_{t−1} + ... + φ_p 
 ```
 """
 
-# ╔═╡ c85069d2-8890-4f3c-ae1c-dc41872f7ec5
-tip(cm"Here we introduce an important tool!")
-
 # ╔═╡ 0edac0fb-f52e-4a2c-b3dc-54f8237ad325
 md"""
 ## General linear processes
@@ -1169,6 +1176,9 @@ x_t = \sum_{i=0}^\infty \psi_i w_{t-i}
 
 - Now we provide a set of useful definitons.
 """
+
+# ╔═╡ 9e6ac4f5-f433-4d57-903a-624935e3d3a6
+warning_box(cm"Some useful notation. Yet, not of immediate use.")
 
 # ╔═╡ 2eb45539-ef03-4f6d-86be-52a1e9228088
 md"""
@@ -1274,7 +1284,7 @@ PlutoUI.combine() do bind
 	cm"""
 	MA(1):
 	
-	``\beta_1 =`` $(@bind beta116 NumberField(-1:0.1:1, default=0.6))
+	``\beta_1 =`` $(@bind beta116 Select([-0.5,0.5,1.0,1.5], default=1.0))
 	"""
 end
 
@@ -1443,7 +1453,7 @@ PlutoUI.combine() do bind
 	cm"""
 	AR(1):
 	
-	``α₁ =`` $(@bind alpha20 NumberField(-1:0.1:1, default=0.5)) 
+	``α₁ =`` $(@bind alpha20 Select([-0.5,0.5,0.9,1.001], default=0.5)) 
 	"""
 end
 
@@ -1468,11 +1478,22 @@ begin
 	rs20 = GetACF(x20,lags20)
 	rsp20 = GetPACF(x20,lags20)
 
+	if alpha20 > 1
+		scale20 = log10
+	else
+		scale20 = identity
+	end
+	
 	fg20 = Figure(size=(640,800))
 	ax1fg20 = Axis(fg20[1, 1],
-    	title = "Time-Series")
+    	title = "Time-Series",
+		yscale=scale20)
 
-	lines!(x20)
+	if alpha20 > 1
+		lines!(x20[x20 .> 0])
+	else
+		lines!(x20)
+	end
 
 	xlims!(5000,6000)
 	
@@ -1898,6 +1919,73 @@ md"""
 > Nowdays, with modern computers, a grid-search (or something more elaborated and effective) if often a feasible solution.
 """
 
+# ╔═╡ fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
+cm"""
+- While the standard ARMA and ARIMA models are the workhorses of time series analysis, real-world data is rarely "standard." It often contains seasonal patterns, long-term dependencies, or external influences that basic models simply aren't equipped to handle.
+
+- To tackle these complexities, extended variants of the basic models designed to capture specific data behaviors do exist. 
+"""
+
+# ╔═╡ 1374c277-287f-4791-83f0-52efb7bc358c
+cm"""
+#### SARIMA (Seasonal ARIMA)
+
+- Standard ARIMA models are great at handling trends, but they fail with repeating patterna. SARIMA adds a seasonal component to the mix. It treats the seasonal part of the data as its own ARIMA process. 
+- These models are often expressed as ``ARIMA(p, d, q) \times (P, D, Q)_s``, where the uppercase letters represent the seasonal orders and ``s`` is the number of periods per season.
+
+#### ARIMAX (ARIMA with Exogenous Variables)
+
+- Sometimes, the future of a variable isn't just dictated by its own past, but by outside factors.  The X stands for Exogenous. This model includes external covariates as predictors alongside the internal lags of the time series.
+
+#### FARIMA / ARFIMA (Fractionally Integrated ARIMA)
+
+- In a standard ARIMA model, the integration parameter (``d``) is an integer. However, some processes exhibit Long Memory, where the impact of a past shock decays very slowly over time. FARIMA allows ``d`` to be a non-integer (a fraction) to take care of these cases. 
+
+#### CARMA (Continuous models)
+
+- While the models we’ve discussed so far (like SARIMA or FARIMA) operate on discrete regularly sampled time steps, the CARMA (Continuous-time Auto-Regressive Moving Average) are designed for data that exists in a continuous flow, even if our observations of it are irregular or missing.
+"""
+
+# ╔═╡ 51d3477f-4bd3-4181-8e31-158cbcadef53
+Foldable("Some more info about SARIMA models?",cm"""
+- In literature, SARIMA model are often written as an ARIMA ``(p,d,q) \times (P,D,Q,s)``, where the lowercase letters indicate the specification for the non-seasonal component, and the uppercase letters indicate the specification for the seasonal component; ``s`` is the periodicity of the seasons (e.g. it is often 4 for quarterly data or 12 for monthly data). The data process can be written generically as
+
+```math
+\begin{equation}
+    \phi_p (L) \tilde \phi_P (L^s) \Delta^d \Delta_s^D y_t = A(t) + \theta_q (L) \tilde \theta_Q (L^s) \epsilon_t
+\end{equation}
+```
+
+- where
+ * ``\phi_p (L)`` is the non-seasonal autoregressive lag polynomial,
+ * ``\tilde \phi_P (L^s)`` is the seasonal autoregressive lag polynomial,
+ * ``\Delta^d \Delta_s^D y_t`` is the time series, differenced ``d`` times, and seasonally differenced ``D`` times.,
+ * ``A(t)`` is a trend polynomial (including the intercept),
+ * ``\theta_q (L)`` is the non-seasonal moving average lag polynomial,
+ * ``\tilde \theta_Q (L^s)`` is the seasonal moving average lag polynomial
+
+
+""")
+
+# ╔═╡ c9b352f2-016d-4d16-8053-48eedc39458d
+md"""
+#### ARCH models
+
+- Another form of nonstationarity occurs when the variance, rather than the local mean level, of  the time series changes during the observation. This is commonly called *volatility*, in econometric contexts.
+
+- These kind of problems can be addressed by the autoregressive conditional heteroscedastic (ARCH) models. Here the variance is assumed to be a stochastic autoregressive process depending on previous values.
+
+- For instance, in a ARCH(1) model: 
+
+```math
+{\rm Var}_{\rm ARCH(1)}(\epsilon_i) = w_t + \alpha_1 {\rm Var(\epsilon_{i-1})}
+```
+
+"""
+
+# ╔═╡ 91890653-db58-4416-bdb1-bfb7750d8d92
+tip(cm"We go back to the airline passenger dataset")
+
 # ╔═╡ 61cade13-3747-4481-aa8a-b59ff87ca05d
 md"""
 #### Exercise: fit a dataset by an ARIMA model
@@ -1905,13 +1993,15 @@ md"""
 
 - Let's go back to the airline passenger dataset.
 
-- Converting to log and differencing we got a stationary time-series, and we also got rid of the trend. W
+- Converting to log and differencing we got a stationary time-series getting rid of the trend. 
 
-- Let's study the ACF and PACF of the differenced time-series.
+- We also have identified a 12 month seasonal component.
+
+- Let's study the ACF and PACF of the differenced (lag 1) time-series.
 """
 
 # ╔═╡ 2100fba7-c85d-4c8e-b9ba-158dc9032da8
-passengereasonalfn = train[!,"Passengers_log"] - ShiftedArrays.lag(train[!,"Passengers_log"],12);
+passengereasonalfn = train[!,"Passengers_log"] - ShiftedArrays.lag(train[!,"Passengers_log"],1);
 
 # ╔═╡ ca1ac1dd-b580-491b-94b6-8ece8c037298
 begin
@@ -1934,77 +2024,33 @@ end
 
 # ╔═╡ f1e1cdde-a8b8-4ff5-9c49-6207de8ad125
 md"""
-- The ACF becomes 0 after 2 lags, and the seasonality is clearly visible, while the PACF is 0 after 8 or 9 lags.
+- The ACF becomes 0 after 1 lag, yet the seasonality is clearly visible, and the same is true for the PACF.
 
-- We might guess that the AR order could be 8 and the MA order 2.
+- Diagnostic plots of the time series can be used along with heuristic rules to determine the hyperparameters of the ARIMA model. These are occasionally good, but this case require a different approach.
 
-- Diagnostic plots of the time series can be used along with heuristic rules to determine the hyperparameters of the ARIMA model.cThese are good in most, but perhaps not all, situations.
+- It is indeed an optimization problem. We deal with it finding the best `p` and `q` both for the 12 month seasonal component and the residuals. 
 
-- As a matter if fact, we also try with a brute-force grid search:
+- For interested reader, the optimization algorithm is described in, e.g., [Durbin & Siem Jan (2012)](https://global.oup.com/academic/product/time-series-analysis-by-state-space-methods-9780199641178?cc=it&lang=en&)
 """
 
-# ╔═╡ 6bf9db61-f56c-4e91-af6b-772a5066e709
+# ╔═╡ c57ac174-27b7-4bcf-bd26-f48e3608f146
 # ╠═╡ show_logs = false
-begin
-	allbics = DataFrame(p=Int[],q=Int[],bic=Float64[])
-	bics = Dict()
-	minbc = 1e6
-	for p in 0:10
-	    for q in 0:10
-	        model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonalfn)); order = (p, 0, q), suppress_warns=true, include_mean=true)
-	        try
-	            StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
-	            println("p: ", p, " q: ", q, " BIC: ", model_ARIMA.results.bic, minbc)
-	            if model_ARIMA.results.bic < minbc
-	                minbc = model_ARIMA.results.bic
-	                bics["BIC"] = minbc
-	                bics["p"] = p
-	                bics["q"] = q
-	            end
-				push!(allbics,[p,q,model_ARIMA.results.bic])
-	        catch DomainError
-	            print()
-	        end
-	    end
-	end
-end
+modelar = auto_arima(train[!,"Passengers_log"]; seasonal = 12, allow_mean=true);
 
-# ╔═╡ e7c583a2-1c61-4b0b-851d-5dcf80a0cf14
-begin
-	fig3d = Figure(size = (800, 600))
-	ax3d = Axis3(fig3d[1, 1],
-           	azimuth = 0.8π,   
-           	elevation = 0.05π,
-	        xlabel = "p", 
-	        ylabel = "q", 
-	        zlabel = "BIC")
-
-	surf = surface!(ax3d, allbics.p, allbics.q, allbics.bic, colormap = :viridis)
-	Colorbar(fig3d[1, 2], surf, label = "BIC")
-	
-	fig3d
-end
-
-# ╔═╡ 965cb065-f033-4384-a38b-0c522e3b17b9
+# ╔═╡ a4eb3827-2cbf-4447-a418-687afc2fc3c9
 cm"""
 
-Best result: p = $(bics["p"]), q = $(bics["q"]) with BIC = $(round(bics["BIC"],digits=2)).
+Best result: p = $(modelar.order.p), q = $(modelar.order.q) for the residuals, while the seasonal component is modeled with p = $(modelar.order.P), q = $(modelar.order.Q) and $(modelar.order.D) differentiation(s).
 
 """
 
 # ╔═╡ 435071db-e81b-4b3e-ab0e-a271030749e4
 md"""
-- All in all, grid search provides quite different results wrt to those suggested by the ACF/PACF plots.
+- All in all, these results are grossly compatible wrt to those suggested by the ACF/PACF plots.
 """
 
-# ╔═╡ dc5a5f74-9289-4614-b1ae-553d43c33120
-begin
-	model_ARIMA = StateSpaceModels.SARIMA(Float64.(filter(!ismissing, passengereasonalfn)); order = (bics["p"], 0, bics["q"]), suppress_warns=true, include_mean=true)
-	StateSpaceModels.fit!(model_ARIMA, save_hyperparameter_distribution=false, optimizer = Optimizer(StateSpaceModels.Optim.NelderMead(),StateSpaceModels.Optim.Options(f_abstol=1e-2)))
-end
-
 # ╔═╡ 61d51f9c-2368-478c-9d77-90c7d9a72610
-kf = kalman_filter(model_ARIMA);
+kf = kalman_filter(modelar);
 
 # ╔═╡ 1f7f1ece-0c82-426a-9e28-0ddad7878986
 begin
@@ -2080,10 +2126,12 @@ begin
 	    title="ARMA fit",
 	    )
 	
-	lines!(model_ARIMA.system.y,color=:blue,label="data")
-	lines!(model_ARIMA.system.y .+ StateSpaceModels.get_innovations(kf)[:,1],color=:red,alpha=0.5)
+	lines!(1:length(modelar.system.y),modelar.system.y,color=:blue,label="data")
+	lines!(13:length(modelar.system.y),modelar.system.y[13:end] .+ StateSpaceModels.get_innovations(kf)[13,end],color=:red,alpha=0.5,label="fit")
 	
-	axislegend()
+	axislegend(position=:rb)
+
+	ylims!(4.5,6.5)
 	
 	fg30
 end
@@ -2092,72 +2140,10 @@ end
 md"""
 - Indeed the modeling of the input dataset is rather satisfactory.
 
-- Finally, we can plot our data with the original scale:
 """
 
-# ╔═╡ e688750a-c6a9-4e08-ba7c-c1fd314405ec
-begin
-	origdata = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ Float64.(filter(!ismissing, passengereasonalfn))
-	arimamodel = collect(skipmissing(ShiftedArrays.lag(train[!,"Passengers_log"],12))) .+ StateSpaceModels.get_innovations(kf)[:,1] .+ model_ARIMA.system.y
-	#origdata = train['#Passengers_log'].shift(6) + train['#Passengers_log_diff']
-	#arimamodel = train['#Passengers_log'].shift(6) + results_ARIMA.predict(0,typ='levels')
-	
-	fg31 = Figure()
-	
-	ax1fg31 = Axis(fg31[1, 1],
-	    title="ARMA fit",
-	    )
-	
-	lines!(exp.(origdata),color=:blue,label="data")
-	lines!(exp.(arimamodel),color=:red,alpha=0.5,label="fit")
-	
-	axislegend(position = :lt)
-	
-	fg31
-end
-
-# ╔═╡ fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
-cm"""
-- While the standard ARMA and ARIMA models are the workhorses of time series analysis, real-world data is rarely "standard." It often contains seasonal patterns, long-term dependencies, or external influences that basic models simply aren't equipped to handle.
-
-- To tackle these complexities, extended variants of the basic models designed to capture specific data behaviors do exist. 
-"""
-
-# ╔═╡ 1374c277-287f-4791-83f0-52efb7bc358c
-cm"""
-#### SARIMA (Seasonal ARIMA)
-
-- Standard ARIMA models are great at handling trends, but they fail with repeating patterna. SARIMA adds a seasonal component to the mix. It treats the seasonal part of the data as its own ARIMA process. 
-- These models are often expressed as ``ARIMA(p, d, q) \times (P, D, Q)_s``, where the uppercase letters represent the seasonal orders and ``s`` is the number of periods per season.
-
-#### ARIMAX (ARIMA with Exogenous Variables)
-
-- Sometimes, the future of a variable isn't just dictated by its own past, but by outside factors.  The X stands for Exogenous. This model includes external covariates as predictors alongside the internal lags of the time series.
-
-#### FARIMA / ARFIMA (Fractionally Integrated ARIMA)
-
-- In a standard ARIMA model, the integration parameter (``d``) is an integer. However, some processes exhibit Long Memory, where the impact of a past shock decays very slowly over time. FARIMA allows ``d`` to be a non-integer (a fraction) to take care of these cases. 
-
-#### CARMA (Continuous models)
-
-- While the models we’ve discussed so far (like SARIMA or FARIMA) operate on discrete regularly sampled time steps, the CARMA (Continuous-time Auto-Regressive Moving Average) are designed for data that exists in a continuous flow, even if our observations of it are irregular or missing.
-"""
-
-# ╔═╡ c9b352f2-016d-4d16-8053-48eedc39458d
-md"""
-#### ARCH models
-
-- Another form of nonstationarity occurs when the variance, rather than the local mean level, of  the time series changes during the observation. This is commonly called *volatility*, in econometric contexts.
-
-- These kind of problems can be addressed by the autoregressive conditional heteroscedastic (ARCH) models. Here the variance is assumed to be a stochastic autoregressive process depending on previous values.
-
-- For instance, in a ARCH(1) model: 
-
-```math
-{\rm Var}_{\rm ARCH(1)}(\epsilon_i) = w_t + \alpha_1 {\rm Var(\epsilon_{i-1})}
-```
-
-"""
+# ╔═╡ 7b6b2573-882e-4fe7-8f5e-29d18e038cfc
+tip(cm"Final remark!")
 
 # ╔═╡ e3234616-d59f-43bb-91b3-bd2f727c68b1
 md"""
@@ -2263,7 +2249,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 65439bec-177b-4523-83e3-d72962ee81e6
-md"Notebook v1.0.0 - 7 April 2026"
+md"Notebook v1.0.0 - 16 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -4443,6 +4429,7 @@ version = "4.1.0+0"
 # ╟─90b6cf29-44c0-425d-a814-910fb08009d2
 # ╟─91c6247b-af12-47cf-811a-1440b6919576
 # ╟─f1c10261-a2c7-473c-879b-005714127aee
+# ╟─ead0056c-babd-4d6e-94c5-16e7bada50d7
 # ╟─56fb0117-2dc3-41c0-aba9-405cd48ff72b
 # ╟─c2d5a2be-6ac7-4908-a96b-f39a4b3fb573
 # ╟─d5fb82f9-c94f-46e5-9261-9760110b146e
@@ -4482,7 +4469,6 @@ version = "4.1.0+0"
 # ╟─f1bc344e-ac85-4815-928f-61f5f48c18a9
 # ╟─cc765f72-cb9d-4b1b-9e11-f2e7b6a4c71e
 # ╟─72700334-0d07-4486-ba3f-46fe0cfacb4f
-# ╟─381bc481-5c7e-4d9a-80c9-8f245718718d
 # ╟─ba0761ce-3fd9-4b28-a9b4-46f850dfbafe
 # ╟─bc60b1c1-a888-4f6a-ac2e-14601c2cac54
 # ╟─9d1af19c-e1b3-48aa-9b9b-245347efd682
@@ -4513,9 +4499,10 @@ version = "4.1.0+0"
 # ╟─4d06a1b3-0ef5-4fcd-95bb-c2058ea3765a
 # ╟─38012afa-faf9-43ef-a443-f5256763a931
 # ╟─2905155b-0de7-4f15-acb0-aaaf1b421c9b
-# ╟─fa1e8adf-969a-4476-81ae-b548cabcd8f6
 # ╟─c85069d2-8890-4f3c-ae1c-dc41872f7ec5
+# ╟─fa1e8adf-969a-4476-81ae-b548cabcd8f6
 # ╟─0edac0fb-f52e-4a2c-b3dc-54f8237ad325
+# ╟─9e6ac4f5-f433-4d57-903a-624935e3d3a6
 # ╟─2eb45539-ef03-4f6d-86be-52a1e9228088
 # ╟─db519b68-35a3-4396-a302-e0bd804985c1
 # ╟─a262674e-d56a-4252-8929-3d548150955c
@@ -4560,25 +4547,25 @@ version = "4.1.0+0"
 # ╟─d94bbb24-b0fd-44d4-bedc-586941fa233c
 # ╟─c1e80404-665c-4a68-978c-1df72a158059
 # ╟─73aecd0e-d6d0-4429-b63b-38f572115c50
+# ╟─fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
+# ╟─1374c277-287f-4791-83f0-52efb7bc358c
+# ╟─51d3477f-4bd3-4181-8e31-158cbcadef53
+# ╟─c9b352f2-016d-4d16-8053-48eedc39458d
+# ╟─91890653-db58-4416-bdb1-bfb7750d8d92
 # ╟─61cade13-3747-4481-aa8a-b59ff87ca05d
 # ╟─2100fba7-c85d-4c8e-b9ba-158dc9032da8
 # ╟─ca1ac1dd-b580-491b-94b6-8ece8c037298
 # ╟─f1e1cdde-a8b8-4ff5-9c49-6207de8ad125
-# ╠═6bf9db61-f56c-4e91-af6b-772a5066e709
-# ╟─e7c583a2-1c61-4b0b-851d-5dcf80a0cf14
-# ╟─965cb065-f033-4384-a38b-0c522e3b17b9
+# ╠═c57ac174-27b7-4bcf-bd26-f48e3608f146
+# ╟─a4eb3827-2cbf-4447-a418-687afc2fc3c9
 # ╟─435071db-e81b-4b3e-ab0e-a271030749e4
-# ╠═dc5a5f74-9289-4614-b1ae-553d43c33120
 # ╠═61d51f9c-2368-478c-9d77-90c7d9a72610
 # ╠═1f7f1ece-0c82-426a-9e28-0ddad7878986
 # ╟─d9988b70-9001-4187-a049-f6adbbf13bcc
 # ╟─15cf410a-13ee-4638-b91a-4dc286754c8c
 # ╟─e74e9fba-8062-45b0-aea9-b7ae1a646bf3
 # ╟─8d084ab0-3027-49d8-9b3b-24f06d0af830
-# ╟─e688750a-c6a9-4e08-ba7c-c1fd314405ec
-# ╟─fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
-# ╟─1374c277-287f-4791-83f0-52efb7bc358c
-# ╟─c9b352f2-016d-4d16-8053-48eedc39458d
+# ╟─7b6b2573-882e-4fe7-8f5e-29d18e038cfc
 # ╟─e3234616-d59f-43bb-91b3-bd2f727c68b1
 # ╟─4a98a96f-a1b3-4144-b98a-9f65c0ca44aa
 # ╟─e97eaccb-f03c-455e-8f15-b606f66704d9
