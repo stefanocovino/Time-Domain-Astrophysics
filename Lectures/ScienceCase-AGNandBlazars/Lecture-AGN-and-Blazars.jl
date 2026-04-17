@@ -23,7 +23,6 @@ begin
 	using Statistics
 	using StateSpaceModels
 	using StatsBase
-	using StatsPlots
 	using Turing
 end
 
@@ -90,15 +89,15 @@ md"""
 
 - Variable: on different times scales. Rapid variability in the X-ray indicate that emission comes from the innermost region.
 
-- Strong Radio emitters: in some sources extended, jets are present.
+- Strong Radio emitters: in some sources extended jets are present.
 
 - Polarized emission.
 
 
 
-- [Markarian 421](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=Mrk++421) shows comparable power emitted across abouit seven orders of magnitude in photon energy:
+- [Markarian 421](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=Mrk++421) shows comparable power emitted across about seven orders of magnitude in photon energy:
 
-$(LocalResource("Pics/mrk421.png"))
+$(LocalResource("Pics/mrk421.png", :width => 700))
 
 """
 
@@ -107,18 +106,18 @@ $(LocalResource("Pics/mrk421.png"))
 md"""
 - [Markarian 421](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=Mrk++421) is also bright at TeV energies, nowdays accessible, e.g., by [Cherenkov telescopes](https://en.wikipedia.org/wiki/IACT):
 
-$(LocalResource("Pics/mrk421tev.png"))
+$(LocalResource("Pics/mrk421tev.png", :width => 700)))
 """
 
 # ╔═╡ b208ae73-2de3-442e-a790-81c2019414b7
-tip(cm"A simple, yet powerful, argument:")
+tip(cm"A simple, yet intriguing argument:")
 
 # ╔═╡ a8f9e126-1730-4f30-8d70-9b454f56ff39
 # ╠═╡ show_logs = false
 md"""
 - A source that varies significantly in time t must have size  $R < ct$, where $c$ is the speed of light.
 
-$(LocalResource("Pics/compactsource.png"))
+$(LocalResource("Pics/compactsource.png", :width => 700)))
 """
 
 # ╔═╡ 7e8db3bd-fac0-44a3-b4f3-5246cc2eda89
@@ -136,7 +135,7 @@ l \le \frac{c \Delta t \delta}{1+z}
 
 - where $c$ is the speed of light, $\Delta t$ the variability time, $\delta$ the Doppler factor and $z$ the source redshift. 
 
-- The Doppler factor is $\delta = \frac{1}{\Gamma (1-\beta \cos \theta)} = \frac{\sqrt{1-\beta2}}{1-\beta \cos \theta}$, where $\Gamma$ is the Lorentz factor, $\beta$ the source speed in units of the speed of light, and $\theta$ the angle of motion wrt the line of sight.
+- The Doppler factor is $\delta = \frac{1}{\Gamma (1-\beta \cos \theta)} = \frac{\sqrt{1-\beta^2}}{1-\beta \cos \theta}$, where $\Gamma$ is the Lorentz factor, $\beta$ the source speed in units of the speed of light, and $\theta$ the angle of motion wrt the line of sight.
     - For this source: $z = 0.030$, $\theta \approx 0^\circ$ and $\beta > 0.98$ so that $\delta \sim 10$ and, finally, $l \le 3 \times 10^{15}$ cm = 203 AU.
 """
 
@@ -148,7 +147,7 @@ cm"""
 
 - Many of the various phenomenologies shown by AGN can be explained by a unique simple scenario and dfferent viewing angles:
 
-$(LocalResource("Pics/unifiedmodel.png"))
+$(LocalResource("Pics/unifiedmodel.png", :width => 700))
 
 
 
@@ -168,7 +167,7 @@ $(LocalResource("Pics/unifiedmodel.png"))
 
 - And now we also have direct imaging of the [M87](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=M87) central black holes:
 
-$(LocalResource("Pics/m87.png"))
+$(LocalResource("Pics/m87.png", :width => 700)))
 """
 
 # ╔═╡ edfcfc7f-e288-4c9f-b11b-b4cda0553a78
@@ -195,7 +194,7 @@ md"""
 - These sorces are often monitored since decades with with multi-band light curves.
     - This is, for instance, the dataset obtained by the [INAF](http://www.inaf.it/en?set_language=en) [REM telescope](https://en.wikipedia.org/wiki/Rapid_Eye_Mount_telescope) for [PKS2155-304](https://simbad.u-strasbg.fr/simbad/sim-basic?Ident=PKS+2155-304&submit=SIMBAD+search):
    
-$(LocalResource("Pics/pks2155-304-rem.jpg",  :width => 400))
+$(LocalResource("Pics/pks2155-304-rem.jpg",  :width => 700))
 """
 
 # ╔═╡ 1c3ac56a-d566-44e6-bf16-be9934724a77
@@ -205,23 +204,32 @@ md"""
 ***
 
 - There is strong interest in (possible) blazar periodicities.
-- It is a highly debated topic, a general agreement in the community is still missing for a series of reasons we are now able to realize:
-    - Often, we refer to year-long (quasi-)periodicities, with light-curve at most a couple of decades long. Usual statistical tests are almost ineffecitve. 
+- It is a highly debated topic, a general agreement in the community is still missing for a series of reasons that we are (likely) able to realize after this exercise:
+    - Often, we refer to year-long (quasi-)periodicities, with light-curve at most a couple of decades long. Usual statistical tests are of limited effectivess. 
     - Time-series are affected by red-noise, making evaluation of the significance of identified features difficult.
-    - For data from ground-based facilities sampling is irregular with long (seasonal) gaps.
+    - For data from ground-based facilities, sampling is irregular with long (seasonal) gaps.
     
-$(LocalResource("Pics/binary.jpg"))
+$(LocalResource("Pics/binary.jpg", :width => 700)))
 """
+
+# ╔═╡ 5ef4ef6f-ff1b-480c-8136-bb57c1a6751d
+tip(cm"Possibly the best case identified so far")
 
 # ╔═╡ c83c4c6c-b3c3-48a5-973f-ae68427c0972
 md"""
-#### Exercise: [PG1553+113](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=PG+1553%2B113) claimed periodicity
+#### Exercise: [PG1553+113](https://simbad.u-strasbg.fr/simbad/sim-id?Ident=PG+1553%2B113) possible periodicity
 ***
 
 - We analyse data obtained by the [Fermi satellite](https://fermi.gsfc.nasa.gov/) with the [LAT](https://fermi.gsfc.nasa.gov/science/instruments/lat.html) instrument. Data can be downloaded [here](https://fermi.gsfc.nasa.gov/ssc/data/access/lat/LightCurveRepository/source.html?source_name=4FGL_J1555.7+1111).
 
 - Let's see the light-curve:
 """
+
+# ╔═╡ a042ce06-7415-488b-a964-007873619351
+begin
+	dt = DataFrame(CSV.File("4FGL_J1555.7+1111_monthly_16_04_2026.csv"))
+	#first(dt,5)
+end
 
 # ╔═╡ 6a0b912f-b531-4ef2-a0bb-8a0d30aed6fc
 begin
@@ -258,12 +266,14 @@ md"""
 begin
 	meandelta = mean(diff(dt[!,:MJD]))
 	meandeltabin = std(diff(dt[!,:MJD]))
-	#printfmtln("Mean sample rate: {:.2f} days, with standard deviation: {:.2f} days",meandelta, meandeltabin)
 end;
 
 # ╔═╡ 5a1bc2de-a335-4024-a249-fec980636cdc
 Markdown.parse("""
 Mean sample rate: $(latexify(meandelta,fmt="%.2f")) days, with standard deviation: $(latexify(meandeltabin,fmt="%.2f")) days.
+
+- Indeed the sampling is pretty regular, but there are a few gaps when source flux was so low not to secure a detection.
+- For our purpose here we can assume the sampling is regular.
 """)
 
 # ╔═╡ 8af78ef0-28f1-4222-bd62-1df8dfe4b931
@@ -276,9 +286,11 @@ ADFTest(dt[!,"Rate"],:constant,1)
 
 # ╔═╡ 70b1d915-2425-4741-9dd9-b7d60496b4ba
 md"""
-- The light-curve can be considered, at least during this exercise, as stationary and therefore we go on modeling it with an ARMA model.
+- The light-curve can be considered stationary and therefore we go on modeling it with an ARMA model.
 
 - This essentially means that our null hypothesis is that this time-series can be described by a purely stochastic model.
+
+> If this were the case, the light-curve, being only due to stochastic processes, has no significant QPOs.
 
 - First, let's look at the ACF and PACF diagnostic plots.
 """
@@ -328,9 +340,9 @@ end
 md"""
 - The ACF is zero after the first 7 lags, but it also shows the typical cyclic behavior of periodic phenomena, with a period of about 25 lags $\sim 2$ years that is close to the proposed (quasi-)periodicity of 2.2 years ([Achermann et al. 2015](https://ui.adsabs.harvard.edu/abs/2015ApJ...813L..41A/abstract)).
 
-- The PACF is zero after 3 lags. This might suggest 3 as AR order and 7 as MA order.
+- The PACF is zero after 3 lags. 
 
-- However, we prefer choosing the AR and MA orders by modern computational tools. Rather than a "brute-force" approach, with a grid search, let's try a more optimized search.
+- However, due to the possible QPO, the diagnostic plots are not easy to interpret and we prefer choosing the AR and MA orders by modern computational tools carrying out an optimized search.
 """
 
 # ╔═╡ 8e23bfe7-676d-449e-af19-dc4785d53e23
@@ -338,12 +350,12 @@ amodel = auto_arima(dt[!,:Rate],allow_mean=true);
 
 # ╔═╡ 982365a4-ac3b-40d5-be65-5d03048467c3
 cm"""
-The best selected ARMA components are: AR($(amodel.order.p)), MA($(amodel.order.q)) with $(amodel.order.d) differentiations. No seasonal components are selected.
+The best selected ARMA components turns out: AR($(amodel.order.p)), MA($(amodel.order.q)) with $(amodel.order.d) differentiations. No seasonal components are selected.
 """
 
 # ╔═╡ ef6c457b-9f04-45b7-bf31-281a39111fb6
 md"""
-- Results are indeed not so close to those inferred from the ACF/PACF analysis. Let's see some diagnostic plots.
+- Results are indeed not so different from those inferred from the ACF/PACF analysis. Let's see some diagnostic plots.
 """
 
 # ╔═╡ 3fdda80e-3360-481c-af16-0bcdd5d3e470
@@ -435,26 +447,31 @@ end
 
 # ╔═╡ 604dab44-6d5f-49e3-a2c1-669a947ac5ea
 md"""
-- The ARMA model is indeed rather effective in getting the variability of the data, but it fails to reproduce the extent of the variability, in particular at the highest or lowest fluxes.
+- What (provbably) happens is simply that the model, in order to reproduce the positive spikes often interpreted as due to a QPO as due to a pure stochastic process, needs to have almost equally likely positive ane negative variations we indeed do not see in our data. 
+"""
 
-- We then try to apply a more sophisticated analysis, based on a procedure described by [Vaughan (2010)](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract).
+# ╔═╡ 6f5f35ca-1fe8-42a3-945e-63096e2d1dbb
+tip("Let's try a pure Bayesian approach modeling the PDS of the source")
+
+# ╔═╡ 2d14c739-7b80-4159-a22f-e54686f7b04d
+cm"""
+- This is a fairly sophisticated approach, based on a procedure described by [Vaughan (2010)](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract).
 """
 
 # ╔═╡ a862c4a2-0a3c-432d-86ab-49c9857554b3
 md"""
-- Let's compuyte the Nyquist frequency and a lower-limit for the freqencies accessible with our dataset:
+- Let's compuyte the Nyquist frequency and a lower-limit for the frequencies accessible with our dataset:
 """
 
 # ╔═╡ 15fd10c7-c163-4c4c-a1a7-993ec5185843
 begin
 	lendata = maximum(dt.MJD)-minimum(dt.MJD)
 	nqy = 1 / (2*meandelta)
-	#printfmtln("Nyquist frequency: {:.4f}, lowest frequency: {:.4f} 1/day", nqy, 1/lendata)
 end;
 
 # ╔═╡ 83fa92c8-643c-408c-9d05-bc8d744e1e1a
 Markdown.parse("""
-##### Nyquist frequency: $(latexify(nqy,fmt="%.4f")), lowest frequency:  $(latexify(1/lendata,fmt="%.4f"))
+##### Nyquist frequency: $(latexify(nqy,fmt="%.4f")) days``^{-1}``, lowest frequency:  $(latexify(1/lendata,fmt="%.4f")) days``^{-1}``
 """)
 
 # ╔═╡ 520a01ff-dfca-405a-8cff-4124f0bc0792
@@ -467,12 +484,13 @@ begin
 	psd = periodogram(dt.Rate; fs=1/meandelta)
 	
 	freq = psd.freq[psd.freq.>0]
-	power = 2*psd.power[psd.freq.>0]/sum(dt.eRate.^2);
+	#power = 2*psd.power[psd.freq.>0]/sum(dt.eRate.^2);
+	power = 2*psd.power[psd.freq.>0]
 end;
 
 # ╔═╡ 8678584b-0bee-4ff0-a466-9f073847d2a1
 begin
-	fg4 = Figure()
+	fg4 = Figure(size=(700,500))
 	
 	axfg4 = Axis(fg4[1,1],
 	    title="Fourier periodogram",
@@ -543,8 +561,57 @@ begin
 	chain = mapreduce(c -> sample(permodel(freq,power), NUTS(burnins,0.65), iterations), chainscat, 1:chains)
 end
 
-# ╔═╡ 2abc083b-f39f-4610-9c40-cfbfb73982a3
-StatsPlots.plot(chain)
+# ╔═╡ 89120723-86b3-4c6c-bc12-78cc3d948efc
+begin
+	params = names(chain, :parameters)	
+	
+	n_chains = chains
+	n_samples = length(chain)
+	
+	figch = Figure(size=(1000, 800))
+
+	for (i, param) in enumerate(params)
+	    axch = Axis(figch[i, 1]; ylabel=string(param))
+	    for ch in 1:n_chains
+	        values = chain[:, param, ch]
+	        lines!(axch, 1:n_samples, values; label=string(ch))
+	    end
+	
+	    hideydecorations!(axch; label=false)
+	    if i < length(params)
+	        hidexdecorations!(axch; grid=false)
+	    else
+	        axch.xlabel = "Iteration"
+	    end
+	end
+
+	for (i, param) in enumerate(params)
+    	axch2 = Axis(figch[i, 2]; ylabel=string(param))
+    	for ch in 1:n_chains
+        	values = chain[:, param, ch]
+        	CairoMakie.density!(axch2, values; label=string(ch), strokearound=false, strokewidth=2,strokecolor=Cycled(ch),color=:transparent)
+    	end
+
+    	axch2.xlabel = "Parameter estimate"
+	end
+
+	figch
+
+end
+
+# ╔═╡ 0b14fca7-9680-42e7-866d-c52e61302e40
+cm"""
+- Checking chain convergence is very important. 
+
+- The ``\hat{r}`` parameter, or Potential Scale Reduction Factor (PSRF), is a MCMC convergence diagnostic that compares between-chain variance to within-chain variance for multiple chains. 
+
+-  It measures if chains have mixed well; a value of ``\hat{r} \approx 1`` indicates convergence.
+
+- It has been introduced in [Gelman & Rubin (1992)](https://sites.stat.columbia.edu/gelman/research/published/itsim.pdf).
+"""
+
+# ╔═╡ 75094523-c93d-42aa-a51c-cdbd2d62fea2
+rhat(chain)
 
 # ╔═╡ eb11b179-5c4c-4b29-b90d-6fd1cf1c54b4
 md"""
@@ -737,24 +804,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 59ae94e7-1c66-4e92-bee0-12b67de7ee39
-md"Notebook v1.0.0 - 16 April 2026"
-
-# ╔═╡ f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	dt = DataFrame(CSV.File("4FGLJ1555 7p1111.txt",select=[1,2,3],comment="#"))
-	rename!(dt,["MJD","Rate","eRate"])
-	dt[!,:Rate] =  dt[!,:Rate] * 1e7
-	dt[!,:eRate] =  dt[!,:eRate] * 1e7
-end;
-  ╠═╡ =#
-
-# ╔═╡ a042ce06-7415-488b-a964-007873619351
-begin
-	dt = DataFrame(CSV.File("4FGL_J1555.7+1111_monthly_16_04_2026.csv"))
-	first(dt,5)
-end
+md"Notebook v1.0.0 - 17 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -776,7 +826,6 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 StateSpaceModels = "99342f36-827c-5390-97c9-d7f9ee765c78"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [compat]
@@ -796,7 +845,6 @@ PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 StateSpaceModels = "~0.7.2"
 StatsBase = "~0.34.10"
-StatsPlots = "~0.15.8"
 Turing = "~0.42.2"
 """
 
@@ -806,7 +854,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "4042a91f5b2d2000f96503423859b4d52207634d"
+project_hash = "1ac8ecc221364fa1ca7a93b33ffb8e09a4e0a7c2"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -990,18 +1038,6 @@ version = "2.5.0"
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
 
-[[deps.Arpack]]
-deps = ["Arpack_jll", "Libdl", "LinearAlgebra", "Logging"]
-git-tree-sha1 = "9b9b347613394885fd1c8c7729bfc60528faa436"
-uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
-version = "0.5.4"
-
-[[deps.Arpack_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "libblastrampoline_jll"]
-git-tree-sha1 = "7f54761502ff149a9d492e4acefe9805898e29b3"
-uuid = "68821587-b530-5797-8361-c406ea357684"
-version = "3.5.2+0"
-
 [[deps.ArrayInterface]]
 deps = ["Adapt", "LinearAlgebra"]
 git-tree-sha1 = "78b3a7a536b4b0a747a0f296ea77091ca0a9f9a3"
@@ -1125,11 +1161,6 @@ version = "0.15.16"
     Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
     ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 
-[[deps.BitFlags]]
-git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
-uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.9"
-
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -1217,12 +1248,6 @@ weakdeps = ["InverseFunctions", "Test"]
     [deps.ChangesOfVariables.extensions]
     ChangesOfVariablesInverseFunctionsExt = "InverseFunctions"
     ChangesOfVariablesTestExt = "Test"
-
-[[deps.Clustering]]
-deps = ["Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "Random", "SparseArrays", "Statistics", "StatsBase"]
-git-tree-sha1 = "3e22db924e2945282e70c33b75d4dde8bfa44c94"
-uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
-version = "0.15.8"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -1328,12 +1353,6 @@ git-tree-sha1 = "3b4be73db165146d8a88e47924f464e55ab053cd"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.7"
 
-[[deps.ConcurrentUtilities]]
-deps = ["Serialization", "Sockets"]
-git-tree-sha1 = "21d088c496ea22914fe80906eb5bce65755e5ec8"
-uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
-version = "2.5.1"
-
 [[deps.ConsoleProgressMonitor]]
 deps = ["Logging", "ProgressMeter"]
 git-tree-sha1 = "3ab7b2136722890b9af903859afcf457fa3059e8"
@@ -1397,12 +1416,6 @@ version = "1.0.0"
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 version = "1.11.0"
-
-[[deps.Dbus_jll]]
-deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "473e9afc9cf30814eb67ffa5f2db7df82c3ad9fd"
-uuid = "ee1fde0b-3d02-5ea6-8484-8dfef6360eab"
-version = "1.16.2+0"
 
 [[deps.DefineSingletons]]
 git-tree-sha1 = "0fba8b706d0178b4dc7fd44a96a92382c9065c2c"
@@ -1488,17 +1501,6 @@ version = "0.7.16"
     Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
     Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
     Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
-
-[[deps.Distances]]
-deps = ["LinearAlgebra", "Statistics", "StatsAPI"]
-git-tree-sha1 = "c7e3a542b999843086e2f29dac96a618c105be1d"
-uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
-version = "0.10.12"
-weakdeps = ["ChainRulesCore", "SparseArrays"]
-
-    [deps.Distances.extensions]
-    DistancesChainRulesCoreExt = "ChainRulesCore"
-    DistancesSparseArraysExt = "SparseArrays"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -1587,23 +1589,11 @@ git-tree-sha1 = "c49898e8438c828577f04b92fc9368c388ac783c"
 uuid = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
 version = "1.0.7"
 
-[[deps.EpollShim_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "8a4be429317c42cfae6a7fc03c31bad1970c310d"
-uuid = "2702e6a9-849d-5ed8-8c21-79e8b8f9ee43"
-version = "0.0.20230411+1"
-
 [[deps.ExactPredicates]]
 deps = ["IntervalArithmetic", "Random", "StaticArrays"]
 git-tree-sha1 = "83231673ea4d3d6008ac74dc5079e77ab2209d8f"
 uuid = "429591f6-91af-11e9-00e2-59fbe8cec110"
 version = "2.2.9"
-
-[[deps.ExceptionUnwrapping]]
-deps = ["Test"]
-git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
-uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
-version = "0.1.11"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1625,12 +1615,6 @@ version = "0.10.14"
 git-tree-sha1 = "b309b36a9e02fe7be71270dd8c0fd873625332b4"
 uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
 version = "0.1.6"
-
-[[deps.FFMPEG]]
-deps = ["FFMPEG_jll"]
-git-tree-sha1 = "95ecf07c2eea562b5adbd0696af6db62c0f52560"
-uuid = "c87230d0-a227-11e9-1b43-d7ebe4e7570a"
-version = "0.4.5"
 
 [[deps.FFMPEG_jll]]
 deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers", "LAME_jll", "Libdl", "Ogg_jll", "OpenSSL_jll", "Opus_jll", "PCRE2_jll", "Zlib_jll", "libaom_jll", "libass_jll", "libfdk_aac_jll", "libva_jll", "libvorbis_jll", "x264_jll", "x265_jll"]
@@ -1666,10 +1650,12 @@ deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "6522cfb3b8fe97bec632252263057996cbd3de20"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.18.0"
-weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
     HTTPExt = "HTTP"
+
+    [deps.FileIO.weakdeps]
+    HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport"]
@@ -1806,35 +1792,11 @@ deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 version = "1.11.0"
 
-[[deps.GLFW_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll", "libdecor_jll", "xkbcommon_jll"]
-git-tree-sha1 = "b7bfd56fa66616138dfe5237da4dc13bbd83c67f"
-uuid = "0656b61e-2033-5cc2-a64a-77c0f6c09b89"
-version = "3.4.1+0"
-
 [[deps.GPUArraysCore]]
 deps = ["Adapt"]
 git-tree-sha1 = "83cf05ab16a73219e5f6bd1bdfa9848fa24ac627"
 uuid = "46192b85-c4d5-4398-a991-12ede77f4527"
 version = "0.2.0"
-
-[[deps.GR]]
-deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Preferences", "Printf", "Qt6Wayland_jll", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "p7zip_jll"]
-git-tree-sha1 = "44716a1a667cb867ee0e9ec8edc31c3e4aa5afdc"
-uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.73.24"
-
-    [deps.GR.extensions]
-    IJuliaExt = "IJulia"
-
-    [deps.GR.weakdeps]
-    IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
-
-[[deps.GR_jll]]
-deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "FreeType2_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Qt6Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "be8a1b8065959e24fdc1b51402f39f3b6f0f6653"
-uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.73.24+0"
 
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "IterTools", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
@@ -1894,12 +1856,6 @@ version = "0.11.2"
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
-
-[[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "51059d23c8bb67911a2e6fd5130229113735fc7e"
-uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.11.0"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -2098,12 +2054,6 @@ version = "1.10.0"
 git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
 uuid = "82899510-4779-5014-852e-03e436cf321d"
 version = "1.0.0"
-
-[[deps.JLFzf]]
-deps = ["REPL", "Random", "fzf_jll"]
-git-tree-sha1 = "82f7acdc599b65e0f8ccd270ffa1467c21cb647b"
-uuid = "1019f520-868f-41f5-a6de-eb00f4b6a39c"
-version = "0.1.11"
 
 [[deps.JLLWrappers]]
 deps = ["Artifacts", "Preferences"]
@@ -2433,18 +2383,6 @@ git-tree-sha1 = "51f3fade0b4ff2cf90b36b3312425460631abb56"
 uuid = "99c1a7ee-ab34-5fd5-8076-27c950a045f4"
 version = "2.5.6"
 
-[[deps.MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "8785729fa736197687541f7053f6d8ab7fc44f92"
-uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.10"
-
-[[deps.MbedTLS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
-uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.1010+0"
-
 [[deps.Measures]]
 git-tree-sha1 = "b513cedd20d9c914783d8ad83d08120702bf2c77"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
@@ -2492,12 +2430,6 @@ git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.4"
 
-[[deps.MultivariateStats]]
-deps = ["Arpack", "Distributions", "LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI", "StatsBase"]
-git-tree-sha1 = "7c3ff68a904d0f7404e5d2f7f5bc667934d8d616"
-uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
-version = "0.10.4"
-
 [[deps.NLSolversBase]]
 deps = ["ADTypes", "DifferentiationInterface", "Distributed", "FiniteDiff", "ForwardDiff"]
 git-tree-sha1 = "25a6638571a902ecfb1ae2a18fc1575f86b1d4df"
@@ -2520,12 +2452,6 @@ version = "0.10.5"
 git-tree-sha1 = "eda490d06b9f7c00752ee81cfa451efe55521e21"
 uuid = "c020b1a1-e9b0-503a-9c33-f039bfc54a85"
 version = "1.0.0"
-
-[[deps.NearestNeighbors]]
-deps = ["AbstractTrees", "Distances", "StaticArrays"]
-git-tree-sha1 = "e2c3bba08dd6dedfe17a17889131b885b8c082f0"
-uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
-version = "0.4.27"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -2584,12 +2510,6 @@ version = "3.4.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
-
-[[deps.OpenSSL]]
-deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
-uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -2761,37 +2681,11 @@ git-tree-sha1 = "f9501cc0430a26bc3d156ae1b5b0c1b47af4d6da"
 uuid = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 version = "0.3.3"
 
-[[deps.PlotThemes]]
-deps = ["PlotUtils", "Statistics"]
-git-tree-sha1 = "41031ef3a1be6f5bbbf3e8073f210556daeae5ca"
-uuid = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
-version = "3.3.0"
-
 [[deps.PlotUtils]]
 deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random", "Reexport", "StableRNGs", "Statistics"]
 git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
-
-[[deps.Plots]]
-deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "TOML", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "cb20a4eacda080e517e4deb9cfb6c7c518131265"
-uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.41.6"
-
-    [deps.Plots.extensions]
-    FileIOExt = "FileIO"
-    GeometryBasicsExt = "GeometryBasics"
-    IJuliaExt = "IJulia"
-    ImageInTerminalExt = "ImageInTerminal"
-    UnitfulExt = "Unitful"
-
-    [deps.Plots.weakdeps]
-    FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-    GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-    IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
-    ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
-    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.PlutoTeachingTools]]
 deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
@@ -2916,36 +2810,6 @@ git-tree-sha1 = "472daaa816895cb7aee81658d4e7aec901fa1106"
 uuid = "4b34888f-f399-49d4-9bb3-47ed5cae4e65"
 version = "1.0.2"
 
-[[deps.Qt6Base_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Vulkan_Loader_jll", "Xorg_libSM_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_cursor_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "libinput_jll", "xkbcommon_jll"]
-git-tree-sha1 = "d7a4bff94f42208ce3cf6bc8e4e7d1d663e7ee8b"
-uuid = "c0090381-4147-56d7-9ebc-da0b1113ec56"
-version = "6.10.2+1"
-
-[[deps.Qt6Declarative_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Qt6Base_jll", "Qt6ShaderTools_jll", "Qt6Svg_jll"]
-git-tree-sha1 = "d5b7dd0e226774cbd87e2790e34def09245c7eab"
-uuid = "629bc702-f1f5-5709-abd5-49b8460ea067"
-version = "6.10.2+1"
-
-[[deps.Qt6ShaderTools_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Qt6Base_jll"]
-git-tree-sha1 = "4d85eedf69d875982c46643f6b4f66919d7e157b"
-uuid = "ce943373-25bb-56aa-8eca-768745ed7b5a"
-version = "6.10.2+1"
-
-[[deps.Qt6Svg_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Qt6Base_jll"]
-git-tree-sha1 = "81587ff5ff25a4e1115ce191e36285ede0334c9d"
-uuid = "6de9746b-f93d-5813-b365-ba18ad4a9cf3"
-version = "6.10.2+0"
-
-[[deps.Qt6Wayland_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Qt6Base_jll", "Qt6Declarative_jll"]
-git-tree-sha1 = "672c938b4b4e3e0169a07a5f227029d4905456f2"
-uuid = "e99dba38-086e-5de3-a5b1-6e4c66e897c3"
-version = "6.10.2+1"
-
 [[deps.QuadGK]]
 deps = ["DataStructures", "LinearAlgebra"]
 git-tree-sha1 = "9da16da70037ba9d701192e27befedefb91ec284"
@@ -3006,12 +2870,6 @@ deps = ["PrecompileTools"]
 git-tree-sha1 = "5c3d09cc4f31f5fc6af001c250bf1278733100ff"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 version = "1.3.4"
-
-[[deps.RecipesPipeline]]
-deps = ["Dates", "NaNMath", "PlotUtils", "PrecompileTools", "RecipesBase"]
-git-tree-sha1 = "45cf9fd0ca5839d06ef333c8201714e888486342"
-uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
-version = "0.6.12"
 
 [[deps.RecursiveArrayTools]]
 deps = ["Adapt", "ArrayInterface", "DocStringExtensions", "GPUArraysCore", "LinearAlgebra", "PrecompileTools", "RecipesBase", "StaticArraysCore", "SymbolicIndexingInterface"]
@@ -3266,11 +3124,6 @@ git-tree-sha1 = "3949ad92e1c9d2ff0cd4a1317d5ecbba682f4b92"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
 version = "0.4.1"
 
-[[deps.SimpleBufferStream]]
-git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
-uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
-version = "1.2.0"
-
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
 git-tree-sha1 = "be8eeac05ec97d379347584fa9fe2f5f76795bcb"
@@ -3431,12 +3284,6 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     [deps.StatsFuns.extensions]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
-
-[[deps.StatsPlots]]
-deps = ["AbstractFFTs", "Clustering", "DataStructures", "Distributions", "Interpolations", "KernelDensity", "LinearAlgebra", "MultivariateStats", "NaNMath", "Observables", "Plots", "RecipesBase", "RecipesPipeline", "Reexport", "StatsBase", "TableOperations", "Tables", "Widgets"]
-git-tree-sha1 = "88cf3587711d9ad0a55722d339a013c4c56c5bbc"
-uuid = "f3b207a7-027a-5e70-b257-86293d7955fd"
-version = "0.15.8"
 
 [[deps.StringManipulation]]
 deps = ["PrecompileTools"]
@@ -3639,23 +3486,6 @@ weakdeps = ["ConstructionBase", "ForwardDiff", "InverseFunctions", "LaTeXStrings
     NaNMathExt = "NaNMath"
     PrintfExt = "Printf"
 
-[[deps.Unzip]]
-git-tree-sha1 = "ca0969166a028236229f63514992fc073799bb78"
-uuid = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
-version = "0.2.0"
-
-[[deps.Vulkan_Loader_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Wayland_jll", "Xorg_libX11_jll", "Xorg_libXrandr_jll", "xkbcommon_jll"]
-git-tree-sha1 = "2f0486047a07670caad3a81a075d2e518acc5c59"
-uuid = "a44049a8-05dd-5a78-86c9-5fde0876e88c"
-version = "1.3.243+0"
-
-[[deps.Wayland_jll]]
-deps = ["Artifacts", "EpollShim_jll", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
-git-tree-sha1 = "96478df35bbc2f3e1e791bc7a3d0eeee559e60e9"
-uuid = "a2964d1f-97da-50d4-b82a-358c7fce9d89"
-version = "1.24.0+0"
-
 [[deps.WeakRefStrings]]
 deps = ["DataAPI", "InlineStrings", "Parsers"]
 git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
@@ -3667,12 +3497,6 @@ deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libw
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
 uuid = "e3aaa7dc-3e4b-44e0-be63-ffb868ccd7c1"
 version = "0.1.3"
-
-[[deps.Widgets]]
-deps = ["Colors", "Dates", "Observables", "OrderedCollections"]
-git-tree-sha1 = "e9aeb174f95385de31e70bd15fa066a505ea82b9"
-uuid = "cc8bc4a8-27d6-5769-a93b-9d913e69aa62"
-version = "0.6.7"
 
 [[deps.WoodburyMatrices]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -3691,18 +3515,6 @@ git-tree-sha1 = "9cce64c0fdd1960b597ba7ecda2950b5ed957438"
 uuid = "ffd25f8a-64ca-5728-b0f7-c24cf3aae800"
 version = "5.8.2+0"
 
-[[deps.Xorg_libICE_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "a3ea76ee3f4facd7a64684f9af25310825ee3668"
-uuid = "f67eecfb-183a-506d-b269-f58e52b52d7c"
-version = "1.1.2+0"
-
-[[deps.Xorg_libSM_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libICE_jll"]
-git-tree-sha1 = "9c7ad99c629a44f81e7799eb05ec2746abb5d588"
-uuid = "c834827a-8449-5923-a945-d239c165b7dd"
-version = "1.2.6+0"
-
 [[deps.Xorg_libX11_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libxcb_jll", "Xorg_xtrans_jll"]
 git-tree-sha1 = "808090ede1d41644447dd5cbafced4731c56bd2f"
@@ -3714,12 +3526,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "aa1261ebbac3ccc8d16558ae6799524c450ed16b"
 uuid = "0c0b7dd1-d40b-584c-a123-a41640f87eec"
 version = "1.0.13+0"
-
-[[deps.Xorg_libXcursor_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXfixes_jll", "Xorg_libXrender_jll"]
-git-tree-sha1 = "6c74ca84bbabc18c4547014765d194ff0b4dc9da"
-uuid = "935fb764-8cf2-53bf-bb30-45bb1f8bf724"
-version = "1.2.4+0"
 
 [[deps.Xorg_libXdmcp_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -3739,24 +3545,6 @@ git-tree-sha1 = "75e00946e43621e09d431d9b95818ee751e6b2ef"
 uuid = "d091e8ba-531a-589c-9de9-94069b037ed8"
 version = "6.0.2+0"
 
-[[deps.Xorg_libXi_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXext_jll", "Xorg_libXfixes_jll"]
-git-tree-sha1 = "a376af5c7ae60d29825164db40787f15c80c7c54"
-uuid = "a51aa0fd-4e3c-5386-b890-e753decda492"
-version = "1.8.3+0"
-
-[[deps.Xorg_libXinerama_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXext_jll"]
-git-tree-sha1 = "0ba01bc7396896a4ace8aab67db31403c71628f4"
-uuid = "d1454406-59df-5ea1-beac-c340f2130bc3"
-version = "1.1.7+0"
-
-[[deps.Xorg_libXrandr_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXext_jll", "Xorg_libXrender_jll"]
-git-tree-sha1 = "6c174ef70c96c76f4c3f4d3cfbe09d018bcd1b53"
-uuid = "ec84b674-ba8e-5d96-8ba1-2a689ba10484"
-version = "1.5.6+0"
-
 [[deps.Xorg_libXrender_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libX11_jll"]
 git-tree-sha1 = "7ed9347888fac59a618302ee38216dd0379c480d"
@@ -3774,60 +3562,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libXau_jll", "Xorg_libXdmcp_j
 git-tree-sha1 = "bfcaf7ec088eaba362093393fe11aa141fa15422"
 uuid = "c7cfdc94-dc32-55de-ac96-5a1b8d977c5b"
 version = "1.17.1+0"
-
-[[deps.Xorg_libxkbfile_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libX11_jll"]
-git-tree-sha1 = "ed756a03e95fff88d8f738ebc2849431bdd4fd1a"
-uuid = "cc61e674-0454-545c-8b26-ed2c68acab7a"
-version = "1.2.0+0"
-
-[[deps.Xorg_xcb_util_cursor_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_jll", "Xorg_xcb_util_renderutil_jll"]
-git-tree-sha1 = "9750dc53819eba4e9a20be42349a6d3b86c7cdf8"
-uuid = "e920d4aa-a673-5f3a-b3d7-f755a4d47c43"
-version = "0.1.6+0"
-
-[[deps.Xorg_xcb_util_image_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xcb_util_jll"]
-git-tree-sha1 = "f4fc02e384b74418679983a97385644b67e1263b"
-uuid = "12413925-8142-5f55-bb0e-6d7ca50bb09b"
-version = "0.4.1+0"
-
-[[deps.Xorg_xcb_util_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libxcb_jll"]
-git-tree-sha1 = "68da27247e7d8d8dafd1fcf0c3654ad6506f5f97"
-uuid = "2def613f-5ad1-5310-b15b-b15d46f528f5"
-version = "0.4.1+0"
-
-[[deps.Xorg_xcb_util_keysyms_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xcb_util_jll"]
-git-tree-sha1 = "44ec54b0e2acd408b0fb361e1e9244c60c9c3dd4"
-uuid = "975044d2-76e6-5fbe-bf08-97ce7c6574c7"
-version = "0.4.1+0"
-
-[[deps.Xorg_xcb_util_renderutil_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xcb_util_jll"]
-git-tree-sha1 = "5b0263b6d080716a02544c55fdff2c8d7f9a16a0"
-uuid = "0d47668e-0667-5a69-a72c-f761630bfb7e"
-version = "0.3.10+0"
-
-[[deps.Xorg_xcb_util_wm_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xcb_util_jll"]
-git-tree-sha1 = "f233c83cad1fa0e70b7771e0e21b061a116f2763"
-uuid = "c22f9ab0-d5fe-5066-847c-f4bb1cd4e361"
-version = "0.4.2+0"
-
-[[deps.Xorg_xkbcomp_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libxkbfile_jll"]
-git-tree-sha1 = "801a858fc9fb90c11ffddee1801bb06a738bda9b"
-uuid = "35661453-b289-5fab-8a00-3d9160c6a3a4"
-version = "1.4.7+0"
-
-[[deps.Xorg_xkeyboard_config_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_xkbcomp_jll"]
-git-tree-sha1 = "00af7ebdc563c9217ecc67776d1bbf037dbcebf4"
-uuid = "33bec58e-1273-512f-9401-5d533626f822"
-version = "2.44.0+0"
 
 [[deps.Xorg_xtrans_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -3852,18 +3586,6 @@ git-tree-sha1 = "434b3de333c75fc446aa0d19fc394edafd07ab08"
 uuid = "700de1a5-db45-46bc-99cf-38207098b444"
 version = "0.2.7"
 
-[[deps.eudev_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "c3b0e6196d50eab0c5ed34021aaa0bb463489510"
-uuid = "35ca27e7-8b34-5b7f-bca9-bdc33f59eb06"
-version = "3.2.14+0"
-
-[[deps.fzf_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "b6a34e0e0960190ac2a4363a1bd003504772d631"
-uuid = "214eeab7-80f7-51ab-84ad-2988db7cef09"
-version = "0.61.1+0"
-
 [[deps.isoband_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "51b5eeb3f98367157a7a12a1fb0aa5328946c03c"
@@ -3887,35 +3609,17 @@ deps = ["Artifacts", "Libdl"]
 uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 version = "5.15.0+0"
 
-[[deps.libdecor_jll]]
-deps = ["Artifacts", "Dbus_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pango_jll", "Wayland_jll", "xkbcommon_jll"]
-git-tree-sha1 = "9bf7903af251d2050b467f76bdbe57ce541f7f4f"
-uuid = "1183f4f0-6f2a-5f1a-908b-139f9cdfea6f"
-version = "0.2.2+0"
-
 [[deps.libdrm_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libpciaccess_jll"]
 git-tree-sha1 = "63aac0bcb0b582e11bad965cef4a689905456c03"
 uuid = "8e53e030-5e6c-5a89-a30b-be5b7263a166"
 version = "2.4.125+1"
 
-[[deps.libevdev_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "56d643b57b188d30cccc25e331d416d3d358e557"
-uuid = "2db6ffa8-e38f-5e21-84af-90c45d0032cc"
-version = "1.13.4+0"
-
 [[deps.libfdk_aac_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "646634dd19587a56ee2f1199563ec056c5f228df"
 uuid = "f638f0a6-7fb0-5443-88ba-1cc74229b280"
 version = "2.0.4+0"
-
-[[deps.libinput_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "eudev_jll", "libevdev_jll", "mtdev_jll"]
-git-tree-sha1 = "91d05d7f4a9f67205bd6cf395e488009fe85b499"
-uuid = "36db933b-70db-51c0-b978-0f229ee0e533"
-version = "1.28.1+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
@@ -3947,12 +3651,6 @@ git-tree-sha1 = "4e4282c4d846e11dce56d74fa8040130b7a95cb3"
 uuid = "c5f90fcd-3b7e-5836-afba-fc50a0988cb2"
 version = "1.6.0+0"
 
-[[deps.mtdev_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "b4d631fd51f2e9cdd93724ae25b2efc198b059b1"
-uuid = "009596ad-96f7-51b1-9f1b-5ce2d5e8a71e"
-version = "1.1.7+0"
-
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
@@ -3980,12 +3678,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "e7b67590c14d487e734dcb925924c5dc43ec85f3"
 uuid = "dfaa095f-4041-5dcd-9319-2fabd8486b76"
 version = "4.1.0+0"
-
-[[deps.xkbcommon_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Xorg_libxcb_jll", "Xorg_xkeyboard_config_jll"]
-git-tree-sha1 = "a1fc6507a40bf504527d0d4067d718f8e179b2b8"
-uuid = "d8fb68d0-12a3-5cfd-a85a-d49703b185fd"
-version = "1.13.0+0"
 """
 
 # ╔═╡ Cell order:
@@ -4002,13 +3694,13 @@ version = "1.13.0+0"
 # ╟─3586aabc-e618-4247-827b-777224115314
 # ╟─edfcfc7f-e288-4c9f-b11b-b4cda0553a78
 # ╟─1c3ac56a-d566-44e6-bf16-be9934724a77
+# ╟─5ef4ef6f-ff1b-480c-8136-bb57c1a6751d
 # ╟─c83c4c6c-b3c3-48a5-973f-ae68427c0972
-# ╠═a042ce06-7415-488b-a964-007873619351
-# ╠═6a0b912f-b531-4ef2-a0bb-8a0d30aed6fc
-# ╠═f502d84a-7f71-4c5d-b1c1-fb975ee61b8c
+# ╟─a042ce06-7415-488b-a964-007873619351
+# ╟─6a0b912f-b531-4ef2-a0bb-8a0d30aed6fc
 # ╟─2cdbd150-ccd5-4f2a-9e49-5321070a2208
 # ╟─21f1efc6-2e79-4c06-862d-55b5d20966d5
-# ╠═94e01a40-8bd6-469a-b348-7aba8a6280d4
+# ╟─94e01a40-8bd6-469a-b348-7aba8a6280d4
 # ╟─5a1bc2de-a335-4024-a249-fec980636cdc
 # ╟─8af78ef0-28f1-4222-bd62-1df8dfe4b931
 # ╠═dc922b83-b899-41df-ba15-32c85ad65b2b
@@ -4025,11 +3717,13 @@ version = "1.13.0+0"
 # ╟─29e38a84-e43f-434a-83cf-3003a33b1079
 # ╟─7dbbeaad-3631-4e42-bce0-38ff0d1f2b0f
 # ╟─604dab44-6d5f-49e3-a2c1-669a947ac5ea
+# ╟─6f5f35ca-1fe8-42a3-945e-63096e2d1dbb
+# ╟─2d14c739-7b80-4159-a22f-e54686f7b04d
 # ╟─a862c4a2-0a3c-432d-86ab-49c9857554b3
-# ╠═15fd10c7-c163-4c4c-a1a7-993ec5185843
+# ╟─15fd10c7-c163-4c4c-a1a7-993ec5185843
 # ╟─83fa92c8-643c-408c-9d05-bc8d744e1e1a
 # ╟─520a01ff-dfca-405a-8cff-4124f0bc0792
-# ╠═be5706a4-0325-45ed-b1b1-bab78d6485e7
+# ╟─be5706a4-0325-45ed-b1b1-bab78d6485e7
 # ╟─8678584b-0bee-4ff0-a466-9f073847d2a1
 # ╟─a8aa2b22-1529-48da-beb0-b51cce0ae2aa
 # ╠═2c1416c7-a866-4742-a424-233eca091657
@@ -4039,7 +3733,9 @@ version = "1.13.0+0"
 # ╠═fc38a1b7-51e4-4832-bfdb-e6d83af0ed27
 # ╟─1d86c6a4-36ab-455a-a6b8-618fe8e36665
 # ╠═47a41ecc-faeb-45f7-a856-03c1d5bb917b
-# ╠═2abc083b-f39f-4610-9c40-cfbfb73982a3
+# ╟─89120723-86b3-4c6c-bc12-78cc3d948efc
+# ╟─0b14fca7-9680-42e7-866d-c52e61302e40
+# ╟─75094523-c93d-42aa-a51c-cdbd2d62fea2
 # ╟─eb11b179-5c4c-4b29-b90d-6fd1cf1c54b4
 # ╟─c9b3afdd-b00f-4735-ab7e-862e9fcac505
 # ╟─39235756-f5b9-4e0d-a47b-64235767ca4c
