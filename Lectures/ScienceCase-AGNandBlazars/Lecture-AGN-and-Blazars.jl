@@ -800,8 +800,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="./open?path=Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html">Lecture about time domain analysis</a></td>
-    <td><a href="./open?path=Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival</a></td>
+    <td><a href="../../Lectures/Lecture-TimeDomainAnalysis/Lecture-Time-Domain.html">Lecture about time domain analysis</a></td>
+    <td><a href="../../Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 
