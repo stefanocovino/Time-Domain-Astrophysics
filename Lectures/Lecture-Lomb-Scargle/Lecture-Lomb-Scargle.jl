@@ -1021,7 +1021,7 @@ md"""
 
 - Even for the LS periodogram, and pure Gaussian noise, it can be proved that the values of the unnormalized periodogram follow a $\chi^2$ distribution with two degrees of freedom.
 
-- If $Z=P(f_0)$ is the periodogram value at a peak with frequency $f_0$, then the cumulative probability to observe a value less then $Z$ is:
+- Due to the normalization of a LS periodogram, if $Z=P(f_0)$ is the periodogram value at a peak with frequency $f_0$, then the cumulative probability to observe a value less then $Z$ is:
 
 ```math
 P_{single}(Z) = 1 - \exp(-Z)
@@ -1188,7 +1188,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 9a3d8f41-bc2b-4cef-a8b5-f4bec18c2aff
-md"Notebook v1.0.0 - 9 April 2026"
+md"Notebook v1.0.1 - 21 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1218,7 +1218,7 @@ PlutoUI = "~0.7.79"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "77adbe2868212e9cf160fdd50014e60a3af79d16"
 

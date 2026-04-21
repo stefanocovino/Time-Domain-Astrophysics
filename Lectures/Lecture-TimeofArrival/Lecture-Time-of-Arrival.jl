@@ -6,10 +6,13 @@ using InteractiveUtils
 
 # ╔═╡ 3c2986d8-2379-4cd5-a747-435a5180076f
 begin
+	using Bootstrap
 	using CairoMakie
 	using CommonMark
+	using Statistics
 	using Latexify
 	using PlutoUI
+	using PlutoTeachingTools
 end
 
 # ╔═╡ 72a2571d-dc92-41d6-b73b-ba9e985ca4f1
@@ -44,7 +47,7 @@ md"""
 """
 
 # ╔═╡ edb27fc5-6c41-4fb5-b1c5-9f5a1a96aa83
-cm"- Even well beyond astronomy, dealing with these kind of datasets presents problems of great interest."
+tip(cm"- Even well beyond astronomy, dealing with these kind of datasets presents problems of great interest.")
 
 # ╔═╡ 0e4c318a-511c-4646-9b33-634e5cb87c6d
 cm"""
@@ -142,12 +145,12 @@ end
 
 # ╔═╡ 14175fbe-5aea-4fe0-b9b1-f99049d9cdde
 md"""
-- We study possible periods from 100 to 10000 years.
+- We study possible periods from 300 to 3000 years.
 """
 
 # ╔═╡ 69256ec4-c8b2-4110-896f-ec8bfa01d662
 begin
-	per = range(start=100,stop=10000,step=100)
+	per = range(start=300,stop=3000,step=10)
 	freq = 1 ./ per
 	res = z2n(freq,DOevts)
 end;
@@ -172,34 +175,75 @@ end
 md"""
 - Given that with large N (and indeed this is NOT the case) the Rayleigh statistics follow the $\chi^2$ distribution with two degrees of freedom, it is easy to commpute the FAP for the observed periodogram peak.
 
-- Evaluating the number of independent periods (or frequncies) allowed by the input data is more difficult. In order to keep everything simple assume $N_{eff} \sim N/2$.
+- For large N, given the definition of the Rayleigh periodogram, FAP ``\sim e^{-Z}``, where ``Z`` is the power. Please, be aware that for a very low number of points we are likely over-estimating the FAP.
+
+- Evaluating the number of independent periods (or frequencies) allowed by the input data is more difficult. In order to keep everything we might simply assume $N_{eff} \sim N_{period}/2$.
 """
 
 # ╔═╡ 961dae0a-3bda-4fa3-8197-ca7fafda3ca6
 begin
 	pmax,pidx = findmax(res)
 	lfap = exp(-pmax/2)
-	gfap = 1-(1-lfap)^(length(DOevts)/2.)
+	gfap = 1-(1-lfap)^(length(per)/2.)
 end;
 
 # ╔═╡ 81184cdc-c7e8-4610-8f84-e27274d7ac4e
 Markdown.parse("""
-Periodogram maximum $(latexify(pmax,fmt="%.1f")) at period $(latexify(per[pidx],fmt="%.1f")) years		
+In our case, the periodogram maximum is $(latexify(pmax,fmt="%.1f")) at period $(latexify(per[pidx],fmt="%.1f")) years		
 
-Local FAP $(latexify(100*lfap,fmt="%.2f"))% and global FAP $(latexify(100*gfap,fmt="%.2f"))%	   
+Local FAP $(latexify(100*lfap,fmt="%.1g"))% and global FAP $(latexify(100*gfap,fmt="%.1g"))%	   
 			   
 """)
 
 # ╔═╡ f184d0dc-5034-45ed-9253-daff25eaa259
-md"""
-- Thus, we have a maximum for a period $P \sim 1500$ years, its local significance (given the assumptions discussed above) is $\sim 99\%$, while the global significance is $\sim 94\%$.
+cm"""
+- Thus, we have a maximum for a period ``P \sim 1500`` years, its local significance (given the assumptions discussed above) is ``\sim``$(round(100-lfap*100,digits=2))%, while the global significance is ``\sim`` $(round(100-gfap*100,digits=2))% 
 
-> Too low for a firm claim.
+> Interesting, but crucially dependent on the number of independent frequencies that for our small dataset is difficult to evaluate and affected by the low number of events that makes the statistics probably unreliable.
 """
+
+# ╔═╡ 5206d6b1-f4e9-4e96-9eab-ae318ccb75ab
+cm"- Let's check the results by a simple bootstrap of the original time-series"
+
+# ╔═╡ df328fde-dd5c-4b64-88f4-77748336fac4
+begin
+	resb(x) = maximum(z2n(freq,x))
+	n_samples = 1000
+	bres = bootstrap(resb, DOevts, BasicSampling(n_samples))
+end;
+
+# ╔═╡ 523e7039-3eed-46d0-b5c1-10026a7ace68
+begin
+	fbt = Figure()
+	
+	axfbt = Axis(fbt[1,1],
+			xlabel="Maximum power",
+				)
+		
+	hist!(bres.t1[1],normalization=:pdf)
+
+	vlines!(pmax,color=:red)
+	
+	fbt
+end
+
+# ╔═╡ 405b8f0c-1c09-4615-a4ec-85aef820f57a
+cm"""
+
+- It is clear that the obained power is nothing exceptional, and it happens in many random realization of the original time-series!
+
+- We therefore can be suspicious about the statistical significance of the proposed period.
+
+"""
+
+# ╔═╡ a3313e9f-d922-417b-9872-24ab03f7ce49
+warning_box(cm"This is an interesting exercize, yet be aware that a bootstrap for a time-series is a complex issue.")
+
+# ╔═╡ 2e56539e-0756-447a-be96-0560f4c6a609
+cm"- Now, in order to go on, it is useful to recap some of the main features of the Poisson distribution"
 
 # ╔═╡ bd88c8fa-856b-40d8-9763-942b465d5504
 cm"""
-- Now, in order to go on, it is useful to recap some of the main features of the Poisson distribution
 
 ## Poisson Distribution: a brief recap
 ***
@@ -315,7 +359,7 @@ p(D | r,I) = (\Delta t)^N e^{-\int_{(T)} r(t) dt} \prod_{j=1}^N r(t_j)
 
 - In the case when little is known about the signal shape, this method is superior to the more popular Fourier series expansion.
 
-- A fairly detailed lecture about the [Gregory & Loredo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm can be found here ([notebook]("./open?path=Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.jl"), [html]("Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.html")).
+- A fairly detailed lecture about the [Gregory & Loredo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm can be found here ([notebook]("./open?path=Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.jl"), [html]("../../Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.html")).
 
 """
 
@@ -376,20 +420,25 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ ffe762a5-77a9-4745-8579-66576b3fc8e6
-md"Notebook v1.0.0 - 20 April 2026"
+md"Notebook v1.0.0 - 21 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Bootstrap = "e28b5b4c-05e8-5b66-bc03-6f0c0a0a06e0"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+Bootstrap = "~2.4.0"
 CairoMakie = "~0.15.9"
 CommonMark = "~1.0.1"
 Latexify = "~0.16.10"
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 """
 
@@ -399,7 +448,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "f953f90b5bb68cc76c5ab4d0b13b54a0cffceb24"
+project_hash = "b365bd322d94992ef7bce5544248255c5aeed929"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -485,6 +534,12 @@ version = "1.11.0"
 git-tree-sha1 = "bca794632b8a9bbe159d56bf9e31c422671b35e0"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
+
+[[deps.Bootstrap]]
+deps = ["DataFrames", "Distributions", "Random", "Statistics", "StatsBase", "StatsModels"]
+git-tree-sha1 = "b605e84e7236671cae810accaf20b7678849ac6a"
+uuid = "e28b5b4c-05e8-5b66-bc03-6f0c0a0a06e0"
+version = "2.4.0"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -630,10 +685,21 @@ git-tree-sha1 = "439e35b0b36e2e5881738abc8857bd92ad6ff9a8"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
+[[deps.Crayons]]
+git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
+uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
+version = "4.1.1"
+
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
+
+[[deps.DataFrames]]
+deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
+git-tree-sha1 = "5fab31e2e01e70ad66e3e24c968c264d1cf166d6"
+uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+version = "1.8.2"
 
 [[deps.DataStructures]]
 deps = ["OrderedCollections"]
@@ -825,6 +891,11 @@ git-tree-sha1 = "7a214fdac5ed5f59a22c2d9a885a16da1c74bbc7"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
+[[deps.Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
+version = "1.11.0"
+
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "IterTools", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
 git-tree-sha1 = "1f5a80f4ed9f5a4aada88fc2db456e637676414b"
@@ -960,6 +1031,19 @@ git-tree-sha1 = "d1b1b796e47d94588b3757fe84fbf65a5ec4a80d"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.5"
 
+[[deps.InlineStrings]]
+git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
+uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
+version = "1.4.5"
+
+    [deps.InlineStrings.extensions]
+    ArrowTypesExt = "ArrowTypes"
+    ParsersExt = "Parsers"
+
+    [deps.InlineStrings.weakdeps]
+    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+    Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
+
 [[deps.IntegerMathUtils]]
 git-tree-sha1 = "4c1acff2dc6b6967e7e750633c50bc3b8d83e617"
 uuid = "18e54dd8-cb9d-406c-a71d-865a43cbb235"
@@ -1032,6 +1116,11 @@ weakdeps = ["Dates", "Test"]
     [deps.InverseFunctions.extensions]
     InverseFunctionsDatesExt = "Dates"
     InverseFunctionsTestExt = "Test"
+
+[[deps.InvertedIndices]]
+git-tree-sha1 = "6da3c4316095de0f5ee2ebd875df8721e7e0bdbe"
+uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+version = "1.3.1"
 
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "b2d91fe939cae05960e760110b328288867b5758"
@@ -1458,6 +1547,12 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
@@ -1468,6 +1563,12 @@ version = "0.7.80"
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
+
+[[deps.PooledArrays]]
+deps = ["DataAPI", "Future"]
+git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
+uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+version = "1.4.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -1480,6 +1581,18 @@ deps = ["TOML"]
 git-tree-sha1 = "8b770b60760d4451834fe79dd483e318eee709c4"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.5.2"
+
+[[deps.PrettyTables]]
+deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
+git-tree-sha1 = "624de6279ab7d94fc9f672f0068107eb6619732c"
+uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+version = "3.3.2"
+
+    [deps.PrettyTables.extensions]
+    PrettyTablesTypstryExt = "Typstry"
+
+    [deps.PrettyTables.weakdeps]
+    Typstry = "f0ed7684-a786-439e-b1e3-3b82803b501e"
 
 [[deps.Primes]]
 deps = ["IntegerMathUtils"]
@@ -1596,6 +1709,12 @@ git-tree-sha1 = "9b81b8393e50b7d4e6d0a9f14e192294d3b7c109"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.3.0"
 
+[[deps.SentinelArrays]]
+deps = ["Dates", "Random"]
+git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
+uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
+version = "1.4.9"
+
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 version = "1.11.0"
@@ -1610,6 +1729,11 @@ version = "0.5.0"
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
 uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 version = "1.11.0"
+
+[[deps.ShiftedArrays]]
+git-tree-sha1 = "503688b59397b3307443af35cd953a13e8005c16"
+uuid = "1277b4bf-5013-50f5-be3d-901d8477a67a"
+version = "2.0.0"
 
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
@@ -1720,6 +1844,18 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     [deps.StatsFuns.extensions]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
+
+[[deps.StatsModels]]
+deps = ["DataAPI", "DataStructures", "LinearAlgebra", "Printf", "REPL", "ShiftedArrays", "SparseArrays", "StatsAPI", "StatsBase", "StatsFuns", "Tables"]
+git-tree-sha1 = "b117c1fe033a04126780c898e75c7980bf676df3"
+uuid = "3eaba693-59b7-5ba5-a881-562e759f1c8d"
+version = "0.7.7"
+
+[[deps.StringManipulation]]
+deps = ["PrecompileTools"]
+git-tree-sha1 = "d05693d339e37d6ab134c5ab53c29fce5ee5d7d5"
+uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
+version = "0.4.4"
 
 [[deps.StructArrays]]
 deps = ["ConstructionBase", "DataAPI", "Tables"]
@@ -2056,9 +2192,15 @@ version = "4.1.0+0"
 # ╠═69256ec4-c8b2-4110-896f-ec8bfa01d662
 # ╟─3cf771fc-30d2-4ded-b17e-f6b66a35d218
 # ╟─3b121627-05b3-4238-9901-441182885848
-# ╠═961dae0a-3bda-4fa3-8197-ca7fafda3ca6
+# ╟─961dae0a-3bda-4fa3-8197-ca7fafda3ca6
 # ╟─81184cdc-c7e8-4610-8f84-e27274d7ac4e
 # ╟─f184d0dc-5034-45ed-9253-daff25eaa259
+# ╟─5206d6b1-f4e9-4e96-9eab-ae318ccb75ab
+# ╠═df328fde-dd5c-4b64-88f4-77748336fac4
+# ╟─523e7039-3eed-46d0-b5c1-10026a7ace68
+# ╟─405b8f0c-1c09-4615-a4ec-85aef820f57a
+# ╟─a3313e9f-d922-417b-9872-24ab03f7ce49
+# ╟─2e56539e-0756-447a-be96-0560f4c6a609
 # ╟─bd88c8fa-856b-40d8-9763-942b465d5504
 # ╟─9193b904-7dd0-4f2d-8f17-972eb1f82104
 # ╟─9f3399e4-d6ba-457b-b5c4-b4acd0238e63

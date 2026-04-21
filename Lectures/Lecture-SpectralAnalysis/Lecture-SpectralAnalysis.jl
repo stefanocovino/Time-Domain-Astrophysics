@@ -31,6 +31,7 @@ begin
 	using LaTeXStrings
 	using Latexify
 	using PlutoUI
+	using PlutoTeachingTools
 	using Statistics
 end
 
@@ -1185,6 +1186,9 @@ Q(\chi^2|2) = \frac{1}{2} \int_{\chi^2}^\infty e^{-\frac{t}{2}} dt = e^{-\frac{\
 
 """
 
+# ╔═╡ f9c1a663-a9a7-4afd-8ef0-082b4edc6883
+warning_box(cm"Please, pay attention to the adopted periodogram normalization, since this affects the value to plug in the above equation.")
+
 # ╔═╡ 83aece6e-cc50-4ce4-b9b5-f518342620e5
 md"""
 - Power spectra are unavoidably very noisy.
@@ -1342,7 +1346,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ bd69c49a-d577-49ab-ac7d-21fbfcd93f2c
-md"Notebook v1.0.0 - 8 April 2026"
+md"Notebook v1.0.1 - 21 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1359,6 +1363,7 @@ Format = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
@@ -1374,6 +1379,7 @@ Format = "~1.3.7"
 HTTP = "~1.11.0"
 LaTeXStrings = "~1.4.0"
 Latexify = "~0.16.10"
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.79"
 """
 
@@ -1383,7 +1389,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "a6abc2fde11c66c8cd35d8fa95d1ecc3cd7242c2"
+project_hash = "ef317a6490208a592230d0fc5d8df682b8f61864"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2577,6 +2583,12 @@ git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
 
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "3ac7038a98ef6977d44adeadc73cc6f596c08109"
@@ -3315,6 +3327,7 @@ version = "4.1.0+0"
 # ╟─ee646903-dc54-46d0-b2f5-b30e41a68853
 # ╟─454fc15d-ea34-4938-b86e-76f2cb0d5125
 # ╟─6e178c7b-1846-4390-b842-b4d303688bd8
+# ╟─f9c1a663-a9a7-4afd-8ef0-082b4edc6883
 # ╟─83aece6e-cc50-4ce4-b9b5-f518342620e5
 # ╟─06df9913-445f-4170-b110-13ec4208d940
 # ╟─9a17f40a-2aad-4b52-96a4-7c275fda9cee
