@@ -384,8 +384,8 @@ cm"""
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
-    <td><a href="Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+    <td><a href="../../Lectures/Lecture-TimeofArrival/Lecture-Time-of-Arrival.html">Lecture about time of arrival analysis</a></td>
+    <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
  </table>
@@ -401,7 +401,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 07209cd9-afe1-4b61-804a-f5a69f6344d4
-md"Notebook v1.0.0 - 9 April 2026"
+md"Notebook v1.0.0 - 21 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -426,7 +426,7 @@ PlutoUI = "~0.7.80"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "30772b64a620859d8f58222e6f56e6cb25ef89a4"
 
