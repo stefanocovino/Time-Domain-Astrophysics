@@ -420,7 +420,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ ffe762a5-77a9-4745-8579-66576b3fc8e6
-md"Notebook v1.0.0 - 21 April 2026"
+md"Notebook v1.0.0 - 22 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
