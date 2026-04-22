@@ -359,7 +359,7 @@ p(D | r,I) = (\Delta t)^N e^{-\int_{(T)} r(t) dt} \prod_{j=1}^N r(t_j)
 
 - In the case when little is known about the signal shape, this method is superior to the more popular Fourier series expansion.
 
-- A fairly detailed lecture about the [Gregory & Loredo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm can be found here ([notebook]("./open?path=Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.jl"), [html]("../../Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.html")).
+- A fairly detailed lecture about the [Gregory & Loredo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm can be found here ([notebook](./open?path=Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.jl), [html](../../Lectures/Lecture-TimeofArrival/Lecture-GregoryLoredo.html)).
 
 """
 
