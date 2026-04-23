@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -256,7 +256,7 @@ end
 # ╔═╡ 405b8f0c-1c09-4615-a4ec-85aef820f57a
 cm"""
 
-- It is clear that the obained power is nothing exceptional, and it happens in many random realization of the original time-series!
+- It is clear that the obained power is nothing exceptional, and it happens in many random realizations of the original time-series!
 
 - We therefore can be suspicious about the statistical significance of the proposed period.
 
