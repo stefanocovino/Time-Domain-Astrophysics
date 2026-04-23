@@ -40,7 +40,7 @@ md"""
 - So far, we have assumed that the our data are constituted by a set of $N$ data points $(t_j,y_j), j = 1,...,N$, possibly with known uncertainties.
 
 - We can anyway think to different datasets. For instance, at X-ray and shorter wavelengths, individual photons are detected and background contamination is often negligible. 
-    - In such cases, the data set consists of the arrival times of individual photons $t_j, j=1,…,N$, or, in principle and more generally, the time of occurrence of a given phenomenon.
+    - In such cases, the data set consists of the arrival times of individual photons $t_j, j=1,…,N$, or, in principle and more generally, of the time of occurrence of a given phenomenon.
 
 - Given such a data set, how do we search for a periodic signal, and more generally, how do we test for any type of variability?
 
@@ -92,6 +92,32 @@ R_n^2 = \frac{2}{N} \sum_{k=1}^n \left[\left( \sum_{j=1}^N \cos(k \varphi_j) \ri
 ```
 
 - ``n`` is of course the number of harmonics.
+"""
+
+# ╔═╡ 85420a0a-cf01-4996-a5ab-c5b1fd948a01
+tip(cm"To help the understanding")
+
+# ╔═╡ ac8beac2-d361-456d-b07b-372cb5d22d96
+cm"""
+- To understand the Rayleigh periodogram, it’s best to think of it as a test for "circular uniformity." 
+- When you have a set of arrival times, you wrap them around a circle based on a test period ``P``.The Rayleigh statistic (``R``) is the length of the average vector of all those points on the circle.
+
+$br 
+
+- High ``R`` values, even approaching 1.0, can occur when the arrival times are strongly periodic. If your test period matches the actual cycle of the data, the events will all "clump" together at the same phase on the circle.
+
+	- Imagine a pulsar emitting a beam every 1.0 seconds. Your arrival times are: 1.02s, 2.01s, 3.03s, 4.02s, 5.01s, etc. 
+	- If you test a period of ``P = 1.0s``, every single data point falls at roughly the "12 o'clock" position on your phase circle. Because they are all pointing in the same direction, their vectors add up constructively.
+
+$br
+
+- Low ``R`` values occur when the arrival times are stochastic (random) and/or if your test period ``P`` is completely wrong for the data.
+	- Imagine rain falling on a tin roof. The hits are random and independent: 0.42s, 1.15s, 2.89s, 3.21s, 4.77s, etc. 
+	- When you wrap these random times around a circle, the phases are scattered everywhere and when you add these vectors together, they cancel each other out.
+
+$(LocalResource("Pics/Rayleigh-test.png"))
+
+$br
 """
 
 # ╔═╡ 39c8c2cb-e6f6-4d74-8792-ba96e057744a
@@ -420,7 +446,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ ffe762a5-77a9-4745-8579-66576b3fc8e6
-md"Notebook v1.0.0 - 22 April 2026"
+md"Notebook v1.0.0 - 23 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2183,6 +2209,8 @@ version = "4.1.0+0"
 # ╟─17903372-3749-4bfc-9519-7181bc0539f1
 # ╟─edb27fc5-6c41-4fb5-b1c5-9f5a1a96aa83
 # ╟─0e4c318a-511c-4646-9b33-634e5cb87c6d
+# ╟─85420a0a-cf01-4996-a5ab-c5b1fd948a01
+# ╟─ac8beac2-d361-456d-b07b-372cb5d22d96
 # ╟─39c8c2cb-e6f6-4d74-8792-ba96e057744a
 # ╟─b5dc35e4-0f85-468c-8f59-4ac0b9b00b3e
 # ╠═93f9b75c-bd43-4229-9ddd-faba108afe65

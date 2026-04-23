@@ -484,7 +484,7 @@ begin
 	psd = periodogram(dt.Rate; fs=1/meandelta)
 	
 	freq = psd.freq[psd.freq.>0]
-	#power = 2*psd.power[psd.freq.>0]/sum(dt.eRate.^2);
+	#power = 2*psd.power[psd.freq.>0]/(length(dt.Rate)*mean(dt.eRate.^2))
 	power = 2*psd.power[psd.freq.>0]
 end;
 
