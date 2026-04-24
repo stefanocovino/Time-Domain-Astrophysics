@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -127,7 +127,14 @@ cm"""
 
 - In a paper by [Ditlevsen et al. 2006](https://ui.adsabs.harvard.edu/abs/2006AGUFMGC24A..07D/abstract), a possible periodicity of about 1500 years for the Dansgaard-Oeschger (DO) events, observed in the Greenland ice cores is discussed.
 
-- According to Wikipedia, [Dansgaard–Oeschger events](https://en.wikipedia.org/wiki/Dansgaard%E2%80%93Oeschger_event) are rapid climate fluctuations that occurred during the last glacial period. Some scientists say that the events occur quasi-periodically with a recurrence time being a multiple of 1,470 years, but this is debated.
+- [Dansgaard–Oeschger events](https://en.wikipedia.org/wiki/Dansgaard%E2%80%93Oeschger_event) are rapid, dramatic climate fluctuations that occurred repeatedly during the last glacial period (roughly 115,000 to 11,000 years ago). They are essentially "flickers" in the Earth's climate system where temperatures in the North Atlantic region spiked and then crashed back to glacial conditions.
+
+- The warming phase was incredibly fast, often jumping by 8°C to 16°C in Greenland within just a few decades or sometimes even less than a decade.
+
+- There were seveeral of these events during the last ice age. While they seem to recur roughly every 1,470 years, specialists still debate whether they are strictly periodic or more random.
+
+- The leading theory involves a massive "reset" of the Atlantic Meridional Overturning Circulation (AMOC). the giant conveyor belt of ocean currents that brings warm water to the North Atlantic.
+
 
 $(LocalResource("Pics/doevents.png"))
 
@@ -332,21 +339,33 @@ P(T \le t) = 1 - e^{-\frac{\rm event}{\rm time} \times t}
 """
 
 # ╔═╡ f9bb204d-53d4-4ac1-92dc-4faf5faba96b
-md"""
+cm"""
 ## The Gregory & Loredo algorithm
 ***
 
-- In 1992 [Gregory & Loredo]((https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract)) pusblihed a seminal paper describibg a fully Bayesian procedure to analyse "time of arrival" data. We give here only a short description of the algorithm.
+- In 1992 [Gregory & Loredo]((https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract)) pusblished a seminal paper describing a fully Bayesian procedure to analyse "time of arrival" data. We give here only a short description of the algorithm.
 
-- Let’s divide the time interval covering our observations,$T = t_N − t_1$, into many arbitrarily small steps, $Δt$, so that each interval contains either 1 or 0 detections.
+- The core of the algorithm is a comparison of two hypotheses:
+	1. ``H_0`` (The Null Hypothesis): The event arrival rate is constant (uniform distribution).
+	2. ``H_1`` (The Periodic/Variable Hypothesis): The event rate follows a "stepwise" distribution with ``m`` bins per period.
 
-- Given an event rate, $r(t)$, the expectation value for the number of events during $Δt$ is:
+- The algorithm divides a trial period into ``m`` bins. It then varies ``m`` (typically from 2 to some ``m_{max}``) to allow for different levels of signal complexity.
+
+- For each number of bins (``m``), it calculates the likelihood of the observed distribution of events (``n_1, n_2, ... n_m``) and then uses Bayes' Theorem to calculate an "odds ratio", the probability that the source is variable versus the probability that it is constant.
+
+
+$(LocalResource("Pics/GregoryLoredo92-outline.png"))
+
+
+- Let’s divide the time interval covering our observations, ``T = t_N − t_1``, into many arbitrarily small steps, ``Δt``, so that each interval contains either 1 or 0 detections.
+
+- Given an event rate, ``r(t)``, the expectation value for the number of events during ``Δt`` is:
 
 ```math
 \mu(t) = r(t) \Delta t
 ```
 
-- Poisson statistics tells us that the probability of detecting no events during $Δt$ is: 
+- Poisson statistics tells us that the probability of detecting no events during ``Δt`` is: 
 
 ```math
 p(0) = e^{r(t) \Delta t}
@@ -366,17 +385,11 @@ p(D | r,I) = (\Delta t)^N e^{-\int_{(T)} r(t) dt} \prod_{j=1}^N r(t_j)
 
 - For simplicity, we assume that the data were collected in a single stretch of time with no gaps. But it is possible to generalize the algorithm.
 
-- With an appropriate $r(t)$, and priors for the model parameters, analysis of arrival time data is no different than any other model selection and parameter estimation problem.
+- With an appropriate ``r(t)``, and priors for the model parameters, analysis of arrival time data is no different than any other model selection and parameter estimation problem.
 
-- Instead of fitting a parametrized model, such as a Fourier series, here a nonparametric description of the rate function $r(t)$.
+- Instead of fitting a parametrized model, such as a Fourier series, here a nonparametric description of the rate function ``r(t)``.
 
-- The shape of the phased light curve is described using a piecewise constant function, $f_j$, with $M$ steps of the same width, and with $\sum_j f_j = 1$.
-
-- The rate is therefore described as: $r(t_j) \equiv r_j = M A f_j$.
-
-    - where $A$ is the average rate, and bin $j$ corresponding to $t_j$, determined from the phase corresponding to $t_j$ and the trial period. 
-
-- The model includes the frequency $ω$ (or period), a phase offset, the average rate $A$, and $M − 1$ parameters $f_j$.
+- The model includes the frequency ``ω`` (or period), a phase offset, the average rate ``A``, and ``M − 1`` parameters for the rate.
 
 - Marginalizing the resulting pdf one can produce 
     1. an analog of the periodogram, 
@@ -446,7 +459,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ ffe762a5-77a9-4745-8579-66576b3fc8e6
-md"Notebook v1.0.0 - 23 April 2026"
+md"Notebook v1.0.0 - 24 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

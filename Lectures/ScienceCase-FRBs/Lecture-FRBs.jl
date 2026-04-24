@@ -160,7 +160,7 @@ end
 # ╔═╡ a3391b24-fec0-4d83-91af-f2a1debd61e3
 md"""
 
-- We apply the [Gregory & Lorendo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm.
+- We apply the [Gregory & Loredo (1992)](https://ui.adsabs.harvard.edu/abs/1992ApJ...398..146G/abstract) algorithm.
     - It computes the likelihood of a set of arrival times originating from a periodic system rather than constant rate (poisson) background noise.
 
 - Let's check how the arrival times are distributed:
@@ -428,7 +428,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 07209cd9-afe1-4b61-804a-f5a69f6344d4
-md"Notebook v1.0.0 - 22 April 2026"
+md"Notebook v1.0.0 - 24 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
