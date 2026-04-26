@@ -327,10 +327,41 @@ md"""
 - Let's therefore compute and plot a periodogram for this choice of $m$:
 """
 
+# ╔═╡ 98c1c1d4-ac27-4b62-859a-d7e9f5aa7b68
+cm"""
+Periodogram log plot? $(lplotper = @bind perlog CheckBox(default=true))
+"""
+
 # ╔═╡ 7950deff-17ce-47ae-a5ca-40b276184680
 begin
 	mper = Periodogram(data,wr,odrs.maxm)
-	PlotPeriodogram(mper,wr)
+	if perlog
+		PlotPeriodogram(mper,wr)
+	else
+		pmax=2π/minimum(wr)
+		pmin=2π/maximum(wr)
+		
+		flper = Figure()
+    
+    	axflper = Axis(flper[1,1],
+    		spinewidth=2,
+    		ylabel="Periodogram",
+    		xlabel="Period",
+    		xlabelsize=20,
+    		ylabelsize=20,
+    		xgridvisible = false,
+    		ygridvisible = false,
+    		xticklabelsize = 20,
+    		yticklabelsize = 20,
+    		)
+    
+    	wrs = wr[(wr .> (2π / pmax)) .&& (wr .< (2π / pmin))]
+		mpersl = mper[(wr .> (2π / pmax)) .&& (wr .< (2π / pmin))]
+
+    	lines!(2π ./ wrs,mpersl)
+
+		flper
+	end
 end
 
 # ╔═╡ 417b1ffa-08c7-4a2c-9134-4c339c0a0808
@@ -384,10 +415,41 @@ md"""
 
 """
 
+# ╔═╡ d2c54799-94a2-45f7-aa7c-250a2211b0fd
+cm"""
+Periodogram log plot? $lplotper
+"""
+
 # ╔═╡ dd7f45a6-4a37-4172-9052-b65bf425e457
 begin
 	marmper = MarginalizedPeriodogram(data,wr,mmax)
-	PlotPeriodogram(marmper,wr)
+	if perlog
+		PlotPeriodogram(marmper,wr)
+	else
+		pmax2=2π/minimum(wr)
+		pmin2=2π/maximum(wr)
+		
+		flper2 = Figure()
+    
+    	axflper2 = Axis(flper2[1,1],
+    		spinewidth=2,
+    		ylabel="Periodogram",
+    		xlabel="Period",
+    		xlabelsize=20,
+    		ylabelsize=20,
+    		xgridvisible = false,
+    		ygridvisible = false,
+    		xticklabelsize = 20,
+    		yticklabelsize = 20,
+    		)
+    
+    	wrs2 = wr[(wr .> (2π / pmax)) .&& (wr .< (2π / pmin))]
+		marmpersl = marmper[(wr .> (2π / pmax)) .&& (wr .< (2π / pmin))]
+
+    	lines!(2π ./ wrs2,marmpersl)
+
+		flper2
+	end
 end
 
 # ╔═╡ b0f1183f-7d11-47a0-a577-462d18f888bd
@@ -466,7 +528,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 07209cd9-afe1-4b61-804a-f5a69f6344d4
-md"Notebook v1.0.0 - 24 April 2026"
+md"Notebook v1.0.0 - 26 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2252,7 +2314,8 @@ version = "4.1.0+0"
 # ╟─7531348e-5024-43b4-a0d8-ffc239f51087
 # ╟─8a5cb4d9-b747-4a6e-91ee-c0977bba6140
 # ╟─aee367ce-2fb6-47b0-86c1-5e69c8380afc
-# ╠═7950deff-17ce-47ae-a5ca-40b276184680
+# ╟─98c1c1d4-ac27-4b62-859a-d7e9f5aa7b68
+# ╟─7950deff-17ce-47ae-a5ca-40b276184680
 # ╟─417b1ffa-08c7-4a2c-9134-4c339c0a0808
 # ╠═c77bf475-3349-4d95-875c-12912ab66a9e
 # ╟─6b899018-fd27-4f16-aa9f-49d130d428dc
@@ -2261,7 +2324,8 @@ version = "4.1.0+0"
 # ╠═01d443bf-1237-4e68-b332-4b3873301189
 # ╟─00e93137-a46a-4f0e-aa0c-ed3653ccaf3f
 # ╟─33d4ee80-5518-4c68-a771-110b859bf40a
-# ╠═dd7f45a6-4a37-4172-9052-b65bf425e457
+# ╟─d2c54799-94a2-45f7-aa7c-250a2211b0fd
+# ╟─dd7f45a6-4a37-4172-9052-b65bf425e457
 # ╟─b0f1183f-7d11-47a0-a577-462d18f888bd
 # ╠═4eac266b-6be5-4e35-8866-cf1d01142655
 # ╟─f46de563-81e4-4f00-99b2-8abff0feb9a5

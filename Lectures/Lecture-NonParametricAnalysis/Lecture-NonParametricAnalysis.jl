@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ d2361176-db34-450c-8721-ed4391b90e9c
 begin
 	using CairoMakie
@@ -41,11 +53,10 @@ md"""
 ## A rich zoo of techniques...
 ***
 
-- Researchers have developed several methods to cope with the characteristics of light curves in astronomy (irregular sampling, etc.). 
+- Researchers have developed many methods to cope with the characteristics of light curves in astronomy (irregular sampling, etc.). 
 
-- Just to mention some, we have the Lomb-Scargle (LS) periodogram, epoch folding, analysis of variance (AoV), string length (SL) methods, and the discrete or slotted autocorrelation. 
+- For instance, the Lomb-Scargle (LS) periodogram, epoch folding, analysis of variance (AoV), string length (SL) methods, discrete or slotted autocorrelation, etc.
 
-- For the LS and AoV periodograms, statistical confidence measures have been developed to assess periodicity detection besides estimating the period.
 
 ### Lomb Scargle
 ***
@@ -76,6 +87,10 @@ md"""
     - The true period is estimated by minimizing the string length on a range of trial periods. 
     - The true period is expected to yield the most ordered folded curve and hence the minimum total distance between points
 
+
+### Discrete autocorrelation
+***
+
 - For the discrete or slotted autocorrelation, time lags are defined as intervals or slots instead of single values. 
     - The slotted autocorrelation function at a certain time lag is computed by averaging the cross product between samples whose time differences fall in the given slot.
 
@@ -98,7 +113,7 @@ md"""
 
 This algorithm was proposed in [Stellingwerf (1978)](https://ui.adsabs.harvard.edu/abs/1978ApJ...224..953S/abstract). 
 
-> This idea consists in distinguishing between possible periods identyfing the period producing the least observational scatter about the mean (derived) light curve. Let's see how the algorithm works:
+> This idea consists in distinguishing between possible periods identyfing the one producing the least observational scatter about the mean light curve. Let's see how the algorithm works:
 
 """
 
@@ -115,7 +130,7 @@ begin
 	fl = sin.(ts .* PERIOD ./ (2*pi)) .+ rand(Normal(0,0.1),length(ts))
 end;
 
-# ╔═╡ edcc2680-4e10-41a1-a55f-be64b0ae8911
+# ╔═╡ db26f062-6c6c-499a-85bd-12050eb152cf
 begin
 	fg1 = Figure(size=(1000,400))
 	ax1 = Axis(fg1[1, 1],
@@ -123,16 +138,10 @@ begin
 	    ylabel = "Flux",
 	)
 	scatter!(ax1,ts,fl,label="Time-Series")
+	lines!(ax1,ts,fl)
+
 	axislegend(ax1)
-	
-	ax2 = Axis(fg1[1, 2],
-	    xlabel = "Time",
-	    ylabel = "Flux",
-	)
-	scatter!(ax2,ts,fl,label="Time-Series")
-	lines!(ax2,ts,fl)
-	axislegend(ax2)
-	
+
 	fg1
 end
 
@@ -187,32 +196,29 @@ md"""
 - Let's now try to phase our input data with the right and a wrong period. 
 """
 
-# ╔═╡ 21cf27d2-968f-46fc-8eb7-d105e5fc59a7
+# ╔═╡ d30ed012-7751-46fd-8cdb-0a095550d6e5
+cm"""
+Right period? $(@bind rper CheckBox(default=false))
+"""
+
+# ╔═╡ 68359d41-37ca-4564-afc6-9c2ba500b530
 begin
 	fg2 = Figure(size=(1000,400))
 	ax1fg2 = Axis(fg2[1, 1],
 	    xlabel = "Phase",
 	    ylabel = "Flux",
-	    title = "Right period"
+	    title = "PDM"
 	)
-	
-	P = 2*pi*PERIOD
+
+	if rper
+		P = 2*pi*PERIOD
+	else
+		P = 2*pi*2
+	end
 	fs = ts ./ P .- [floor(Int,x) for x in (ts ./ P)]
 	
 	scatter!(ax1fg2,fs,fl,label="Phased time-Series")
-	axislegend(ax1)
-	
-	ax2fg2 = Axis(fg2[1, 2],
-	    xlabel = "Phase",
-	    ylabel = "Flux",
-	    title = "Wrong period"
-	)
-	
-	P = 2*pi*2.
-	fs = ts ./ P .- [floor(Int,x) for x in (ts ./ P)]
-	
-	scatter!(ax2fg2,fs,fl,label="Phased time-Series")
-	axislegend(ax2fg2)
+	axislegend(ax1fg2)
 	
 	fg2
 end
@@ -227,9 +233,9 @@ md"""
 
 - Therefore, it was suggested that $\Theta$ follows a probability density given by an $F$ distribution with $\sum n_j -M$ and $N — 1$ degrees of freedom.
 
-    - Actually, [further studies](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract) showed this is not correct, and the right statistic turns out to be an incomplete beta distribution, although often Monte Carlo methods are applied to derive the significance of identified features.
+    - Actually, [further studies](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract) showed this is not correct, and the right statistic turns out to be an incomplete beta distribution although, often, Monte Carlo methods are applied to derive the significance of identified features.
     
-- Several improvements have been proposed since 1978 for this algorithm, to make it more usable for larget datasets or to avoid the possible bias introduced by the (somewhat arbitrary) binning procedure (See the wikipedia page devoted to the [PDM technique](https://en.wikipedia.org/wiki/Phase_dispersion_minimization)).
+- Several improvements have been proposed since 1978 for this algorithm, to make it more usable for larget datasets or to avoid the possible bias introduced by the (somewhat arbitrary) binning procedure (See, e.g., the wikipedia page devoted to the [PDM technique](https://en.wikipedia.org/wiki/Phase_dispersion_minimization)).
 """
 
 # ╔═╡ 9d0b25ab-b8bc-455c-bf42-40f0d085be08
@@ -269,7 +275,7 @@ cm"""
 
 
 
-- [Clarke (2002)](http://localhost:8888/notebooks/Lecture-NonParametricAnalysis.ipynb#:~:text=Clarke%20(2002)%20%2D%20%22String/Rope%20length%20methods%20using%20the%20Lafler%2DKinman%20statistic%22) introduced a rescaling term ``(N-1)/2N`` to remove the sample size bias and normalize the periodogram to 1, leading to the sop-calles String-Length-Lafler-Kinman (SSLK) periodogram:
+- [Clarke (2002)](http://localhost:8888/notebooks/Lecture-NonParametricAnalysis.ipynb#:~:text=Clarke%20(2002)%20%2D%20%22String/Rope%20length%20methods%20using%20the%20Lafler%2DKinman%20statistic%22) introduced a rescaling term ``(N-1)/2N`` to remove the sample size bias and normalize the periodogram to 1, leading to the so-calles String-Length-Lafler-Kinman (SSLK) periodogram:
 
 ```math
 T(P) = \frac{\sum_{i=1}^N [(m_{i+1}-m_i)^2]}{\sum_{i=1}^N [(m_i - \bar{m})^2]} \times \frac{N-1}{2N}
@@ -285,39 +291,33 @@ $(LocalResource("Pics/StringLengthMethod.png"))
 - We can see the different path even for the example presenetd above:
 """
 
+# ╔═╡ df6ab42b-bfa9-46a4-a23d-1cca9ca844e7
+cm"""
+Right period? $(@bind rslper CheckBox(default=false))
+"""
+
 # ╔═╡ 80cfa78d-60e5-4f3a-912e-42413009cf0e
 begin
 	fg3 = Figure(size=(1000,400))
 	ax1fg3 = Axis(fg3[1, 1],
 	    xlabel = "Phase",
 	    ylabel = "Flux",
-	    title = "Right period"
+	    title = "SL"
 	)
+
+	if rslper
+		P1 = 2*pi*PERIOD
+		fs1 = ts ./ P1 .- [floor(Int,x) for x in (ts ./ P1)]
+	else
+		P1 = 2*pi*2.
+		fs1 = ts ./ P1 .- [floor(Int,x) for x in (ts ./ P1)]
+	end
 	
-	P1 = 2*pi*PERIOD
-	fs1 = ts ./ P1 .- [floor(Int,x) for x in (ts ./ P1)]
-	
-	# Sorting array fs and using indices idx to sort fl too.
 	idx = sortperm(fs1)
-	
+		
 	scatter!(ax1fg3,fs1[idx],fl[idx],label="Phased time-Series")
 	lines!(ax1fg3,fs1[idx],fl[idx])
 	axislegend(ax1fg3)
-	
-	ax2fg3 = Axis(fg3[1, 2],
-	    xlabel = "Phase",
-	    ylabel = "Flux",
-	    title = "Wrong period"
-	)
-	
-	P2 = 2*pi*2.
-	fs2 = ts ./ P2 .- [floor(Int,x) for x in (ts ./ P2)]
-	
-	idx = sortperm(fs2)
-	
-	scatter!(ax2fg3,fs2[idx],fl[idx],label="Phased time-Series")
-	lines!(ax2fg3,fs2[idx],fl[idx])
-	axislegend(ax2fg3)
 	
 	fg3
 end
@@ -574,7 +574,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
-md"Notebook v1.0.0 - 9 April 2026"
+md"Notebook v1.0.0 - 24 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -596,7 +596,7 @@ PlutoUI = "~0.7.80"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "1ba9408fb32c86eac0ef997fcc6e5d4b77c98adb"
 
@@ -2222,17 +2222,19 @@ version = "4.1.0+0"
 # ╟─caa79afb-d9cb-483f-87f3-05bfa215d047
 # ╟─efe4400e-dce7-40ab-b142-6ac560b98eaf
 # ╠═4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
-# ╠═edcc2680-4e10-41a1-a55f-be64b0ae8911
+# ╟─db26f062-6c6c-499a-85bd-12050eb152cf
 # ╟─016bc3af-7be9-4fa4-bf83-865229f67359
 # ╟─8550f405-2819-4a33-9cd2-c72dbbb04a87
 # ╟─7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
 # ╟─576eb9f0-40c6-4a9a-9504-d562452541e6
-# ╠═21cf27d2-968f-46fc-8eb7-d105e5fc59a7
+# ╟─d30ed012-7751-46fd-8cdb-0a095550d6e5
+# ╟─68359d41-37ca-4564-afc6-9c2ba500b530
 # ╟─f153fdfa-57d5-4112-8d59-847ee1ec06ca
 # ╟─9d0b25ab-b8bc-455c-bf42-40f0d085be08
 # ╟─1c4ceb56-af5c-4f12-860d-d64380e7a0ca
 # ╟─9d094cc4-60f4-49c0-af51-e5b4a666d41b
-# ╠═80cfa78d-60e5-4f3a-912e-42413009cf0e
+# ╟─df6ab42b-bfa9-46a4-a23d-1cca9ca844e7
+# ╟─80cfa78d-60e5-4f3a-912e-42413009cf0e
 # ╟─b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
 # ╟─517ff59c-aee6-4e66-b87c-e1e16921a758
 # ╟─785fb200-b217-4674-9d78-a1dc82be456e
