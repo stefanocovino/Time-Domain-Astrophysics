@@ -165,7 +165,7 @@ $(LocalResource("Pics/language.jpg"))
 
 - Nevertheless, we are not dogmatic and mentions or applications based on familiar "frequentist" approaches are presented and discussed, when we deem it opportune.
 
-$(LocalResource("Pics/Bayesians.png"))
+$(LocalResource("Pics/Bayesians.png", :width => 700))
 
 ### Programming languages
 
@@ -178,7 +178,7 @@ $(LocalResource("Pics/Bayesians.png"))
 
 - Notebooks are written by the [markdown language](https://www.markdownguide.org/basic-syntax/), a simple language integrating features of the [HTML](https://en.wikipedia.org/wiki/HTML) and [LaTeX](https://www.latex-project.org/) languages. 
 
-- We use here a specific flavours of notebook known as [`Pluto`](https://plutojl.org/) notebooks. These notebooks offer a high level of interactivity and several more advanced features. 
+- We use here a specific flavours of notebook known as [`Pluto`](https://plutojl.org/) notebooks. These notebooks offer a high level of interactivity and several more advanced features. However, any other option is perfectly fine, e.g., [jupyter](https://jupyter.org/), [Visual Studio](https://code.visualstudio.com/), etc.
 
 
  $(LocalResource("Pics/julia.png"))
@@ -187,7 +187,7 @@ $(LocalResource("Pics/Bayesians.png"))
 
 # ╔═╡ 3c960134-e9d9-4b66-891f-6b3522c691c4
 md"""
-- There are plenty of good tutorial about the `julia` language. Among the many goos resources, we can suggest trying this introduction for scientists available online, e.g. [Julia data science](https://github.com/tirthajyoti/Julia-data-science). 
+- There are plenty of good tutorial about the `julia` language. We can suggest trying this introduction for scientists available online, e.g. [Julia data science](https://github.com/tirthajyoti/Julia-data-science). Else, this [introduction](https://julia.quantecon.org/intro.html), in spite of being, formally, designed for economists, is of particular interest and worth considering for any computer scientist. 
 """
 
 # ╔═╡ 6827c9f6-b98a-4a88-a192-5c61f375f1d5
@@ -196,7 +196,7 @@ md"""
 
 - It is indeed part of the set of courses for future astrophysicists. Nevertheles, almost nothing we are going to discuss is truly only for astrophysics. In reality, several applications and ideas are taken from other fields, i.e. economics, social sciences, climatology, etc.
 
-$(LocalResource("Pics/astrophysics.jpg"))
+$(LocalResource("Pics/astrophysics.jpg", :width => 700))
 """
 
 # ╔═╡ d5e83a80-2c3a-48a5-937f-95b50e745bc4
@@ -218,7 +218,7 @@ md"""
 md"""
 ## Course Website
 
-$(LocalResource("Pics/TDA.jpg", :width => 200))  
+$(LocalResource("Pics/TDA.jpg"))  
 
 - For most of the users, a web site reporting all the material shown during the lectures is probably the preferred and simpler solution. The course is available online at: [website](http://vstpol.brera.inaf.it:8081/Course.html)
 
@@ -274,7 +274,7 @@ The course calendar, notes, advised, topics discussed during a given lecture, an
 md"""
 ## Relaxing time(-series...)
 
-$(LocalResource("Pics/relaxing.png"))
+$(LocalResource("Pics/relaxing.png", :width => 700))
 """
 
 # ╔═╡ 87f81f95-2f33-496a-a9df-cbc711e51e3c
@@ -342,7 +342,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 03a0396f-0fbc-42c9-88d3-85b422bb72da
-md"Notebook v1.0.1 - 7 April 2026"
+md"Notebook v1.0.2 - 27 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -357,7 +357,7 @@ PlutoUI = "~0.7.61"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "95f3f934b7e2c5249ef6e1068e98d6029094e806"
 
