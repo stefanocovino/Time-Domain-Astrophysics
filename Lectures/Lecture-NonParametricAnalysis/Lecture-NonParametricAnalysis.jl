@@ -22,6 +22,7 @@ begin
 	using CommonMark
 	using Distributions
 	using PlutoUI
+	using PlutoTeachingTools
 	using Random
 end
 
@@ -323,77 +324,126 @@ begin
 end
 
 # ╔═╡ b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
-md"""
+cm"""
 ## Analysis of variance and orthogonal polynomials
 ***
 
-- This idea was introduced by [Schwarzenberg-Czerny (1996)](https://ui.adsabs.harvard.edu/abs/1996ApJ...460L.107S/abstract) and is based on the description of the data by a set of orthogonal complex polynomials on a discrete set of uneven observations. 
+- This algorithm has been introuced in [Schwarzenberg-Czerny (1989)](https://scixplorer.org/abs/1989MNRAS.241..153S/abstract) is a phase-folding technique and it treats the search for a period as a statistical grouping problem.
 
-- A Fourier series of ``N`` harmonics ``F^{(N)}(t)`` corresponds to the complex polynomial of order ``2N``, namely ``\Psi_{2N}(z) = z^N F^{(N)}(t) = z^N \sum_{n=0}^N (a_n \cos n \omega t + b_n \sin n \omega t)``.
+- First, the algorithm picks a "trial period" and "folds" the time-series data into a phase diagram (mapping all data points into a single cycle from 0 to 1). Then, the phase cycle is divided into several "bins" (discrete segments) and, finally, the variance of the data within each bin versus the variance between the bins is computed.
 
-- By [Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula) we get: 
+	- If the period is wrong: The data points will be randomly scattered; the variance within each bin will be high, and the means of the bins will be similar.
+	- If the period is correct: The data will follow a coherent shape. The points in each bin will be tightly clustered (low internal variance), but the means of the different bins will vary significantly (high between-bin variance).
 
-```math
-\Psi_{2N}(z) = \frac{1}{2} \sum_{n=0}^N [(a_n - i b_n)z^{N+n} + (a_n + i b_n)z^{N-n})]
-```
+- In [Schwarzenberg-Czerny (1996)](https://ui.adsabs.harvard.edu/abs/1996ApJ...460L.107S/abstract), the same author updated the method to use orthogonal polynomials (often called the MHAOV or Harmonic AoV). 
 
-- where ``a_0 = b_0`` and the ``z = e^{i \omega t}`` lay on a unit circle ``|z| = 1``. 
+- Instead of just using discrete bins, this version fits the phase-folded data with a series of harmonics making the algorithm not dependent on the, partly arbitrary choice of the bin length.
 
-- For a given trial frequency ``\omega``, times of observation ``t_k``, map onto points on the unit circle: ``z_k = e^{i\omega t_k}, k = 1,...,K``.
+- In practise, for the MHAVO algorithm, the period search is a least-squares problem using orthogonal basis functions made by complex polynomials.
 
-- These complex polynomials form a [Hilbert space](https://en.wikipedia.org/wiki/Hilbert_space) with the scalar product defined by the [Stjeltjes integral](https://en.wikipedia.org/wiki/Lebesgue%E2%80%93Stieltjes_integration) over the unit circle: ``(\Phi, \Psi) = \frac{1}{2\pi} \int_{-\pi}^{\pi} \Phi(z) \overline{\Psi(z)} d\mu(t)``.
-
-- The integral depends on a weight function ``\mu(t)`` defined on the circle. 
-    - A natural weight function ``\mu`` for the case of discrete observations is the step function with the steps at the phases ``\omega t_k``. 
-    
-- Then the scalar product reduces to the weighted sum: ``(\Phi, \Psi) = \sum_{k=1}^K g_k \Phi(z_k) \overline{\Psi(z_k)}`` so that observations with uneven weights ``g_k \sim 1/{\rm Var} \{X_k\}`` are accounted for in a natural way.
-
-
-
-
-
-- For a given base ``\Phi_N(z) = \sum_{n=0}^N a_n^{(N)} z^n, \ N=0, 1...,`` the expansion of a polynomial ``\Psi_N`` is unique:
-
-```math
-\Psi_N(z) = \sum_{n=0}^N c_n \Phi_n(z)
-```
-
-- It can be proved that in the polynomial Hilbert space, there exists a unique orthonormal base, with real and positive leading coefficients ``0 < a_n^{(n)} \in \mathcal{R}`` that of course satisfies the conditions of orthonormality: ``(\Phi_n,\Phi_m) = \delta_{n,m}``.
-
-- In [Schwarzenberg-Czerny (1996)](https://ui.adsabs.harvard.edu/abs/1996ApJ...460L.107S/abstract) it is described in detail how to generate the needed orthonormal basis and how to compute the projection coefficients. 
-
-| This is beyond our purpose here, it is sufficient to stress that by this family of polynomials we can project any time-series, independently of the sampling strategy, to a orthonormal basis. Quite a remarkable achievement!
-
-
-
-
-- In order to find the period (or frequency) giving the best description of the input data the analysis of variance (ANOVA) statistics is used.
-
-- Let observations ``X`` consist of the sum of the signal ``F`` and of the noise ``E``: ``X_k = F_k + E_k``. 
-
-- The relevant ANOVA statistics is ``\Theta \equiv \widehat{\rm Var} \{F \} / \widehat{\rm Var} \{E \}``, that takes the following form: 
-
-```math
-\Theta(\omega) = \frac{(K-2N-1) \sum_{n=0}^{2N} |c_n|^2}{(2N) [(X,X) - \sum_{n=0}^{2N} |c_n|^2]}
-```
-
-- If no subtraction of the average value from the time-series has been made, replace ``2N`` in the denominator (and not in the numerator) by ``2N + 1``.
-
-
-
-
-- For the quantitative evaluation of detection significance one uses the probability distribution of the periodogram for the hypothesis ``H_0``, i.e. that observations contain only pure white noise. 
-- The relevant statistical procedure is hypothesis testing. The statistics ``\widehat{\rm Var} \{F \}`` and ``\widehat{\rm Var} \{E \}``  are independent. So, the AoV periodogram, even for small samples, has Fisher’s F probability distribution with ``2N`` and ``K - 2N - 1`` degrees of freedom.
-
-
-
-- Another important point to recall is that classical statistics as the power spectrum, the PDM and the string-length all have to be normalized by the empirical variance  ``\widehat{\rm Var} \{X \}``. 
-    - Because of this normalization, their true distribution is no longer the theoretical distribution. Although the normalized statistics are ratios of variances, they do not obey Fisher’s F distribution since ``\widehat{\rm Var} \{X \}`` is now correlated to the periodogram itself.
-    - Fisher’s F distribution holds only for ratios of independent variances.
-
-- It can also be proved that for a pure sinusoidal signal ``N=1`` harmonic periodogram corresponds to the Lomb-Scargle periodogram.
 
 """
+
+# ╔═╡ 6e719f8a-b702-4406-a6b8-e0fdf5ed9552
+LocalResource("Pics/MHAOV.png")
+
+# ╔═╡ 94fbea32-d079-4f52-8a73-1e53fc848b7d
+Foldable("Some more mathematical desvcription of the MHAOV algorithm", cm"""
+- In MHAOV, for a given trial frequency ``f``, the signal is modeled as a sum of ``n`` harmonics. The observed data ``y_i`` at time ``t_i`` is modeled by the function ``g(t)``:
+
+```math
+g(t) = a_0 + \sum_{k=1}^{n} \left[ a_k \cos(2\pi k f t) + b_k \sin(2\pi k f t) \right]
+```
+
+- In MHAOV, the transition from a simple sum of sines to a computationally efficient algorithm relies on the projection of the data onto a set of basis functions. 
+
+- The core of the MHAOV technique involves solving the least-squares problem by projecting the observed data vector ``\mathbf{y}`` onto a subspace spanned by the model functions. To ensure computational stability and speed with unevenly sampled data, Schwarzenberg-Czerny utilizes a set of basis functions ``\{\phi_j\}`` that are orthonormal over the discrete set of observation times ``\{t_i\}``:
+
+```math
+\langle \phi_j, \phi_l \rangle = \sum_{i=1}^{N} \phi_j(t_i) \phi_l(t_i) = \delta_{jl}
+```
+
+- Where ``\delta_{jl}`` is the Kronecker delta. By transforming the trigonometric terms from the previous section into these orthogonal polynomials, the coefficients can be calculated independently:
+
+```math
+c_j = \sum_{i=1}^{N} y_i \phi_j(t_i)
+```
+
+- This projection represents the signal in a [Hilbert space](https://en.wikipedia.org/wiki/Hilbert_space). The total "power" or the reduction in sum of squares at a specific frequency ``f`` is simply the sum of the squares of these coefficients:
+
+```math
+||\hat{y}||^2 = \sum_{j=1}^{m} c_j^2
+```
+
+- Using this orthogonal basis avoids the need to invert large, often ill-conditioned matrices (the "normal equations") that would otherwise arise from the irregular sampling of the time series ``\{t_i\}``.
+
+- Since the sine and cosine functions are not naturally orthogonal on an arbitrary, discrete time grid ``\{t_i\}``, we use the [Gram-Schmidt process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process) (it is also possible to use the [QR decomposition](https://en.wikipedia.org/wiki/QR_algorithm)) to orthogonalize them.
+
+- Given our set of raw periodic functions ``\{s_1, s_2, \dots, s_m\}`` (where these are the sines and cosines of the harmonics), we derive the orthonormal basis ``\{\phi_1, \phi_2, \dots, \phi_m\}`` such that they satisfy the discrete inner product:
+
+```math
+\langle \phi_j, \phi_l \rangle = \sum_{i=1}^{N} w_i \phi_j(t_i) \phi_l(t_i) = \delta_{jl}
+```
+
+- where ``w_i`` are the weights, often ``w_i = 1/\sigma_i^2`` if the measurement errors are known.
+
+$br
+
+- Now, there is an iterative construction as follows:
+
+- Start with the first function, usually the constant ``a_0`` term:
+
+```math
+\phi_1 = \frac{s_1}{||s_1||}
+```
+
+- For the subsequent functions (``j > 1``) subtract the projections of the previous basis vectors from the new raw function ``s_j``:
+
+```math
+\psi_j = s_j - \sum_{k=1}^{j-1} \langle s_j, \phi_k \rangle \phi_k
+```
+
+- And then normalize the results:
+
+```math
+\phi_j = \frac{\psi_j}{||\psi_j||}
+```
+
+- In a standard regression, if your predictors (the harmonics) are correlated—which they always are in unevenly sampled data—changing one coefficient affects all others. This creates "interference" in your periodogram. By using the orthogonal projection we ensure that each harmonic's contribution to the fit is calculated independently.
+
+$br
+
+- The transition from simple power estimation to a formal "Analysis of Variance" is handled by the [F-test](https://en.wikipedia.org/wiki/F-test). Once the data is projected onto the orthonormal basis ``\{\phi_j\}``, we can decompose the total variance of the observations.
+
+- Let the total sum of squares be ``SS_{tot}``, the sum of squares explained by the ``m``-parameter model be ``SS_{reg}``, and the residual sum of squares be ``SS_{res}``. The statistic is defined as:
+
+```math
+F = \frac{SS_{reg} / (m - 1)}{SS_{res} / (N - m)}
+```
+
+- Using the orthogonal coefficients ``c_j``, these terms are expressed as:
+
+	- Model Power (``SS_{reg}``): ``\sum_{j=2}^{m} c_j^2``. This excludes the mean ``c_1`` to focus on periodic variance.
+	- Residuals (``SS_{res}``) ``\sum_{i=1}^{N} (y_i - \bar{y})^2 - SS_{reg}``
+
+- The final MHAOV periodogram value ``\Theta(f)`` for a given frequency is:
+
+```math
+\Theta(f) = \frac{(N - m)}{(m - 1)} \frac{\sum_{j=2}^{m} c_j^2}{\sum_{i=1}^{N} y_i^2 - \sum_{j=1}^{m} c_j^2}
+```
+
+- Under the null hypothesis (assuming the data is pure Gaussian noise), ``\Theta(f)`` follows a [Snedecor’s F-distribution](https://en.wikipedia.org/wiki/F-distribution) with ``d_1 = m-1`` and ``d_2 = N-m`` degrees of freedom. 
+
+- To determine if a peak is statistically significant, we calculate the *False Alarm Probability (FAP)*:
+
+```math
+FAP = 1 - [P(F < \Theta_{max})]^{N_{eff}}
+```
+
+- where ``P(F < \Theta_{max})`` is the cumulative distribution function (CDF) of the F-distribution and ``N_{eff}`` is the number of independent frequencies searched.
+
+"""		 
+)
 
 # ╔═╡ 517ff59c-aee6-4e66-b87c-e1e16921a758
 md"""
@@ -499,7 +549,7 @@ This idea was introduced [Huijse et al. (2018)](https://ui.adsabs.harvard.edu/ab
 
 - Technically speaking, the MI is the divergence (i.e. statistical distance) between the joint PDF of the RVs and the product of their marginal PDFs.
 
-- For the interested readers, an exhaustive description of the algorithm is reported here ([notebook](./open?path=Lectures/SLecture-NonParametricAnalysis/Lecture-MI.jl), [html](Lectures/Lecture-NonParametricAnalysis/Lecture-MI.html)).
+- For the interested readers, an exhaustive description of the algorithm is reported here ([notebook](./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-MI.jl), [html](../../Lectures/Lecture-NonParametricAnalysis/Lecture-MI.html)).
 
 - If the light curve is folded with the wrong period, the structure in the joint PDF will be almost equal to the product of the marginal PDFs, i.e., magnitudes are independent of the phases. 
 
@@ -574,7 +624,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
-md"Notebook v1.0.0 - 24 April 2026"
+md"Notebook v1.0.0 - 27 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -582,6 +632,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
@@ -589,6 +640,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 CairoMakie = "~0.15.9"
 CommonMark = "~1.0.1"
 Distributions = "~0.25.123"
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 """
 
@@ -598,7 +650,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "1ba9408fb32c86eac0ef997fcc6e5d4b77c98adb"
+project_hash = "a861ff90351baeda8095f5a04d83faf5a0459ac5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1042,6 +1094,12 @@ git-tree-sha1 = "45288942190db7c5f760f59c04495064eedf9340"
 uuid = "b0724c58-0f36-5564-988d-3bb0596ebc4a"
 version = "0.22.4+0"
 
+[[deps.Ghostscript_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "38044a04637976140074d0b0621c1edf0eb531fd"
+uuid = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
+version = "9.55.1+0"
+
 [[deps.Giflib_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "6570366d757b50fabae9f4315ad74d2e40c0560a"
@@ -1316,6 +1374,24 @@ version = "2.10.3+0"
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
+
+[[deps.Latexify]]
+deps = ["Format", "Ghostscript_jll", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "44f93c47f9cd6c7e431f2f2091fcba8f01cd7e8f"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.10"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SparseArraysExt = "SparseArrays"
+    SymEngineExt = "SymEngine"
+    TectonicExt = "tectonic_jll"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+    tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
 [[deps.LazyModules]]
 git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
@@ -1632,6 +1708,12 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -2236,6 +2318,8 @@ version = "4.1.0+0"
 # ╟─df6ab42b-bfa9-46a4-a23d-1cca9ca844e7
 # ╟─80cfa78d-60e5-4f3a-912e-42413009cf0e
 # ╟─b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
+# ╟─6e719f8a-b702-4406-a6b8-e0fdf5ed9552
+# ╟─94fbea32-d079-4f52-8a73-1e53fc848b7d
 # ╟─517ff59c-aee6-4e66-b87c-e1e16921a758
 # ╟─785fb200-b217-4674-9d78-a1dc82be456e
 # ╟─c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
