@@ -400,13 +400,13 @@ cm"""
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
-    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricAnalysis.jl">Lecture about non-parametric analysis</a></td>
+    <td><a href="./open?path=Lectures/ScienceCase-GRBs/Lecture-GRBs.jl">Science case about GRBs</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NnParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
-<td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NnParametricAnalysis.html">Lecture about non-parametric analysis</a></td>
+<td><a href="../../Lectures/ScienceCase-GRBs/Lecture-GRBs.html">Science case about GRBs</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
@@ -422,7 +422,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 98c10d5b-e47a-4973-96a1-2b85d91570bb
-md"Notebook v1.0.0 - 9 April 2026"
+md"Notebook v1.0.0 - 28 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -458,7 +458,7 @@ StatsBase = "~0.34.10"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "7832129d62be8692f444ec089c6da4b6157bc15a"
 

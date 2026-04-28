@@ -450,7 +450,7 @@ md"""
 ## Generalized Correlation Function: Correntropy
 ***
 
-> Recently, non-parametric methods have attracted a considerable attention and novel appoaches, based on ideas and algorithms developed for machine-learning in a big-data scenario, have been developed.
+> Recently, non-parametric methods have attracted a considerable attention due to novel appoaches, based on ideas and algorithms developed for machine-learning in a big-data scenario, have been developed.
 
 
 - [Huijse et al. (2012)](https://ui.adsabs.harvard.edu/abs/2012ITSP...60.5135H/abstract) discussed a methodology based on information theoretic (IT) based criteria.
@@ -462,7 +462,7 @@ md"""
   - The new metric provides a periodogram, called Correntropy Kernelized Periodogram (CKP), whose peaks are associated with the fundamental frequencies present in the data. 
   - The CKP does not require any resampling, slotting or folding scheme as it is computed directly from the available samples.
 
-- The generalized correlation function (GCF) is also known as correntropy, and measures similarities between feature vectors separated by a certain time delay in input space.
+- The generalized correlation function (GCF), i.e., the correntropy, measures similarities between feature vectors separated by a certain time delay in input space.
 
 - The similarities are measured in terms of inner products in a high-dimensional kernel space. 
 
@@ -624,7 +624,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
-md"Notebook v1.0.0 - 27 April 2026"
+md"Notebook v1.0.0 - 28 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
