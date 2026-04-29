@@ -43,12 +43,10 @@ $(LocalResource("Pics/TimeDomainBanner.jpg"))
 
 # ╔═╡ 404060d3-23ec-400b-84cf-779e63b90293
 md"""
-# Non-parametric periodograms 
+# Exercise with non-parametric periodograms 
 ***
 
-- Let's work with a simple irregulary sampled time series using a harmonic model composed of three sine waves. The fundamental frequency is "$2.0$" and the observation lasts "$100.0$" inverse units of the frequency, with $30$ points.
-    
-- And let's give a look at the light-curve and at the folded version.
+- In this exercise, we are going to work with a simple irregulary sampled time series geberated using a harmonic model composed of three sine waves. The fundamental frequency is "$2.0$" and the observation lasts "$100.0$" inverse units of the frequency, with $30$ points.
 
 """
 
@@ -123,7 +121,7 @@ end
 
 # ╔═╡ 36fc3042-928c-4e65-b841-2419f37a0ea0
 md"""
-> The simulated data are sufficiently close to a real dataset with a modest number of heteroscedastic observations carried out when possible, i.e. irregularly during the "source" monitoring.
+> The simulated data are sufficiently close to a real dataset, composed by a modest number of heteroscedastic observations carried out when possible, i.e. irregularly sampled during the "source" monitoring.
 """
 
 # ╔═╡ e417b405-7520-4916-8e9c-94aea023ec47
@@ -131,14 +129,14 @@ md"""
 ## Finding the best frequency/period using a Lomb-Scargle algorithm
 ***
 
-- Before moving to non-parametric methods let's analyse our time-series with the standard algorithm for irregularly sampled time-series: the Lomb-Scargle (LS) algorithm.
+- Before moving to non-parametric methods let's analyse our time-series with the *de facto* standard algorithm for irregularly sampled time-series: the Lomb-Scargle (LS) algorithm.
 
 - Let's remind us that for evenly sampled light-curves the LS reduces to the plain discrete Fourier transform.
 """
 
 # ╔═╡ 1cd6aa8e-bff2-4964-adf1-e6b1449a6ea7
 begin
-	frequencyLS = range(start=0.1,stop=5.0,length=2000)   
+	frequencyLS = range(start=0.1,stop=5.0,step=1e-3)   
 	
 	pgram = lombscargle(mjd, mag, err; 
                     frequencies = frequencyLS,
@@ -186,11 +184,12 @@ begin
 end
 
 # ╔═╡ 243fb125-419f-47fd-822d-5609584b2c6a
-md"""
+cm"""
 - We see immediately that the LS periodogram indeed does show a peak at the expected frequency.
     - Yet, even without a detailed statistical analysis, it is clear that its significance, compared to the several other peaks of similar power (the scale is linear) should likely be modest.
+	- This is likely due to the relatively modest number of available observations, and the variability shape that is not truly sinusoidal. These two factors make hard for the algorithm to distiguish the *true* frequency from the harmonics.
     
-> The LS periodogram in this rather typical (although, by no means, simple) case yields difficult to interpret results. We now move to non-parametric tools.
+> The LS periodogram in this rather typical (although, by no means, trivial) case is difficult to interpret. We now move to non-parametric tools. 
 """
 
 # ╔═╡ 7fc49a76-56e9-406b-8164-f49c59303dc2
@@ -293,6 +292,8 @@ md"- Here we have a situation similar to the LS periodogram. We can retrieve the
 md"""
 ## AoV analysis
 ***
+
+- The AoV algorithm has been designed to model any light-curve shape with an approadh still close to the one adopted for the LS algorithm.
 """
 
 # ╔═╡ af1332b7-e000-406e-a3a3-199b2237f7cd
@@ -329,12 +330,14 @@ Best frequency: $(latexify(pg_aov.best_frequency,fmt="%.2f")) corresponding to p
 """)
 
 # ╔═╡ 16cc2bdd-43fb-4e3a-9327-be8752e4a7de
-md"- Another noisy periodogram, but again the right frequency although the harmonic at half frequency is comparable to the frequency using to generate the input data.."
+md"- Another noisy periodogram, but again the right frequency is identified. As for most of the previous cases, the harmonic at half frequency is comparable in power to the *true* frequency using to generate the input data."
 
 # ╔═╡ 9b92a4bb-fe10-4928-91a3-af2d822e4c23
 md"""
 ## Quadratic Mutual Information
 ***
+
+- And finally let's try with one of the algorithms based on the analysis of the probability densities of the input fluxes and phased data.
 """
 
 # ╔═╡ a3e9e860-c31a-4cd9-b877-946d0d82fd48
@@ -372,9 +375,11 @@ Best frequency: $(latexify(pg_qmi.best_frequency,fmt="%.2f")) corresponding to p
 
 # ╔═╡ 1856fcad-9767-4fc3-ab2a-c408a0ed3523
 md"""
-- The periodogram based on the QMI is defintely the most convincing, with the right period standig above the alternatives.
-- Please, be aware that with a different dataset results can change, this simple exercize does not authorize to judge the PDM technique as the least effective. 
-- It is indeed true that the QMI periodogram seems to outperform the alternatives.
+- Indeed, the periodogram based on the QMI appears to be definitely the most convincing, with the right period standing above the alternatives.
+
+> Please, be aware that with a different dataset results can change, this simple exercize does not authorize, e.g., to judge the PDM technique as the least effective in general. 
+
+- It is indeed true that the QMI periodogram seems to be more effective than the other explored algorithms.
 """
 
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
@@ -422,7 +427,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 98c10d5b-e47a-4973-96a1-2b85d91570bb
-md"Notebook v1.0.0 - 28 April 2026"
+md"Notebook v1.0.0 - 29 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
