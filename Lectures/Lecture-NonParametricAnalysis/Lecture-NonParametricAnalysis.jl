@@ -199,7 +199,7 @@ md"""
 
 # ╔═╡ d30ed012-7751-46fd-8cdb-0a095550d6e5
 cm"""
-Right period? $(@bind rper CheckBox(default=false))
+Right period? $(@bind rper CheckBox(default=true))
 """
 
 # ╔═╡ 68359d41-37ca-4564-afc6-9c2ba500b530
@@ -218,7 +218,7 @@ begin
 	end
 	fs = ts ./ P .- [floor(Int,x) for x in (ts ./ P)]
 	
-	scatter!(ax1fg2,fs,fl,label="Phased time-Series")
+	scatter!(ax1fg2,fs,fl,label="Phased time-series")
 	axislegend(ax1fg2)
 	
 	fg2
@@ -234,7 +234,7 @@ md"""
 
 - Therefore, it was suggested that $\Theta$ follows a probability density given by an $F$ distribution with $\sum n_j -M$ and $N — 1$ degrees of freedom.
 
-    - Actually, [further studies](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract) showed this is not correct, and the right statistic turns out to be an incomplete beta distribution although, often, Monte Carlo methods are applied to derive the significance of identified features.
+    - Actually, [further studies](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract) showed this is not correct, and the right statistic turns out to be an [incomplete beta distribution](https://en.wikipedia.org/wiki/Beta_function) although, often, Monte Carlo methods are applied to derive the significance of identified features.
     
 - Several improvements have been proposed since 1978 for this algorithm, to make it more usable for larget datasets or to avoid the possible bias introduced by the (somewhat arbitrary) binning procedure (See, e.g., the wikipedia page devoted to the [PDM technique](https://en.wikipedia.org/wiki/Phase_dispersion_minimization)).
 """
@@ -294,7 +294,7 @@ $(LocalResource("Pics/StringLengthMethod.png"))
 
 # ╔═╡ df6ab42b-bfa9-46a4-a23d-1cca9ca844e7
 cm"""
-Right period? $(@bind rslper CheckBox(default=false))
+Right period? $(@bind rslper CheckBox(default=true))
 """
 
 # ╔═╡ 80cfa78d-60e5-4f3a-912e-42413009cf0e
@@ -316,7 +316,7 @@ begin
 	
 	idx = sortperm(fs1)
 		
-	scatter!(ax1fg3,fs1[idx],fl[idx],label="Phased time-Series")
+	scatter!(ax1fg3,fs1[idx],fl[idx],label="Phased time-series")
 	lines!(ax1fg3,fs1[idx],fl[idx])
 	axislegend(ax1fg3)
 	
@@ -335,9 +335,11 @@ cm"""
 	- If the period is wrong: The data points will be randomly scattered; the variance within each bin will be high, and the means of the bins will be similar.
 	- If the period is correct: The data will follow a coherent shape. The points in each bin will be tightly clustered (low internal variance), but the means of the different bins will vary significantly (high between-bin variance).
 
+- This is, indeed, close to the strategy adopted for the PDM technique.
+
 - In [Schwarzenberg-Czerny (1996)](https://ui.adsabs.harvard.edu/abs/1996ApJ...460L.107S/abstract), the same author updated the method to use orthogonal polynomials (often called the MHAOV or Harmonic AoV). 
 
-- Instead of just using discrete bins, this version fits the phase-folded data with a series of harmonics making the algorithm not dependent on the, partly arbitrary choice of the bin length.
+- Instead of just using discrete bins, this version fits the phase-folded data with a series of harmonics making the algorithm not dependent on the, partly arbitrary, choice of the bin length.
 
 - In practise, for the MHAVO algorithm, the period search is a least-squares problem using orthogonal basis functions made by complex polynomials.
 
@@ -348,7 +350,7 @@ cm"""
 LocalResource("Pics/MHAOV.png")
 
 # ╔═╡ 94fbea32-d079-4f52-8a73-1e53fc848b7d
-Foldable("Some more mathematical desvcription of the MHAOV algorithm", cm"""
+Foldable("Some more mathematical description of the MHAOV algorithm", cm"""
 - In MHAOV, for a given trial frequency ``f``, the signal is modeled as a sum of ``n`` harmonics. The observed data ``y_i`` at time ``t_i`` is modeled by the function ``g(t)``:
 
 ```math
@@ -624,7 +626,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
-md"Notebook v1.0.0 - 28 April 2026"
+md"Notebook v1.0.0 - 30 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

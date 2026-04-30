@@ -31,7 +31,7 @@ md"""
 # Mutual Information and Time-Series Analysis
 ***
 
-> We see here an algorithm introduced by [Huijse et al. (2018)](https://ui.adsabs.harvard.edu/abs/2018ApJS..236...12H/abstract), to identify light curve periods based on quadratic mutual information (MI). We invite any intersted reader to check the original publication for any further detail.
+> We see here an algorithm introduced by [Huijse et al. (2018)](https://ui.adsabs.harvard.edu/abs/2018ApJS..236...12H/abstract), to identify light curve periods based on quadratic mutual information (MI). We invite any interested reader to check the original publication for any further detail.
 
 - This is a non-parametric method since it does not rely on sinusoidal models for the data. 
 
@@ -243,15 +243,17 @@ f_{\Phi, M}(\phi, m) = \frac{1}{N} \sum_{i=1}^N \text{G}_{\sqrt{\sigma_i^2+h_m^2
 
 > If the period of a light curve is estimated by maximizing the QMI for a range of trial periods. This yields a QMI periodogram!
 
+"""
 
-
+# ╔═╡ df6b5ba8-bf55-46c7-997b-51904eaa143c
+cm"""
 - An interesting problem by itself is the choice of the KDE bandwidth. In this case we have two parameters ``h_\phi`` and ``h_m``. 
     - The former is associated to the phases which are always constrained to ``[0, 2\pi]``, i.e. the dynamic range of this variable is fixed. QMI is not too sensitive to ``h_\phi`` as long as it is not extremely small or large. It was found empirically that ``h_\phi = 1`` is a good choice and we keep it constant to make comparisons between QMI values easier. 
-    - The second bandwidth ``h_m`` is more difficult to set as the dynamic range of the magnitudes is not known \emph{a priori}. Following [Silverman (1986)](https://www.taylorfrancis.com/books/mono/10.1201/9781315140919/density-estimation-statistics-data-analysis-bernard-silverman), we may write:
+    - The second bandwidth ``h_m`` is more difficult to set as the dynamic range of the magnitudes is not known *a priori*. Following [Silverman (1986)](https://www.taylorfrancis.com/books/mono/10.1201/9781315140919/density-estimation-statistics-data-analysis-bernard-silverman), we may write:
 ```math
 h_m = 0.9 \cdot \text{min} ( \sqrt{\text{VAR}[m]}, ~\text{IQR}[m]/1.349) \cdot N^{-1/5}, 
 ```
-- where ``\text{VAR}[m]`` is the variance of the magnitudes, ``\text{IQR}[m]`` is the interquartile range of the magnitudes and ``N`` is the number of samples. To avoid overestimation of ``h_m`` we use the weighted versions of variance and IQR, with weights ``w_i = \sigma_i^{-2}``, ``i = 1,\ldots,N``. o frequency, $\omega$).
+- where ``\text{VAR}[m]`` is the variance of the magnitudes, ``\text{IQR}[m]`` is the interquartile range of the magnitudes and ``N`` is the number of samples. To avoid overestimation of ``h_m`` we use the weighted versions of variance and IQR, with weights ``w_i = \sigma_i^{-2}``, ``i = 1,\ldots,N``. o frequency, ``\omega``).
 """
 
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
@@ -299,7 +301,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ bfdab6d3-62de-477f-b1ac-ba68b3fbe38b
-md"Notebook v1.0.0 - 9 April 2026"
+md"Notebook v1.0.0 - 30 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -620,6 +622,7 @@ version = "17.7.0+0"
 # ╟─5029a214-0841-40fb-b397-4a2e1047bfb7
 # ╟─404060d3-23ec-400b-84cf-779e63b90293
 # ╟─72cf6fcf-2e2f-4dee-994b-ce2bfef51802
+# ╟─df6b5ba8-bf55-46c7-997b-51904eaa143c
 # ╟─2d596c28-74bc-4ff8-a030-fbac18dbceb0
 # ╟─b36fd613-95c8-44bf-876d-4eb345c26f08
 # ╟─206474b8-0811-4785-8a71-acdcfd20b76c

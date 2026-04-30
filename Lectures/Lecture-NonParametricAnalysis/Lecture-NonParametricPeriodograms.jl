@@ -46,7 +46,7 @@ md"""
 # Exercise with non-parametric periodograms 
 ***
 
-- In this exercise, we are going to work with a simple irregulary sampled time series geberated using a harmonic model composed of three sine waves. The fundamental frequency is "$2.0$" and the observation lasts "$100.0$" inverse units of the frequency, with $30$ points.
+- In this exercise, we are going to work with a simple irregulary sampled time series generated using a harmonic model composed of three sine waves. The fundamental frequency is "$2.0$" and the observation lasts "$100.0$" inverse units of the frequency, with $30$ points.
 
 """
 
@@ -63,7 +63,7 @@ end;
 
 # ╔═╡ 143a4faa-7b08-4a94-a3c8-d78691b3ba7a
 begin
-	fig = Figure(size = (1200, 400), figure_padding = 10)
+	fig = Figure(size = (800, 400), figure_padding = 10)
 	
 	# Pannello sinistro: Time series
 	ax1 = Axis(fig[1, 1],
@@ -187,9 +187,11 @@ end
 cm"""
 - We see immediately that the LS periodogram indeed does show a peak at the expected frequency.
     - Yet, even without a detailed statistical analysis, it is clear that its significance, compared to the several other peaks of similar power (the scale is linear) should likely be modest.
-	- This is likely due to the relatively modest number of available observations, and the variability shape that is not truly sinusoidal. These two factors make hard for the algorithm to distiguish the *true* frequency from the harmonics.
+	- This is likely due to the relatively small number of available observations, and the variability shape that is not truly sinusoidal. These two factors make hard for the algorithm to distiguish the *true* frequency from the harmonics.
     
 > The LS periodogram in this rather typical (although, by no means, trivial) case is difficult to interpret. We now move to non-parametric tools. 
+
+- As we are going to learn, non-parametric methods, unsurprisingly, have to deal with the some of the same difficulties.
 """
 
 # ╔═╡ 7fc49a76-56e9-406b-8164-f49c59303dc2
@@ -249,7 +251,7 @@ md"""
 ## Lafler-Kinman's string length
 ***
 
-- This is one of the possible variants of string-length methods
+- This is one of the possible variants of string-length methods:
 """
 
 # ╔═╡ d947c978-08b3-48c0-83a0-c45b7194c54a
@@ -293,7 +295,7 @@ md"""
 ## AoV analysis
 ***
 
-- The AoV algorithm has been designed to model any light-curve shape with an approadh still close to the one adopted for the LS algorithm.
+- The AoV algorithm has been designed to model any light-curve shape with an approach still close to the one adopted for the LS algorithm.
 """
 
 # ╔═╡ af1332b7-e000-406e-a3a3-199b2237f7cd
@@ -427,7 +429,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 98c10d5b-e47a-4973-96a1-2b85d91570bb
-md"Notebook v1.0.0 - 29 April 2026"
+md"Notebook v1.0.0 - 30 April 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
