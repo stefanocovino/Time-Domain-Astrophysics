@@ -269,14 +269,14 @@ pr = 100 * count(<=(pmax), bres) / length(bres);
 cm"""
 - And the observed value has a FAP (under the quite simple null hypothesis we have adopted) of $(round(100-pr,digits=2))%.
 
-- Indeed, a valiue not too far from whhat derived analytically.
+- Indeed, a value not too far from what (grossly) derived analytically.
 
 - It is thus clear that the obained power is of interest, deserving further investigations.
 
 """
 
 # ╔═╡ a3313e9f-d922-417b-9872-24ab03f7ce49
-warning_box(cm"This is an interesting exercize, yet be aware that a bootstrap for a time-series is a complex issue.")
+warning_box(cm"This is an interesting exercize, yet be aware that a MonteCarlo or bootstrap analysis for a time-series is a complex issue.")
 
 # ╔═╡ 2e56539e-0756-447a-be96-0560f4c6a609
 cm"- Now, in order to go on, it is useful to recap some of the main features of the Poisson distribution"
