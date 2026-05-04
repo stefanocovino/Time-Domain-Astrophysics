@@ -653,7 +653,7 @@ cm"""
 
 - The most interesting aspect of the GEV distribution is that it can be proved that it holds asymptotically, essentially independently of the probability distribution describing the phenomena that generate the observed data.
 
-- There is some analogy with the [central limit theorem](http://vstpol.brera.inaf.it:8081/Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.html) that guarantees that, under rather general conditions, the limiting distribution of sample means for a large family of parental statistical distributions is a standard normal distribution.
+- There is some conceptual analogy with the central limit theorem ([notebook](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.jl), [html](../../Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.html)) that guarantees that, under rather general conditions, the limiting distribution of sample means for a large family of parental statistical distributions is a standard normal distribution.
 
 - The idea, essentially, is to carry out a simulation, fit the GEV (assuming, of course, that the kind of simulation, allows) and then extrapolate to the desidered percentile value.
 
@@ -723,7 +723,7 @@ begin
 	quantile_val95 = quantile(d_gev, 0.95) # 95th percentile
 	quantile_val90 = quantile(d_gev, 0.90) # 90th percentile
 	
-end
+end;
 
 # ╔═╡ 35e1f8b4-7ec7-4932-9586-8a5d449dda22
 cm"""
@@ -796,13 +796,13 @@ cm"""
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
-    <td><a href="./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.jl">Lecture about singlular spectrum analysis"</a></td>
+    <td><a href="./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.jl">Lecture about singular spectrum analysis"</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
-<td><a href="../../Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html">Lecture about singlular spectrum analysis</a></td>
+<td><a href="../../Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html">Lecture about singular spectrum analysis</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
@@ -818,7 +818,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 0eaec6b9-82a6-4166-a8bd-c3c8147238d8
-md"Notebook v1.0.0 - 03 May 2026"
+md"Notebook v1.0.0 - 05 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
