@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ 6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 begin
 	using CairoMakie
@@ -11,6 +23,7 @@ begin
 	using LaTeXStrings
 	using LinearAlgebra
 	using PlutoUI
+	using PlutoTeachingTools
 	using Random
 	using Statistics
 end
@@ -300,7 +313,7 @@ md"""
 # Singular-Spectrum Analysis
 ***
 
-- We introduce now technique of **singular-spectrum analysis (SSA)**. In simple words, SSA decomposes a time series into a set of summable components that are grouped together and interpreted as *trend*, *periodicity* and *noise*. 
+- We want to introduce the **singular-spectrum analysis (SSA)**. In simple words, SSA decomposes a time series into a set of summable components that are grouped together and interpreted as *trend*, *periodicity* and *noise*. 
 
 - SSA emphasises **separability** of the underlying components, and can readily separate periodicities that occur on different time scales, even in very noisy time series data. The original time series is recovered by summing together all of its components.
 
@@ -346,6 +359,13 @@ begin
 	F = trend .+ periodic1 .+ periodic2 .+ noise
 end;
 
+# ╔═╡ f0573d72-27cf-4a04-baef-9a191c6edd5a
+cm"""
+
+Total time-series only? $(@bind totts CheckBox(default=true))
+
+"""
+
 # ╔═╡ b728fcba-8aea-4f8c-962c-96c61f3c6457
 begin
 	fg1 = Figure()
@@ -356,10 +376,12 @@ begin
 	    title = "The Toy Time Series and its Components",
 	)
 	lines!(t, F, linewidth=2.5, label="Toy Series (F)")
-	lines!(t, trend, alpha=0.75, label="Trend")
-	lines!(t, periodic1, alpha=0.75, label="Periodic #1")
-	lines!(t, periodic2, alpha=0.75, label="Periodic #2")
-	lines!(t, noise, alpha=0.5, label="Noise")
+	if !totts
+		lines!(t, trend, alpha=0.75, label="Trend")
+		lines!(t, periodic1, alpha=0.75, label="Periodic #1")
+		lines!(t, periodic2, alpha=0.75, label="Periodic #2")
+		lines!(t, noise, alpha=0.5, label="Noise")
+	end
 	    
 	axislegend(ax1,framevisible = false,position = :ct)
 	
@@ -466,11 +488,10 @@ md"""
 ```
 - where ``\sigma_i`` is the ``i``th singular value, ``U_i`` and ``V_i`` are vectors representing the ``i``th columns of ``\mathbf{U}`` and ``\mathbf{V}``, respectively, ``d \le L`` is the *rank* of the trajectory matrix, and ``\mathbf{X}_i = \sigma_i U_i V_i^{\text{T}}`` is the ``i``th *elementary matrix* of ``\mathbf{X}``. The collection ``\{U_i, \sigma_i, V_i\}`` will be denoted the ``i``th *eigentriple* of the SVD.
 
-- To build a picture of what all of this means, let's inspect the ``\mathbf{U}``, ``\mathbf{V}`` and ``\mathbf{\Sigma}`` matrices in turn. 
 """
 
 # ╔═╡ b393afda-d52b-4b48-aee0-cf1a42054afe
-md"""
+Foldable(cm"Would you like to know more about the ``\mathbf{U}`` matrix?", md"""
 #### The ``\mathbf{U}`` Matrix
 ***
 
@@ -501,9 +522,10 @@ md"""
 
 - In other words, the columns of the ``\mathbf{U}`` matrix form an orthonormal basis set that describes the time subseries ``\left\{ f_i, \ldots, f_{i+L-1}\right\}_{i=0}^{N-L}`` in the columns of the trajectory matrix. 
 """
+)
 
 # ╔═╡ 61850790-88da-4cf9-8ed3-f96282f04e2d
-md"""
+Foldable(cm"Would you like to know more about the ``\mathbf{V}`` matrix?", md"""
 #### The ``\mathbf{V}`` Matrix
 ***
 
@@ -526,9 +548,10 @@ X^{(\text{T})}_j = \sum_{i=0}^{d-1}y_{j,i}V_i
 
 - Equivalently, ``\mathcal{V}`` is a basis set spanning the *row space* of ``\mathbf{X}``. That is, the columns of the ``\mathbf{V}`` matrix form an orthonormal basis set that describe the time subseries ``\{ f_i, \ldots, f_{i+N-L}\}_{i=0}^{L-1}`` in the rows of the trajectory matrix.
 """
+)
 
 # ╔═╡ 35390351-c3d9-4218-aa8a-02cabda3c192
-md"""
+Foldable(cm"Would you like to know more about the ``\mathbf{\Sigma}`` matrix?", md"""
 #### The ``\mathbf{\Sigma}`` Matrix
 ***
 
@@ -572,26 +595,12 @@ md"""
 - Following a similar argument, multiplying ``\mathbf{X}`` on the left by ``\mathbf{X}^{\text{T}}`` shows that the columns of ``\mathbf{V}`` are eigenvectors of the matrix ``\mathbf{X}^{\text{T}}\mathbf{X}``, also with eigenvalues ``\{\sigma_0^2, \ldots , \sigma_{L-1}^2\}``.
 
 """
+)
 
 # ╔═╡ 86d2e08b-bfab-46a3-9db6-6ef8a22147b2
 md"""
-#### Putting it all Together
-***
 
-- Let's quickly recap everything so far: we have mapped a time series ``F = \{f_0, \ldots, f_{N-1}\}`` to a collection of multi-dimensional lagged vectors, ``X_i = (f_i, f_{i+1}, \ldots, f_{i+L-1})^{\text{T}}, i = 0, \ldots, N-L``, which together comprise the columns of the trajectory matrix ``\mathbf{X}``.
-
-- We then decomposed this matrix with an SVD; in doing so, we found two orthonormal basis sets, ``\mathcal{U}`` and ``\mathcal{V}``, which span the column- and row-space, respectively, of the trajectory matrix. The SVD of ``\mathbf{X}`` can be written as
-```math
-\begin{align*}
-    \mathbf{X} & = \sum_{i=0}^{d-1}\sigma_i U_i V_i^{\text{T}} \\
-               & \equiv \sum_{i=0}^{d-1}\mathbf{X}_i
-\end{align*}
-```
-- where ``\mathbf{X}_i`` is the ``i``th elementary matrix of ``\mathbf{X}``, determined by the eigentriple  ``\{U_i, \sigma_i, V_i\}``. The ``i``th singular value, ``\sigma_i``, determines the relative contribution of ``\mathbf{X}_i`` in the expansion of ``\mathbf{X}`` above.
-
-- The integer ``d \le L`` is the intrinsic dimensionality of the time series' trajectory space, and we may choose to obtain a lower-dimensional approximation of ``\mathbf{X}`` by summing only the first ``r < d`` elementary matrices.
-
-> Much of what has been covered so far is general to the SVD of *any* matrix, not just the trajectory matrix of a time series.
+- With different worrds, when we decompose the trajectory matrix with an SVD; in doing so, we found two orthonormal basis sets, ``\mathcal{U}`` and ``\mathcal{V}``, which span the column- and row-space, respectively, of the trajectory matrix. 
 
 - From now on, we are going to focus on reconstructing the components of a time series from its elementary matrices.
 """
@@ -602,9 +611,6 @@ begin
 	
 	U, Σ, V = svd(X)
 	
-	# Calculate the elementary matrices of X, storing them in a multidimensional array.
-	# This requires calculating sigma_i * U_i * (V_i)^T for each i, or sigma_i * outer_product(U_i, V_i). 
-	# Note that Sigma is a 1D array of singular values, instead of the full L x K diagonal matrix.
 	X_elem = [Σ[i] * U[:, i] * (V[:, i])' for i in 1:d]
 	
 	# Quick sanity check: the sum of all elementary matrices in X_elm should be equal to X, to within a 
@@ -615,7 +621,7 @@ begin
 end
 
 # ╔═╡ aaebbbcd-6bb6-46e0-8564-8029a4f2d1cf
-md"- Let's take a peak at the first 12 elementary matrices:"
+md"- Let's check the first, say, 12 elementary matrices:"
 
 # ╔═╡ 2b3f952d-db20-4790-8482-9c6e981f60e0
 begin
@@ -669,7 +675,7 @@ end;
 
 # ╔═╡ ef9e9f9a-7598-4e22-9add-f1dd2a74c516
 begin
-	n = min(12, d) # In case d is less than 12 for the toy series. Say, if we were to exclude the noise component.
+	n = min(12, d) 
 	plot_series_in_grid(X_elem, n)
 end
 
@@ -684,7 +690,24 @@ md"""
     - ``\mathbf{X}_7`` may lie somewhere between periodicity and trend.
     - The matrices of ``\mathbf{X}_8`` onwards (and all the way up to ``\mathbf{X}_{70}``) appear to alternate quickly between a few values; these elementary matrices are likely to be associated with the noise in the original time series.
 
-- Let's plot now the relative contributions, ``\dfrac{\sigma_i^2}{\sum_{k=1}^{d} \sigma_k^2}``, and the cumulative contributions, ``\dfrac{\sum_{j=1}^i \sigma_j^2}{\sum_{k=1}^{d} \sigma_k^2}``, of the first 12 elementary matrices to the trajectory matrix of the toy time series:
+$br
+
+#### The relative contributions
+***
+
+- Let's plot now the relative contributions:
+
+```math
+\dfrac{\sigma_i^2}{\sum_{k=1}^{d} \sigma_k^2}
+```
+
+- and the cumulative contributions:
+
+```math
+\dfrac{\sum_{j=1}^i \sigma_j^2}{\sum_{k=1}^{d} \sigma_k^2}
+```
+
+- of the first 12 elementary matrices to the trajectory matrix of the toy time series:
 """
 
 # ╔═╡ 54273740-9fb0-46b6-a928-c74b9077eaa3
@@ -757,7 +780,7 @@ md"""
 """
 
 # ╔═╡ 911757a4-a582-469d-8a2a-9273065e8d83
-md"""
+Foldable(cm"Would you like to know *Hankelize* the elementary matrices?", md"""
 
 - To extract a time series from the elementary matrices, we'll employ *diagonal averaging*, which defines the values of the reconstructed time series ``\tilde{F}^{(j)}`` as averages of the corresponding anti-diagonals of the matrices ``\mathbf{X}^{(j)}``.
 
@@ -799,6 +822,7 @@ md"""
 
 - As a time series is uniquely determined from a Hankel matrix, the expression above also defines the time series ``F`` as a sum of its components ``\tilde{F}_i``. It is up to us to group these components together, and classify them as trend, periodicity or noise, and then we're free to decide how we use them. 
 """
+)
 
 # ╔═╡ 1d406a03-8158-4b3f-a734-d1b80c259847
 """
@@ -890,9 +914,12 @@ function Hankelise(X::AbstractMatrix)
     end
 end;
 
+# ╔═╡ c2b8effb-527e-43e4-b300-e1c73d4a8d83
+cm"- Once we have modified the structure of the elementary matrices we can look at them:"
+
 # ╔═╡ 38fc4698-f890-4104-b37b-0d938a02f012
 begin
-	nh = min(12, d) # In case d is less than 12 for the toy series. Say, if we were to exclude the noise component.
+	nh = min(12, d) 
 	els = [Hankelise(X_elem[i]) for i in 1:nh]
 	plot_series_in_grid(els, nh)
 end
@@ -1553,6 +1580,7 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -1561,6 +1589,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 CairoMakie = "~0.15.9"
 CommonMark = "~0.8.15"
 LaTeXStrings = "~1.4.0"
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.61"
 """
 
@@ -1570,7 +1599,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "c82c12050b4356fb944cb2359f2d87d68691c7da"
+project_hash = "157f3c6e437ef76c7e332cde37daa81e65d61f72"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -2007,6 +2036,12 @@ git-tree-sha1 = "45288942190db7c5f760f59c04495064eedf9340"
 uuid = "b0724c58-0f36-5564-988d-3bb0596ebc4a"
 version = "0.22.4+0"
 
+[[deps.Ghostscript_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "38044a04637976140074d0b0621c1edf0eb531fd"
+uuid = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
+version = "9.55.1+0"
+
 [[deps.Giflib_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "6570366d757b50fabae9f4315ad74d2e40c0560a"
@@ -2275,6 +2310,24 @@ version = "2.10.3+0"
 git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.4.0"
+
+[[deps.Latexify]]
+deps = ["Format", "Ghostscript_jll", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "44f93c47f9cd6c7e431f2f2091fcba8f01cd7e8f"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.10"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SparseArraysExt = "SparseArrays"
+    SymEngineExt = "SymEngine"
+    TectonicExt = "tectonic_jll"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+    tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
 [[deps.LazyModules]]
 git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
@@ -2591,6 +2644,12 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "26ca162858917496748aad52bb5d3be4d26a228a"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.4.4"
+
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -3165,6 +3224,7 @@ version = "4.1.0+0"
 # ╟─404060d3-23ec-400b-84cf-779e63b90293
 # ╟─72cf6fcf-2e2f-4dee-994b-ce2bfef51802
 # ╠═0646411b-bbbe-4b6d-bf94-33c4e9522ed5
+# ╟─f0573d72-27cf-4a04-baef-9a191c6edd5a
 # ╟─b728fcba-8aea-4f8c-962c-96c61f3c6457
 # ╟─2f2430a4-ea1f-4373-b5a7-10db4756b29b
 # ╟─e210c43a-1205-40b8-8989-7975ea85e648
@@ -3178,14 +3238,15 @@ version = "4.1.0+0"
 # ╠═490e3a2a-cf23-42e3-9530-3a6fad82bb30
 # ╟─aaebbbcd-6bb6-46e0-8564-8029a4f2d1cf
 # ╟─2b3f952d-db20-4790-8482-9c6e981f60e0
-# ╠═ef9e9f9a-7598-4e22-9add-f1dd2a74c516
+# ╟─ef9e9f9a-7598-4e22-9add-f1dd2a74c516
 # ╟─3d354f7c-ea01-4465-9b0e-b911801d742b
 # ╟─54273740-9fb0-46b6-a928-c74b9077eaa3
 # ╟─018667ce-b84d-46f2-9fce-dd890fc9a557
 # ╟─f05b56b9-801c-42e1-9062-4aa3234bc482
 # ╟─911757a4-a582-469d-8a2a-9273065e8d83
 # ╟─1d406a03-8158-4b3f-a734-d1b80c259847
-# ╠═38fc4698-f890-4104-b37b-0d938a02f012
+# ╟─c2b8effb-527e-43e4-b300-e1c73d4a8d83
+# ╟─38fc4698-f890-4104-b37b-0d938a02f012
 # ╟─d45f4fbd-8ef0-47db-8278-72cd1230ab5e
 # ╟─5385afbd-33a9-4dba-af14-dfe98c841611
 # ╟─18745681-9e0c-46f1-b9fe-d00b61fbafb8
@@ -3203,7 +3264,7 @@ version = "4.1.0+0"
 # ╟─7fcb3776-fa5c-46f7-abee-688d4ea28466
 # ╟─919a747c-c657-45b1-b578-cf9f532e54bf
 # ╟─097f54d6-2a9c-4eeb-8008-07f087d592fc
-# ╠═cd347311-bb1e-4404-a93c-3ac7a37e04e2
+# ╟─cd347311-bb1e-4404-a93c-3ac7a37e04e2
 # ╟─692bd29f-8949-42a6-885a-cada66630eac
 # ╠═bd0ac540-1ca1-42f7-b0df-7c41b315b1f5
 # ╟─c34220e7-0530-431c-9707-7fe874588836
