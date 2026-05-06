@@ -114,9 +114,13 @@ $(LocalResource("Pics/afterglow.png"))
 
 <br>
 
-- Only a few monnths later, for [GRB090726](https://www.mpe.mpg.de/~jcg/grb090726.html), the identification of the the optical counterpart was rapid enough to allow researchers to obtain a spectrum of the source that revealed to be hosted in a distant galaxy at a redshift ``z \sim 2.7``.
+- Only a few monnths later, for [GRB970508](https://en.wikipedia.org/wiki/GRB_970508), the identification of the the optical counterpart was rapid enough to allow researchers to obtain a spectrum of the source that revealed to be hosted in a distant galaxy at a redshift ``z \sim 0.8``.
 
-$(LocalResource("Pics/grb960726.png"))
+- GRBs are now routinely observed at any redshift, from the closest case in the local universe to the faterthest objects ar redshift larger than 8. 
+
+- In the picture below an example of identification of the resdhift for [GRB090726](https://www.mpe.mpg.de/~jcg/grb090726.html) is provided.
+
+$(LocalResource("Pics/grb090726.png"))
 
 - The energy output of these events is huge, comparable to a SN but in a timescale of seconds!
 
@@ -818,7 +822,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 0eaec6b9-82a6-4166-a8bd-c3c8147238d8
-md"Notebook v1.0.0 - 05 May 2026"
+md"Notebook v1.0.0 - 06 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

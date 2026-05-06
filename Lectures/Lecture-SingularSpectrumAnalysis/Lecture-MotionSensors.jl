@@ -4,6 +4,18 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    #! format: off
+    return quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+    #! format: on
+end
+
 # ╔═╡ 6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 begin
 	using CairoMakie
@@ -39,7 +51,7 @@ md"""
 # MotionSense: Applying SSA to Accelerometer Data
 ***
 
-- In this lecture, we'll leave the toy time series behind and apply SSA to real-world data. To this end, I have chosen the accelerometer time series recordings in the [MotionSense](https://www.kaggle.com/malekzadeh/motionsense-dataset) dataset. More specifically, we will use accelerometer readings taken from a smart phone of a study participant walking naturally. 
+- In this lecture, we'll leave the toy time series behind and apply SSA to real-world data. To this end, we have chosen the accelerometer time series recordings in the [MotionSense](https://www.kaggle.com/malekzadeh/motionsense-dataset) dataset. More specifically, we will use accelerometer readings taken from a smart phone of a study participant walking naturally. 
 
 ### Loading the Data
 ***
@@ -159,11 +171,49 @@ SSAJL.plot_wcorr(accel_ssa,ptitle="W-Correlation for Walking Time Series")
 # ╔═╡ 99f42276-b21d-4344-8dcc-9002c39c9ea3
 cm"""
 - Of course, with a larger window length (and therefore a large number of elementary components), such a view of the w-correlation matrix is not the most helpful. 
-- Zoom into the w-correlation matrix for the first 50 components:  
+- Zoom into the w-correlation matrix for the first components:  
+"""
+
+# ╔═╡ 587cddc9-994d-43ea-b791-d52a2af26499
+cm"""
+
+Maximum number of components: $(@bind maxcpt PlutoUI.Slider(10:2:50,default=50))
+
 """
 
 # ╔═╡ 309ac671-6587-4d3e-95c5-cdf1f35ca717
-SSAJL.plot_wcorr(accel_ssa,max_idx=50,ptitle="W-Correlation for Walking Time Series")
+SSAJL.plot_wcorr(accel_ssa,max_idx=maxcpt,ptitle="W-Correlation ($maxcpt x $maxcpt) for Walking Time Series")
+
+# ╔═╡ 9f34d6e6-a819-4d4a-b26e-f51d46f5c069
+cm"- But we can also plot the relative contribution of each component:"
+
+# ╔═╡ aacb52ed-9ce1-4a1c-a751-5ae0fb3efea7
+begin
+	sigma_sumsq = sum(accel_ssa.Sigma.^2)
+	fgsgm = Figure(size=(1000,600))
+	
+	ax1sgm = Axis(fgsgm[1, 1],
+	    xlabel = L"$i$",
+	    ylabel = "Contribution (%)",
+	    title = L"Relative Contribution of $\mathbf{X}_i$ to Trajectory Matrix",
+	    titlesize=20
+	)
+	lines!(accel_ssa.Sigma.^2 / sigma_sumsq * 100, linewidth=2.5)
+	xlims!(0,15) 
+	
+	
+	
+	ax2sgm = Axis(fgsgm[1, 2],
+	    xlabel = L"$i$",
+	    ylabel = "Contribution (%)",
+	    title = L"Cumulative Contribution of $\mathbf{X}_i$ to Trajectory Matrix",
+	    titlesize=20
+	)
+	xlims!(0,15) 
+	lines!(cumsum(accel_ssa.Sigma.^2) / sigma_sumsq * 100, linewidth=2.5)
+	
+	fgsgm
+end
 
 # ╔═╡ ae99a570-6740-4464-89a0-fc82c368b549
 cm"""
@@ -314,13 +364,13 @@ begin
 	    title = "Walking Time Series: High-Frequency Periodicity (Zoomed)",
 	)
 	
-	lines!(index_1[rng], SSAJL.reconstruct(accel_ssa,vcat(1,6:11)))
+	lines!(index_1[rng], SSAJL.reconstruct(accel_ssa,vcat(1,6:11)),label="6:11 components")
 	lines!(index_1[rng], accel_1[rng], label="Original time-series")
 	
 	xlims!(16,20)
 	ylims!(-0.5, 2.5)
 	
-	#axislegend(ax,framevisible = false,position = :ct,orientation = :horizontal)
+	axislegend(axfg8,framevisible = false,position = :ct,orientation = :horizontal)
 	
 	fg8
 end
@@ -355,7 +405,7 @@ cm"""
 - The plot above demonstrates that the sum of the first 11 components adequately capture the basic, underlying periodicity of the accelerometer time series.
 - However, the sum of the remaining 339 components (equivalent to the residual series ``F_{\text{orig}} - \sum_{i=1}^{11} \tilde{F}_i``) still contains large, regular spikes spaced approximately 1 second apart, likely associated with the footfall events of walking.
 - However, the basic form of SSA presented here does not handle these types of sharp periodicities very well, instead spreading the 'signal' from these periodicities across many elementary components.
-    - Put another way, the regular part of signal cannot be separated from the noise. 
+    - Put another way, the regular part of signal cannot (always, easily) be separated from the noise. 
 """
 
 # ╔═╡ 8a82c66d-4f3b-4080-bae7-2166d6a8ae0c
@@ -422,7 +472,7 @@ cm"""
 ***
 
 - For this task, we'll only do an informal comparison of the walks from several participants. A more rigorous investigation would properly quantify time series similarity, ensure that the different time series are aligned as best as possible before comparison, and account for differences in walking pace.
-- Here, we'll plot a few time series, compare them by eye, and call it a day. We will assume the low frequency components of interest are all contained in the first four eigentriples.
+- Here, we'll plot a few time series and compare them by eye. We will assume the low frequency components of interest are all contained in the first four eigentriples.
 
 - Based on the provided participants' characteristics [here](https://github.com/mmalekzadeh/motion-sense), the participants we'll examine are as follows:
     * `3` and `5`—both females with almost-identical weights and heights;
@@ -489,7 +539,7 @@ cm"""
 
 - Through a relatively straightforward process of embedding, decomposition and reconstruction, the technique of **singular-spectrum analysis** can extract the trend of a time series, separate underlying periodicities and remove noise. It can be used as an exploratory tool, or in the context of a more detailed analysis. 
 
-- The version of singular-spectrum analysis presented here is typically termed *basic SSA*, as a number of variants and extensions to the method have been developed. Singular-spectrum analysis can also be used for forecasting, and detecting structural changes in a time series—that is, detecting where a time series has been perturbed and taken on a new 'behaviour'. Multivariate and 2D versions of singular-spectrum analysis also exist.
+- The version of singular-spectrum analysis presented here is typically termed *basic SSA*, as a [number of variants and extensions](https://en.wikipedia.org/wiki/Singular_spectrum_analysis) to the method have been developed. Singular-spectrum analysis can also be used for forecasting, and detecting structural changes in a time series—that is, detecting where a time series has been perturbed and taken on a new 'behaviour'. Multivariate and 2D versions of singular-spectrum analysis also exist.
 """
 
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
@@ -547,7 +597,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ e63916c8-a793-4d3c-84a9-b00005c18111
-md"Notebook v1.0.0 - 04 May 2026"
+md"Notebook v1.0.0 - 05 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2265,11 +2315,14 @@ version = "4.1.0+0"
 # ╟─2ffd8be3-d8b9-475e-b4d4-90ac585f9e5c
 # ╟─07547d05-1e64-4a29-a3b6-e108fe42e23f
 # ╟─40f9589f-7f90-4001-8ede-27e124f23926
-# ╠═76f52611-c0f9-4d43-8661-04fc8cc23aa7
+# ╟─76f52611-c0f9-4d43-8661-04fc8cc23aa7
 # ╟─861ac23a-dbc5-4d87-95e7-4fe03a53daca
-# ╠═0d958b0f-449a-4dd1-bbbe-3871117db734
+# ╟─0d958b0f-449a-4dd1-bbbe-3871117db734
 # ╟─99f42276-b21d-4344-8dcc-9002c39c9ea3
-# ╠═309ac671-6587-4d3e-95c5-cdf1f35ca717
+# ╟─587cddc9-994d-43ea-b791-d52a2af26499
+# ╟─309ac671-6587-4d3e-95c5-cdf1f35ca717
+# ╟─9f34d6e6-a819-4d4a-b26e-f51d46f5c069
+# ╟─aacb52ed-9ce1-4a1c-a751-5ae0fb3efea7
 # ╟─ae99a570-6740-4464-89a0-fc82c368b549
 # ╟─36529097-ad0e-4261-86d6-ab73c9f9543c
 # ╟─caacbd7e-f5a8-4fb9-97ea-25c84daad787
