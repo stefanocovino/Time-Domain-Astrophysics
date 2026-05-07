@@ -780,7 +780,7 @@ md"""
 """
 
 # ╔═╡ 911757a4-a582-469d-8a2a-9273065e8d83
-Foldable(cm"Would you like to know *Hankelize* the elementary matrices?", md"""
+Foldable(cm"Would you like to know how to *Hankelize* the elementary matrices?", md"""
 
 - To extract a time series from the elementary matrices, we'll employ *diagonal averaging*, which defines the values of the reconstructed time series ``\tilde{F}^{(j)}`` as averages of the corresponding anti-diagonals of the matrices ``\mathbf{X}^{(j)}``.
 
@@ -1197,8 +1197,8 @@ begin
 	    ylabel = L"\tilde{F}_j",
 	)
 	
-	xlims!(axf2,0.5,6.5),
-	ylims!(axf2,6.5,0.5)
+	xlims!(axf2,0.5,7.5),
+	ylims!(axf2,7.5,0.5)
 	
 	hm2 = CairoMakie.heatmap!(axf2, Wcorr,
 	    colorrange = (0, 1)
@@ -1220,23 +1220,6 @@ md"""
 - The initial appearance-based groupings we made for the first six components are supported by the corresponding w-correlation values. ``\tilde{F}_1`` and ``\tilde{F}_2`` have ``W_{1,2} = 0.40``, suggesting they should be paired. ``\tilde{F}_2`` and ``\tilde{F}_7`` also have ``W_{2,7} = 0.39``, suggesting ``\tilde{F}_7`` should also be grouped with ``\tilde{F}_1`` and ``\tilde{F}_2`` as a trend component. However, ``\tilde{F}_7`` also has a slight w-correlation with ``\tilde{F}_5`` and ``\tilde{F}_6``, but since ``\tilde{F}_5`` and ``\tilde{F}_6`` have no w-correlation with ``\tilde{F}_1`` and ``\tilde{F}_2``, we choose to keep ``\tilde{F}_7`` with ``\tilde{F}_1`` and ``\tilde{F}_2``.
 
 - Our prior groupings of  ``\tilde{F}^{\text{(periodic 1)}} = \tilde{F}_3 + \tilde{F}_4`` and ``\tilde{F}^{\text{(periodic 2)}} = \tilde{F}_5 + \tilde{F}_6`` are clearly justified by the w-correlation matrix, with ``W_{3,4} = 0.98`` and ``W_{5,6} = 0.98``.
-"""
-
-# ╔═╡ 097f54d6-2a9c-4eeb-8008-07f087d592fc
-md"""
-## A julia module for SSA
-***
-
-- It is time to collect the SSA code into a handy module, imaginatively named *`SSAJL`*, which will form the basis for the rest of this notebook. Each instance of the class will contain the decomposition of a time series for some window length ``L``, and provide useful methods to analyse, plot and reconstruct the time series.
-
-- To summarise the SSA algorithm:
-    1. For a time series ``F = (f_0, \ f_1, \ldots, \ f_{N-1})``, and a window length ``L``, form the trajectory matrix ``\mathbf{X}``, with columns given by the vectors ``(f_i, \ldots, f_{L+i-1})^{\text{T}}``, ``0 \le i \le N-L``.
-    2. Decompose ``\mathbf{X}`` with the singular value decomposition, ``\mathbf{X} = \sum_{i=0}^{d-1}\sigma_i U_i V^{\text{T}}_i``.
-    3. Construct the ``d`` elementary matrices ``\mathbf{X}_i = \sigma_i U_i V^{\text{T}}_i``.
-    4. Diagonally average the ``\mathbf{X}_i`` to form the elementary time series components ``\tilde{F}_i``, such that ``F = \sum_{i=0}^{d-1} \tilde{F}_i``.
-    5. Calculate and store the weighted correlation matrix, ``\mathbf{W}_{\text{corr}}``, for the ``\tilde{F}_i``.
-
-- The task of grouping and classifying the elementary components ``\tilde{F}_i`` is left to the user.
 """
 
 # ╔═╡ 692bd29f-8949-42a6-885a-cada66630eac
@@ -3252,24 +3235,23 @@ version = "4.1.0+0"
 # ╟─18745681-9e0c-46f1-b9fe-d00b61fbafb8
 # ╟─4c55c72d-3c4e-4fb9-8fa0-4dd6d6259637
 # ╟─9993023e-588a-4ab8-999a-377702cc93a3
-# ╠═7c912664-b822-46e6-9ff8-7743c6569447
+# ╟─7c912664-b822-46e6-9ff8-7743c6569447
 # ╟─af222a9a-cf1f-4926-9ace-65723b03fc69
 # ╟─8060ad99-5a09-4c77-8686-eab07dd08204
 # ╟─ef8aa983-c67b-432a-84a6-1c1e45f92e22
 # ╟─099bc6ae-ba2d-45f8-be0d-40fb83326b3f
-# ╠═4c70cf9d-54f7-42ae-86bf-1df2230d986b
+# ╟─4c70cf9d-54f7-42ae-86bf-1df2230d986b
 # ╟─5d5ff0d5-f24c-4260-8c86-b9f5162940b9
 # ╟─72a030bd-518c-47e2-a020-d460f4062f6d
 # ╟─fd32e9e5-546a-4be3-90f9-9d36738152b1
 # ╟─7fcb3776-fa5c-46f7-abee-688d4ea28466
 # ╟─919a747c-c657-45b1-b578-cf9f532e54bf
-# ╟─097f54d6-2a9c-4eeb-8008-07f087d592fc
 # ╟─cd347311-bb1e-4404-a93c-3ac7a37e04e2
 # ╟─692bd29f-8949-42a6-885a-cada66630eac
-# ╠═bd0ac540-1ca1-42f7-b0df-7c41b315b1f5
+# ╟─bd0ac540-1ca1-42f7-b0df-7c41b315b1f5
 # ╟─c34220e7-0530-431c-9707-7fe874588836
 # ╟─128845f9-9def-4f79-8562-e8ec14120594
-# ╠═88b4bbbe-90df-434e-8ab9-3c2783733db4
+# ╟─88b4bbbe-90df-434e-8ab9-3c2783733db4
 # ╟─4a83bdce-603c-4650-8fac-d5f3d80ed91f
 # ╟─d0ecf62d-4f12-4921-a43b-392fa41f039f
 # ╟─ff15d461-5923-4bf0-9ce7-739f9040375c
