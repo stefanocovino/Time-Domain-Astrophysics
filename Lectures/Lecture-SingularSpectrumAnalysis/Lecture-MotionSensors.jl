@@ -185,7 +185,7 @@ Maximum number of components: $(@bind maxcpt PlutoUI.Slider(10:2:50,default=50))
 SSAJL.plot_wcorr(accel_ssa,max_idx=maxcpt,ptitle="W-Correlation ($maxcpt x $maxcpt) for Walking Time Series")
 
 # ╔═╡ 9f34d6e6-a819-4d4a-b26e-f51d46f5c069
-cm"- But we can also plot the relative contribution of each component:"
+cm"- We can also plot the relative contribution of each component:"
 
 # ╔═╡ aacb52ed-9ce1-4a1c-a751-5ae0fb3efea7
 begin
@@ -249,7 +249,7 @@ begin
 end
 
 # ╔═╡ caacbd7e-f5a8-4fb9-97ea-25c84daad787
-cm"- And zoom in on a four-second subseries: "
+cm"- And zoom in a four-second subseries: "
 
 # ╔═╡ 0854c24a-d709-4e96-895f-37f67567a208
 begin
@@ -597,7 +597,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ e63916c8-a793-4d3c-84a9-b00005c18111
-md"Notebook v1.0.0 - 05 May 2026"
+md"Notebook v1.0.0 - 07 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
