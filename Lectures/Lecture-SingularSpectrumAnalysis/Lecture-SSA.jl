@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -1531,13 +1531,13 @@ cm"""
   </tr>
   <tr>
 	<td>notebook</td>
-    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
+    <td><a href="./open?path=Lectures/ScienceCase-GRBs/Lecture-GRBs.jl">Science case about GRBs</a></td>
     <td><a href="./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.jl">Science case about motion sensor data</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../../Lectures/Lecture-NonParametricPeriodograms/Lecture-NnParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
+    <td><a href="../../Lectures/ScienceCase-GRBs/Lecture-GRBs.html">Science case about GRBs</a></td>
 <td><a href="../../Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html">Science case about motion sensor data</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
@@ -1554,7 +1554,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 212fed09-3c7d-485b-9db1-6b4697184b69
-md"Notebook v1.0.0 - 04 May 2026"
+md"Notebook v1.0.0 - 07 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
