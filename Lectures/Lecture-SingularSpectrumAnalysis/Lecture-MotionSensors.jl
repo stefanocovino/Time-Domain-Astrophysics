@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v0.20.21
 
 using Markdown
 using InteractiveUtils
@@ -537,9 +537,9 @@ cm"""
 ### Final Words
 ***
 
-- Through a relatively straightforward process of embedding, decomposition and reconstruction, the technique of **singular-spectrum analysis** can extract the trend of a time series, separate underlying periodicities and remove noise. It can be used as an exploratory tool, or in the context of a more detailed analysis. 
+- Through a relatively straightforward process of embedding, decomposition and reconstruction, the technique of *singular-spectrum analysis* can extract the trend of a time series, separate underlying periodicities and remove noise. It can be used as an exploratory tool, or in the context of a more detailed analysis. 
 
-- The version of singular-spectrum analysis presented here is typically termed *basic SSA*, as a [number of variants and extensions](https://en.wikipedia.org/wiki/Singular_spectrum_analysis) to the method have been developed. Singular-spectrum analysis can also be used for forecasting, and detecting structural changes in a time series—that is, detecting where a time series has been perturbed and taken on a new 'behaviour'. Multivariate and 2D versions of singular-spectrum analysis also exist.
+- The version of singular-spectrum analysis presented here is typically termed *basic SSA*, as a [number of variants and extensions](https://en.wikipedia.org/wiki/Singular_spectrum_analysis) to the method have been developed. Singular-spectrum analysis can also be used for forecasting, and detecting structural changes in a time series, that is, detecting where a time series has been perturbed and taken on a new 'behaviour'. Multivariate and 2D versions of singular-spectrum analysis also exist.
 """
 
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
@@ -597,7 +597,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ e63916c8-a793-4d3c-84a9-b00005c18111
-md"Notebook v1.0.0 - 07 May 2026"
+md"Notebook v1.0.0 - 09 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2340,7 +2340,7 @@ version = "4.1.0+0"
 # ╟─e9252b97-1912-4243-9596-f2ad34718638
 # ╠═e300c766-fa38-4e39-add1-fbd4793b342e
 # ╟─456b7941-ab04-4626-8af6-569cb53563a2
-# ╠═4bea04a5-1bc7-4ce3-9cca-a707af256ff6
+# ╟─4bea04a5-1bc7-4ce3-9cca-a707af256ff6
 # ╟─59b8270c-0e45-4c04-8a8f-1740206a0807
 # ╟─27307dc5-18c6-4db2-b9cd-696065e2d02a
 # ╟─7f646a36-988f-4537-8c52-2a6a45b32cec
