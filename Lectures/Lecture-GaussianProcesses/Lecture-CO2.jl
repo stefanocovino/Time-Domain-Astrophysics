@@ -66,7 +66,7 @@ cm"""
 
 
 - Each year, human activities release more carbon dioxide into the atmosphere than natural processes can remove, causing the amount of carbon dioxide in the atmosphere to increase.
-- The global average carbon dioxide set a new record every year, we are now at more than 400 parts per million ("ppm" for short).
+- The global average carbon dioxide set a new record every year, we are now at more than 400 parts per million ("ppm").
 - Atmospheric carbon dioxide is now 50% higher than it was before the Industrial Revolution.
 - The ocean has absorbed enough carbon dioxide to lower its pH by 0.1 units, a 30% increase in acidity. 
 """
@@ -106,7 +106,7 @@ cm"""
 # ╔═╡ 65c77d95-83e8-4550-8274-ce6702d355b6
 cm"""
 
-- Carbon dioxide is Earth’s most important long-lived greenhouse gas: a gas that absorbs and radiates heat. Unlike oxygen or nitrogen (which make up most of Earth's atmosphere), greenhouse gases absorb heat radiating from the Earth’s surface and re-release it in all directions. Without any carbon dioxide, Earth’s natural greenhouse effect would be too weak to keep the average global surface temperature above freezing.
+- Carbon dioxide is Earth’s most important long-lived greenhouse gas: a gas that absorbs and radiates heat. Unlike oxygen or nitrogen, greenhouse gases absorb heat radiating from the Earth’s surface and re-release it in all directions. Without any carbon dioxide, Earth’s natural greenhouse effect would be too weak to keep the average global surface temperature above freezing.
 
 - By adding more carbon dioxide to the atmosphere, we are amplifying the natural greenhouse effect, causing global temperature to rise. According to observations and analysis by the NOAA Global Monitoring Laboratory, carbon dioxide alone is responsible for about 80% of the [total heating influence](https://gml.noaa.gov/aggi/aggi.html) of all human-produced greenhouse gases since 1990.
 
@@ -148,7 +148,7 @@ cm"""
 
 - We now apply Gaussian process regression to the Mauna Loa CO₂ dataset. This exercise might require a farly advanced coding skill, yet it is anyway of interest since it showcases a rich combination of kernels, and how to handle and optimize all their parameters.
 
-- First, let's download the data, and extract the variable of our interest. We separate data betwwen a training and test set, as it is common in machine learning. 
+- First, let's load the data, and extract the variable of our interest. We separate data betwwen a training and test set, as it is common in machine learning. 
 """
 
 # ╔═╡ 72cf6fcf-2e2f-4dee-994b-ce2bfef51802
@@ -202,6 +202,9 @@ cm"""
     
 - For more details, see [Rasmussen & Williams (2005), chapter 5](http://www.gaussianprocess.org/gpml/chapters/RW5.pdf).
 """
+
+# ╔═╡ 649f7a84-abf2-4fec-8703-b536b5936c0d
+md"- We first define the parameters of the covariance functions we are going to pliug into our GP:"
 
 # ╔═╡ 45d15bea-a4b9-4bf1-a98c-3d2f07b188e6
 θ_init = (;
@@ -326,7 +329,7 @@ function loss(θ)
 end
 
 # ╔═╡ e0ddf0ed-b066-40e9-9156-527bd33a044c
-cm"- The L-BFGS parameters were chosen because they seem to work well empirically. You could also try with the defaults."
+cm"- The [L-BFGS](https://en.wikipedia.org/wiki/Limited-memory_BFGS) algorithm was chosen because it seems to work effectively."
 
 # ╔═╡ a8fe8960-e627-4a11-abe1-ca3a1bd5373c
 begin
@@ -341,7 +344,7 @@ begin
 	    θ_flat_init, unflatten = ParameterHandling.value_flatten(θ_init)
 	    loss_packed = loss ∘ unflatten
 	
-	    # https://julianlsolvers.github.io/Optim.jl/stable/#user/tipsandtricks/#avoid-repeating-computations
+	    # 
 	    function fg!(F, G, x)
 	        if F !== nothing && G !== nothing
 	            val, grad = Zygote.withgradient(loss_packed, x)
@@ -395,6 +398,8 @@ plot_gp!(fpost_opt; label="optimized posterior f(⋅)", miny=year0)
 cm"""
 - Now the fit is, at least visually, satisfactorarily. And one can appreciate the expected increase in CO``_2`` content in atmosphere after the last measrements in our dataset. 
     - Actually, test data seem to show an even more rapid increase than the extrapolation based upon the training data.
+
+- It is possible that in the future the model has to be upgraded to take care of a new behavior, likely bads news for the planet, anyway.
 """
 
 # ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
@@ -403,7 +408,8 @@ md"""
 
 Material and papers related to the topics discussed in this lecture.
 
-- [Huijse et al. (2018) - Robust Period Estimation Using Mutual Information for Multiband Light Curves in the Synoptic Survey](https://ui.adsabs.harvard.edu/abs/2018ApJS..236...12H/abstract)
+- [Ma et al. (2021) -  Can Machine Learning be Applied to Carbon Emissions Analysis: An Application to the CO``_2`` Emissions Analysis Using Gaussian Process Regression](https://www.frontiersin.org/journals/energy-research/articles/10.3389/fenrg.2021.756311/full)
+- [Tian et al. (2025) - Carbon Dioxide Emission Forecast: A Review of Existing Models and Future Challenges](https://www.mdpi.com/2071-1050/17/4/1471)
 """
 
 # ╔═╡ 139ed0c9-fbcb-4994-9066-e5cea39233b3
@@ -428,13 +434,13 @@ cm"""
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl">Lecture about Gaussian processes</a></td>
-    <td><a href="./open?path=Lectures/ScienceCase-GRBs/Lecture-GRBs.jl">Science case about GRBs</a></td>
+    <td><a href="./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl">Lecture about the astrostatistics future</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html">Lecture about Gaussian processes</a></td>
-    <td><a href="../Lectures/ScienceCase-GRBs/Lecture-GRBs.html">Science case about GRBs</a></td>
+    <td><a href="../../Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html">Lecture about Gaussian processes</a></td>
+    <td><a href="../../Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html">Lecture about the astrostatistics future</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
@@ -3182,8 +3188,9 @@ version = "4.1.0+0"
 # ╟─880aa6d8-1daf-4a36-a7bd-3b8d471a2f47
 # ╠═72cf6fcf-2e2f-4dee-994b-ce2bfef51802
 # ╟─6c026eaa-cd29-4ce1-ab32-90bbcd717b9d
-# ╠═8b80f672-4533-41af-9521-dec56b136dbd
+# ╟─8b80f672-4533-41af-9521-dec56b136dbd
 # ╟─fc0bfe64-07f4-4461-ae06-1e5bf461c4d7
+# ╟─649f7a84-abf2-4fec-8703-b536b5936c0d
 # ╠═45d15bea-a4b9-4bf1-a98c-3d2f07b188e6
 # ╟─7c071a4f-1772-43bf-94d8-2423ca146a37
 # ╠═d0610eac-e675-4937-a3cd-f087f3ee5ad5
