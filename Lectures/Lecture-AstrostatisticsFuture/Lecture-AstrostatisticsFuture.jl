@@ -190,13 +190,13 @@ cm"""
   </tr>
   <tr>
 	<td>notebook</td>
-    <td><a href="./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl">Science case about CO₂ content in atmosphere</a></td>
+    <td><a href="./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl">Lecture about AI interaction</a></td>
     <td>-</td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../../Lectures/Lecture-GaussianProcesses/Lecture-CO2.html">Science case about CO₂ content in atmosphere</a></td>
+    <td><a href="../../Lectures/Lecture-AIinteraction/Lecture-AI.html">Lecture about AI interaction</a></td>
 	<td>-</td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
