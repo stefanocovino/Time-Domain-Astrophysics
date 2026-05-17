@@ -434,13 +434,13 @@ cm"""
   <tr>
 	<td>notebook</td>
     <td><a href="./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl">Lecture about Gaussian processes</a></td>
-    <td><a href="./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl">Lecture about the astrostatistics future</a></td>
+    <td><a href="./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl">Lecture about AI interaction</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
     <td><a href="../../Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html">Lecture about Gaussian processes</a></td>
-    <td><a href="../../Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html">Lecture about the astrostatistics future</a></td>
+    <td><a href="../../Lectures/Lecture-AIinteraction/Lecture-AI.html">Lecture about AI interaction</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 </table>
@@ -456,7 +456,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ e86b01db-2ac2-4134-9c49-2131359fc84c
-md"Notebook v1.0.0 - 11 May 2026"
+md"Notebook v1.0.1 - 17 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
