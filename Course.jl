@@ -72,7 +72,8 @@ md"""
 | 17. Science case: Motion sensor data | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html) |
 | 18. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html) | 
 | 19. Science case: CO₂ content in atmosphere | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-CO2.html) |
-| 20. Lecture: Astrostatistics Future | [notebook](./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl) | [html](Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html) |
+| 20. Lecture: Interacting with an AI | [notebook](./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl) | [html](Lectures/Lecture-AIinteraction/Lecture-AI.html) |
+| 21. Lecture: Astrostatistics Future | [notebook](./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl) | [html](Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html) |
 
 
 """
@@ -85,7 +86,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.0.0 - 5 April 2026"
+md"Notebook v1.0.1 - 17 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
