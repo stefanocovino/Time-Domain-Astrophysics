@@ -7,10 +7,12 @@ using InteractiveUtils
 # ╔═╡ 2f82cbd2-4c34-11f1-901e-01c419d48099
 begin
 	using CairoMakie
+	using CSV
 	using DataFrames
 	using DSP
 	using FFTW
 	using HDF5
+	using LombScargle
 	using PlutoUI
 	using PlutoTeachingTools
 	using Statistics
@@ -64,7 +66,7 @@ md"""
 ## [GW150914](https://en.wikipedia.org/wiki/First_observation_of_gravitational_waves): the first gravitational wave signal ever detected
 ***
 
-- We have downloaded the strain recorded by the [LIGO](https://en.wikipedia.org/wiki/LIGO) observatory, in particular by the interferometer at the [Hanford site](https://en.wikipedia.org/wiki/Hanford_Site).
+- We have downloaded the strain data recorded by the [LIGO](https://en.wikipedia.org/wiki/LIGO) observatory, in particular by the interferometer at the [Hanford site](https://en.wikipedia.org/wiki/Hanford_Site).
 """
 
 # ╔═╡ fb8ce658-f20a-410e-aadc-b06e4eba6c51
@@ -719,7 +721,394 @@ $br
 
 - A possible step forward could be to really analyse the strain data in order to identify the event, rather than locating and plotting it.
 - This is possible, but definitely more difficult, althoug the many tutorials about this event available on the web could allow the AI to be properly trained.
+"""
 
+# ╔═╡ ab18737f-4240-4ee1-91ef-085f323630b4
+md"""
+
+## [Delta Cephei](https://en.wikipedia.org/wiki/Delta_Cephei): one of the most important  variable stars
+***
+
+- We have downloaded the photoemtric data from the *American Association of Variable Star Observers*, [AAVSO](https://www.aavso.org/), site.
+
+- It is a standard [CSV](https://en.wikipedia.org/wiki/Comma-separated_values), comma-separeted, text file.
+"""
+
+# ╔═╡ 54acd847-1b15-40c2-822c-b1d3310350e0
+question_box("Hi, I have a CSV file with photometry of the delta cephei star. How can I read it? I work with julia and CairoMakie.")
+
+# ╔═╡ e5c8046e-fc53-4bec-b222-2dc1449f48bc
+md"- The AI complains I have not uploaded the file, so I do it and get a more specific response."
+
+# ╔═╡ a90f0121-a687-45ee-a162-69b6db7e9dd1
+answer_box(md"""
+**The file structure:** A comma-separated AAVSO file with 24 columns and ~69,400 rows. The useful ones are `JD`, `Magnitude`, `Uncertainty`, and `Band`. Many `Uncertainty` values are missing (especially older visual observations), which is expected.
+
+**Reading it in Julia:**
+```julia
+using CSV, DataFrames
+
+df = CSV.read("DeltaCep.csv", DataFrame,
+    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+    silencewarnings = true
+)
+dropmissing!(df, :Magnitude)
+```
+
+**Plotting the V-band light curve with CairoMakie:**
+```julia
+using CairoMakie
+
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+
+fig = Figure(size = (1000, 400))
+ax  = Axis(fig[1,1],
+    xlabel = "Julian Date", ylabel = "Magnitude",
+    title = "δ Cephei — V band", yreversed = true)
+
+scatter!(ax, df_V.JD, df_V.Magnitude,
+    color = :steelblue, markersize = 3, alpha = 0.5)
+
+save("delta_cep_lc.png", fig)
+```
+
+Shall I move on to the phase-folded light curve?
+""")
+
+# ╔═╡ ebbfe81b-d543-4c65-ba9e-69d812055321
+begin
+	df = CSV.read("DeltaCep.csv", DataFrame,
+	    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+	    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+	    silencewarnings = true
+	)
+	dropmissing!(df, :Magnitude)
+end
+
+# ╔═╡ 4535cf14-f667-4a2e-9e55-a24e2acb06d6
+begin
+	df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+	
+	figlc = Figure(size = (1000, 400))
+	axlc  = Axis(figlc[1,1],
+	    xlabel = "Julian Date", ylabel = "Magnitude",
+	    title = "δ Cephei — V band", yreversed = true)
+	
+	scatter!(axlc, df_V.JD, df_V.Magnitude,
+	    color = :steelblue, markersize = 3, alpha = 0.5)
+	
+	figlc
+end
+
+# ╔═╡ abb545bc-d2e7-4d61-a3fa-8956121d1047
+question_box("Yes, I'd like to see the phase-folded light-curve")
+
+# ╔═╡ 1c306fd9-fc22-4657-9ad7-4d89c9d0181b
+answer_box(md"""
+Sure! Here's the code for the phase-folded light curve. The standard ephemeris for δ Cephei uses a period of **5.366341 days** and a well-known reference epoch.
+
+```julia
+using CSV, DataFrames, CairoMakie
+
+# --- Read data ---
+df = CSV.read("DeltaCep.csv", DataFrame,
+    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+    silencewarnings = true
+)
+dropmissing!(df, :Magnitude)
+
+# --- Filter V-band with uncertainty ---
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+
+# --- Phase folding ---
+period  = 5.366341          # days
+t0      = 2436084.0         # reference epoch of maximum light (HJD)
+
+df_V.phase = mod.((df_V.JD .- t0) ./ period, 1.0)
+
+# Sort by phase for a clean look
+sort!(df_V, :phase)
+
+# --- Plot ---
+fig = Figure(size = (900, 450), figure_padding = 30)
+ax  = Axis(fig[1,1],
+    xlabel     = "Phase",
+    ylabel     = "Magnitude",
+    title      = "δ Cephei — Phase-folded light curve (V band)",
+    yreversed  = true,
+    xticks     = 0:0.1:1.0,
+)
+
+scatter!(ax, df_V.phase, df_V.Magnitude,
+    color      = :steelblue,
+    markersize = 3,
+    alpha      = 0.4,
+    label      = "V-band observations"
+)
+
+# Duplicate points shifted by +1 to show continuity across the cycle boundary
+scatter!(ax, df_V.phase .+ 1.0, df_V.Magnitude,
+    color      = :steelblue,
+    markersize = 3,
+    alpha      = 0.15,
+)
+
+xlims!(ax, 0.0, 2.0)
+axislegend(ax, position = :rb)
+
+save("delta_cep_phased.png", fig)
+fig
+```
+
+A few notes on the choices made here:
+
+- **`t0 = 2436084.0`** is a standard epoch of maximum light for δ Cep. Phase 0 corresponds to brightness maximum (the fast rise).
+- **Duplicating points shifted by +1** in a faded style is a common trick to show the cycle wraps around continuously — it makes the steep rise near phase 0 much easier to see.
+- The **asymmetric shape** should be very clear: a rapid brightening over ~0.1–0.2 in phase, followed by a slow decline — the classic Cepheid sawtooth.
+
+Would you like to also add a **binned mean curve** on top of the scatter, to highlight the average pulse shape more cleanly?
+""")
+
+# ╔═╡ 7fb2f1be-7194-4512-85a2-dd151b320194
+begin
+	# --- Phase folding ---
+	period_dc  = 5.366341          # days
+	t0_dc      = 2436084.0         # reference epoch of maximum light (HJD)
+	
+	df_V.phase = mod.((df_V.JD .- t0) ./ period_dc, 1.0)
+	
+	# Sort by phase for a clean look
+	sort!(df_V, :phase)
+	
+end
+
+# ╔═╡ 39b51d69-634a-4709-9d0f-028f56fb0a7f
+begin
+	figpp = Figure(size = (900, 450), figure_padding = 30)
+	axpp  = Axis(figpp[1,1],
+	    xlabel     = "Phase",
+	    ylabel     = "Magnitude",
+	    title      = "δ Cephei — Phase-folded light curve (V band)",
+	    yreversed  = true,
+	    xticks     = 0:0.1:1.0,
+	)
+	
+	scatter!(axpp, df_V.phase, df_V.Magnitude,
+	    color      = :steelblue,
+	    markersize = 3,
+	    alpha      = 0.4,
+	    label      = "V-band observations"
+	)
+	
+	# Duplicate points shifted by +1 to show continuity across the cycle boundary
+	scatter!(axpp, df_V.phase .+ 1.0, df_V.Magnitude,
+	    color      = :steelblue,
+	    markersize = 3,
+	    alpha      = 0.15,
+	)
+	
+	xlims!(axpp, 0.0, 2.0)
+	axislegend(axpp, position = :rb)
+	
+	figpp
+end
+
+# ╔═╡ 259d2420-846c-427f-898e-2024a42a3ac5
+question_box("No, but I would like to find the best period by myself")
+
+# ╔═╡ 66c7dc64-dc24-4f63-91c0-a45ee19dae5f
+answer_box(md"""
+Great idea — this is a classic period-finding problem, perfect for a Cepheid. The natural tool here is the **Lomb-Scargle periodogram**, since the data are unevenly sampled and span 145 years.
+
+Here's the code:
+
+```julia
+using CSV, DataFrames, LombScargle, CairoMakie
+
+# --- Read and filter ---
+df = CSV.read("DeltaCep.csv", DataFrame,
+    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+    silencewarnings = true
+)
+dropmissing!(df, :Magnitude)
+
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+sort!(df_V, :JD)
+
+# --- Lomb-Scargle ---
+t   = df_V.JD
+mag = df_V.Magnitude
+err = df_V.Uncertainty
+
+plan = LombScargle.plan(t, mag, err,
+    minimum_frequency = 1.0 / 6.0,   # periods shorter than 6 days
+    maximum_frequency = 1.0 / 4.0,   # periods longer than 4 days
+    samples_per_peak  = 10
+)
+
+pgram = lombscargle(plan)
+
+# --- Find best period ---
+best_freq  = freqat(pgram, argmaxpower(pgram))
+best_period = 1.0 / best_freq
+println("Best period: ", round(best_period, digits=6), " days")
+
+# --- Plot periodogram ---
+fig = Figure(size = (900, 400), figure_padding = 30)
+ax  = Axis(fig[1,1],
+    xlabel = "Period (days)",
+    ylabel = "Lomb-Scargle Power",
+    title  = "δ Cephei — Lomb-Scargle Periodogram (V band)"
+)
+
+periods = 1.0 ./ pgram.freq
+lines!(ax, periods, pgram.power, color = :steelblue, linewidth = 0.8)
+
+# Mark the best period
+vlines!(ax, best_period, color = :crimson, linewidth = 1.5, linestyle = :dash,
+    label = "Best period: $(round(best_period, digits=4)) d")
+
+axislegend(ax, position = :rt)
+save("delta_cep_periodogram.png", fig)
+fig
+```
+
+A couple of things worth noting:
+
+- I've **restricted the frequency range** to periods between 4 and 6 days, since we already have a good prior on δ Cep's period (~5.37 d). You can widen it if you want a blind search.
+- **`samples_per_peak = 10`** gives good frequency resolution without being too slow. Increase it to 20–50 for finer sampling near the peak.
+- The package is `LombScargle.jl` — if you don't have it yet, just run `] add LombScargle` in the REPL.
+
+Once you have the best period, you can plug it straight into the phase-folding code from before. How close does it come to the canonical 5.366341 days?
+""")
+
+# ╔═╡ dc6e4a90-70ac-4441-97de-896e2c3eb3d1
+md"- But, as it happens frequently, the code is not correct. I need to interact a bit to have a correct (i.e. running) answer."
+
+# ╔═╡ 6d0565e4-c094-4e77-90da-49de29bf4323
+question_box("I have this error: MethodError: no method matching plan(::Vector{Float64}, ::Vector{Float64}, ::Vector{Union{Missing, Float64}}; minimum_frequency::Float64, maximum_frequency::Float64, samples_per_peak::Int64)
+The function `plan` exists, but no method is defined for this combination of argument types.
+
+Closest candidates are:
+  plan(::AbstractVector{<:Real}, ::AbstractVector{<:Real}; kwargs...)
+   @ LombScargle ~/.julia/packages/LombScargle/kygQJ/src/__planning.jl:130__
+  plan(::AbstractVector{<:Real}, ::AbstractVector{<:Real}, ::AbstractVector{<:Real}; kwargs...)
+   @ LombScargle ~/.julia/packages/LombScargle/kygQJ/src/__planning.jl:134__
+  plan(::AbstractVector{<:Real}, ::AbstractVector{<:Measurements.Measurement}; kwargs...)
+   @ LombScargle ~/.julia/packages/LombScargle/kygQJ/src/__planning.jl:144__")
+
+# ╔═╡ 071b333f-5912-466b-b087-7a54787f19b3
+answer_box(md"""
+The issue is that `err` still has type `Vector{Union{Missing, Float64}}` even after `dropmissing!` on `:Magnitude` — because we never dropped rows with missing *uncertainty*. The fix is to either drop those rows too, or simply not pass the errors to `plan` (which is fine for a period search).
+
+**Option 1 — drop missing uncertainties (recommended, keeps error weighting):**
+
+```julia
+dropmissing!(df_V, :Uncertainty)
+
+t   = df_V.JD
+mag = df_V.Magnitude
+err = Float64.(df_V.Uncertainty)   # convert to plain Vector{Float64}
+```
+
+**Option 2 — ignore uncertainties entirely (simpler, slightly less accurate):**
+
+```julia
+t   = df_V.JD
+mag = df_V.Magnitude
+
+plan = LombScargle.plan(t, mag,   # no err argument
+    minimum_frequency = 1.0 / 6.0,
+    maximum_frequency = 1.0 / 4.0,
+    samples_per_peak  = 10
+)
+```
+
+I'd go with **Option 1** — δ Cep has many observations of varying quality, so weighting by uncertainty gives a cleaner periodogram. Just add the `dropmissing!` line right after your V-band filter:
+
+```julia
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+dropmissing!(df_V, :Uncertainty)   # ← add this
+sort!(df_V, :JD)
+
+t   = df_V.JD
+mag = df_V.Magnitude
+err = Float64.(df_V.Uncertainty)
+```
+
+The `Float64.()` broadcast conversion is the key step — it strips the `Union{Missing, Float64}` type even when no values are actually missing.
+""")
+
+# ╔═╡ 395b7292-2019-414d-8c5d-ad62848386e0
+md"- I agree **option 1** is the best one. But there is another problem:"
+
+# ╔═╡ dc952611-60b2-4399-8b29-3ff72a5eef1e
+question_box("Another problem: UndefVarError: `freqat` not defined in this notebook.
+Suggestion: check for spelling errors or missing imports.")
+
+# ╔═╡ 8c42f688-a1d1-4297-b480-7b74bd33cc2b
+answer_box(md"""
+The function is called `findmaxfreq` in `LombScargle.jl`. Replace this part:
+
+```julia
+best_freq   = freqat(pgram, argmaxpower(pgram))
+```
+
+with:
+
+```julia
+best_freq   = findmaxfreq(pgram)[1]
+best_period = 1.0 / best_freq
+println("Best period: ", round(best_period, digits=6), " days")
+```
+
+`findmaxfreq` returns a vector (in case of ties), so we just take the first element with `[1]`. Everything else in the code stays the same.
+""")
+
+# ╔═╡ 03deaa04-f30d-4332-a648-1f84d6b8a50f
+md"""
+- However, the code it is still wrong, and even after a few interaction the AI cannot find the rigtht solution.
+
+- Therefore, I work directly on the code, fixing a few problems. Actually, really minor problems due to the specific syntax of the `findmax` command and to the filtering of the data frame. 
+- In addition, several uncertainties were exactly ``0``, not allowing the Lomb-Scargle algorithm to work correctly.
+"""
+
+# ╔═╡ a5334710-4093-4710-80cc-9a3e0d43a59c
+begin
+	# --- Lomb-Scargle ---
+
+	df_V_dt = filter(row -> row.Band == "V", df)
+	dropmissing!(df_V_dt)
+	
+	sort!(df_V_dt, :JD)
+
+	t_dc   = df_V_dt.JD[df_V_dt.Uncertainty .> 0]
+	mag_dc = df_V_dt.Magnitude[df_V_dt.Uncertainty .> 0]
+	err_dc = df_V_dt.Uncertainty[df_V_dt.Uncertainty .> 0]
+	
+	plan = LombScargle.plan(t_dc, mag_dc, err_dc,
+	    minimum_frequency = 1.0 / 6.0,   # periods shorter than 6 days
+	    maximum_frequency = 1.0 / 4.0,   # periods longer than 4 days
+	    samples_per_peak  = 10
+	)
+
+	pgram = lombscargle(plan)
+	
+	# --- Find best period ---
+	best_freq_dc  = pgram.freq[findmax(pgram.power)[2]]
+	best_period_dc = 1.0 ./ best_freq_dc
+	println("Best period: ", round(best_period_dc, digits=6), " days")
+	
+end
+
+# ╔═╡ 127b364a-00c6-4523-bbc5-7b916336f56b
+md"- The right period!"
+
+# ╔═╡ addbb51f-eb34-4cda-b39a-9d1179daf25e
+md"""
 > While `julia` offers better performances for scientific computing, most of the tutorials are still written in `python`. This would probably make working with python, aided by an AI, a simpler task.
 """
 
@@ -766,21 +1155,25 @@ md"Notebook v1.0.0 - 18 May 2026"
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+CSV = "~0.10.16"
 CairoMakie = "~0.15.9"
 DSP = "~0.8.4"
 DataFrames = "~1.8.2"
 FFTW = "~1.10.0"
 HDF5 = "~0.17.2"
+LombScargle = "~1.0.3"
 PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 """
@@ -791,7 +1184,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "e0aa02f15d155c8b8f8365750a305a2fb0c33132"
+project_hash = "7191a3db40f8556b1d2e0050747da92d1522cfbe"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -910,6 +1303,12 @@ git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
 
+[[deps.CSV]]
+deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
+git-tree-sha1 = "8d8e0b0f350b8e1c91420b5e64e5de774c2f0f4d"
+uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+version = "0.10.16"
+
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
 git-tree-sha1 = "71aa551c5c33f1a4415867fe06b7844faadb0ae9"
@@ -928,6 +1327,12 @@ git-tree-sha1 = "d0efe2c6fdcdaa1c161d206aa8b933788397ec71"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.6+0"
 
+[[deps.Calculus]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "9cb23bbb1127eefb022b022481466c0f1127d430"
+uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+version = "0.5.2"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
 git-tree-sha1 = "12177ad6b3cad7fd50c8b3825ce24a99ad61c18f"
@@ -937,6 +1342,12 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
+
+[[deps.CodecZlib]]
+deps = ["TranscodingStreams", "Zlib_jll"]
+git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
+uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
+version = "0.7.8"
 
 [[deps.CodecZstd]]
 deps = ["TranscodingStreams", "Zstd_jll"]
@@ -1725,6 +2136,12 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LombScargle]]
+deps = ["FFTW", "LinearAlgebra", "Measurements", "Random", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "d64a0ce7539181136a85fd8fe4f42626387f0f26"
+uuid = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
+version = "1.0.3"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -1786,6 +2203,28 @@ deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "Geo
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
+
+[[deps.Measurements]]
+deps = ["Calculus", "LinearAlgebra", "Printf"]
+git-tree-sha1 = "cb47f69a1cab9dcec7ff4a5d6e163410d6905866"
+uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+version = "2.14.1"
+
+    [deps.Measurements.extensions]
+    MeasurementsBaseTypeExt = "BaseType"
+    MeasurementsJunoExt = "Juno"
+    MeasurementsMakieExt = "Makie"
+    MeasurementsRecipesBaseExt = "RecipesBase"
+    MeasurementsSpecialFunctionsExt = "SpecialFunctions"
+    MeasurementsUnitfulExt = "Unitful"
+
+    [deps.Measurements.weakdeps]
+    BaseType = "7fbed51b-1ef5-4d67-9085-a4a9b26f478c"
+    Juno = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+    SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.MicrosoftMPI_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -2333,16 +2772,12 @@ deps = ["Dates", "UUIDs"]
 git-tree-sha1 = "86f5831495301b2a1387476cb30f86af7ab99194"
 uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
 version = "2.8.0"
+weakdeps = ["Measurements", "StaticArraysCore", "Tables"]
 
     [deps.StructUtils.extensions]
     StructUtilsMeasurementsExt = ["Measurements"]
     StructUtilsStaticArraysCoreExt = ["StaticArraysCore"]
     StructUtilsTablesExt = ["Tables"]
-
-    [deps.StructUtils.weakdeps]
-    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
-    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -2454,6 +2889,12 @@ version = "1.28.0"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.WeakRefStrings]]
+deps = ["DataAPI", "InlineStrings", "Parsers"]
+git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
+uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
+version = "1.4.2"
+
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
@@ -2465,6 +2906,11 @@ deps = ["LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "1.1.0"
+
+[[deps.WorkerUtilities]]
+git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
+uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
+version = "1.6.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
@@ -2645,7 +3091,7 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─d5b55ac6-0f38-4603-aa72-bd964d0604a8
-# ╠═2f82cbd2-4c34-11f1-901e-01c419d48099
+# ╟─2f82cbd2-4c34-11f1-901e-01c419d48099
 # ╟─efc84c48-a322-4c98-869d-2fe1e32151d5
 # ╟─72168e90-1440-42ac-a859-834ec6dcc703
 # ╟─9b66dbc6-7dd9-4762-a791-7fe1e433961b
@@ -2690,6 +3136,28 @@ version = "4.1.0+0"
 # ╟─67ba18bf-801a-4f2d-8e71-568fc0303c01
 # ╟─0ceea6e9-f8d3-40dc-8568-c96cb047ba55
 # ╟─f03a5299-58f3-4efd-8649-70f9855871a2
+# ╟─ab18737f-4240-4ee1-91ef-085f323630b4
+# ╟─54acd847-1b15-40c2-822c-b1d3310350e0
+# ╟─e5c8046e-fc53-4bec-b222-2dc1449f48bc
+# ╟─a90f0121-a687-45ee-a162-69b6db7e9dd1
+# ╠═ebbfe81b-d543-4c65-ba9e-69d812055321
+# ╠═4535cf14-f667-4a2e-9e55-a24e2acb06d6
+# ╟─abb545bc-d2e7-4d61-a3fa-8956121d1047
+# ╟─1c306fd9-fc22-4657-9ad7-4d89c9d0181b
+# ╠═7fb2f1be-7194-4512-85a2-dd151b320194
+# ╠═39b51d69-634a-4709-9d0f-028f56fb0a7f
+# ╟─259d2420-846c-427f-898e-2024a42a3ac5
+# ╟─66c7dc64-dc24-4f63-91c0-a45ee19dae5f
+# ╟─dc6e4a90-70ac-4441-97de-896e2c3eb3d1
+# ╟─6d0565e4-c094-4e77-90da-49de29bf4323
+# ╟─071b333f-5912-466b-b087-7a54787f19b3
+# ╟─395b7292-2019-414d-8c5d-ad62848386e0
+# ╟─dc952611-60b2-4399-8b29-3ff72a5eef1e
+# ╟─8c42f688-a1d1-4297-b480-7b74bd33cc2b
+# ╟─03deaa04-f30d-4332-a648-1f84d6b8a50f
+# ╠═a5334710-4093-4710-80cc-9a3e0d43a59c
+# ╟─127b364a-00c6-4523-bbc5-7b916336f56b
+# ╟─addbb51f-eb34-4cda-b39a-9d1179daf25e
 # ╟─ddb1955a-d1e7-4452-8bd6-a80913e39487
 # ╟─24385054-0edb-4b78-8cce-c89426964dfb
 # ╟─e44397bf-7be0-4c6f-bf38-057df876fb92
