@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.21
+# v0.20.24
 
 using Markdown
 using InteractiveUtils
@@ -566,7 +566,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 8ed11f8c-4810-433c-9c4f-bbd8cc5f23e9
-md"Notebook v1.0.0 - 17 May 2026"
+md"Notebook v1.0.0 - 20 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2450,7 +2450,7 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─d5b55ac6-0f38-4603-aa72-bd964d0604a8
-# ╠═2f82cbd2-4c34-11f1-901e-01c419d48099
+# ╟─2f82cbd2-4c34-11f1-901e-01c419d48099
 # ╟─efc84c48-a322-4c98-869d-2fe1e32151d5
 # ╟─72168e90-1440-42ac-a859-834ec6dcc703
 # ╟─9b66dbc6-7dd9-4762-a791-7fe1e433961b
