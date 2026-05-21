@@ -7,10 +7,12 @@ using InteractiveUtils
 # ╔═╡ 2f82cbd2-4c34-11f1-901e-01c419d48099
 begin
 	using CairoMakie
+	using CSV
 	using DataFrames
 	using DSP
 	using FFTW
 	using HDF5
+	using LombScargle
 	using PlutoUI
 	using PlutoTeachingTools
 	using Statistics
@@ -525,7 +527,580 @@ end
 md"""
 - This plot above, while truly if interest, does not fully show how the event evolved. 
 
-- A frequency-time/power plot, e.g. that resulting from a, e.g., wavelet analysis, could be much more effective.
+- Probably, a wavelet, i.e. time-frequency-power, plot could be more expressive.
+"""
+
+# ╔═╡ 164f7527-6434-4df1-8cab-d25f6363ecb1
+question_box("This is good. Do you think you could write a code to have a plot of the chirp by, e.g., a wavelet?")
+
+# ╔═╡ 8ac36e25-05ac-4477-958e-a35c9fb4646a
+answer_box(md"""
+Yes! A wavelet spectrogram (scalogram) is exactly how LIGO visualises the chirp — you can see the frequency sweeping upward in time right at the merger. The standard choice is the **Morlet wavelet**, which gives good time-frequency resolution.
+
+DSP.jl doesn't have a built-in CWT, but it's straightforward to implement in the frequency domain:
+
+```julia
+using FFTW
+using CairoMakie
+using Statistics
+
+# --- Morlet CWT in the frequency domain ---
+function morlet_cwt(data, dt, freqs; omega0=6.0)
+    n       = length(data)
+    data_fft = rfft(data)
+    ang_freqs = rfftfreq(n, 1.0/dt) .* 2π   # angular frequencies
+
+    scalogram = zeros(Float64, length(freqs), n)
+
+    for (i, f) in enumerate(freqs)
+        # Scale corresponding to this frequency
+        scale = omega0 / (2π * f)
+
+        # Morlet wavelet in frequency domain
+        psi_hat = @. (π^(-0.25)) * exp(-0.5 * (scale * ang_freqs - omega0)^2)
+        psi_hat .*= sqrt(2π * scale / dt)
+
+        # Convolve via multiplication in frequency domain, then iFFT
+        col = irfft(data_fft .* psi_hat, n)
+        scalogram[i, :] = abs.(col)
+    end
+    return scalogram
+end
+
+# --- Frequency axis (log-spaced, 30–400 Hz) ---
+freqs = exp10.(range(log10(30.0), log10(400.0), length=200))
+
+# --- Compute scalogram on whitened+bandpassed strain ---
+# Use a cropped version to avoid edge effects
+crop  = round(Int, 1.0/dt)
+t_crop     = collect(t)[crop:end-crop]
+white_crop = strain_white[crop:end-crop]
+
+println("Computing CWT... (this may take a few seconds)")
+scalogram = morlet_cwt(white_crop, dt, freqs)
+
+# --- Plot ---
+fig = Figure(size=(1000, 500), figure_padding=20)
+
+ax = Axis(fig[1, 1],
+    xlabel      = "Time from GPS $(t0) (s)",
+    ylabel      = "Frequency (Hz)",
+    title       = "GW150914 — H1 Wavelet Spectrogram (Morlet)",
+    yscale      = log10,
+    yticks      = ([32, 64, 128, 256], ["32", "64", "128", "256"]),
+    yminorticksvisible = true)
+
+# Clip dynamic range for better contrast (like LIGO plots)
+slog = log10.(scalogram .+ 1e-10)
+vmin, vmax = quantile(vec(slog), 0.05), quantile(vec(slog), 0.9995)
+
+hm = heatmap!(ax, t_crop, freqs, slog',
+    colorrange  = (vmin, vmax),
+    colormap    = :inferno)
+
+# Merger line
+vlines!(ax, [t_merger],
+    color     = (:white, 0.6),
+    linewidth = 1.5,
+    linestyle = :dash)
+
+text!(ax, t_merger + 0.2, 300.0,
+    text     = "merger",
+    color    = :white,
+    fontsize = 13)
+
+Colorbar(fig[1, 2], hm, label="log₁₀ |CWT|")
+
+save("GW150914_H1_wavelet.png", fig, px_per_unit=2)
+fig
+```
+
+A few notes:
+
+- **Morlet with ω₀=6** is the standard choice for GW data — it balances time and frequency resolution well. Increasing ω₀ gives better frequency resolution but smears in time.
+- The frequency axis is **log-spaced** (30–400 Hz) because the chirp sweeps logarithmically and this matches LIGO's standard plots.
+- The **`quantile` clipping** of the dynamic range (`0.05`–`0.9995`) is key for contrast — without it the loud merger drowns out everything else.
+- The chirp should appear as a bright curved track sweeping from ~35 Hz up to ~150 Hz, peaking at `t_merger`. If the track isn't visible, try tightening `vmax` to `quantile(..., 0.999)` or even `0.99`.
+- The CWT loop over 200 frequencies on 131072 samples takes a handful of seconds — perfectly fine for a 32-s segment.
+""")
+
+# ╔═╡ 9d73d318-6cdf-49e5-b997-b6ac204ec19d
+# --- Morlet CWT in the frequency domain ---
+function morlet_cwt(data, dt, freqs; omega0=6.0)
+    n       = length(data)
+    data_fft = rfft(data)
+    ang_freqs = rfftfreq(n, 1.0/dt) .* 2π   # angular frequencies
+
+    scalogram = zeros(Float64, length(freqs), n)
+
+    for (i, f) in enumerate(freqs)
+        # Scale corresponding to this frequency
+        scale = omega0 / (2π * f)
+
+        # Morlet wavelet in frequency domain
+        psi_hat = @. (π^(-0.25)) * exp(-0.5 * (scale * ang_freqs - omega0)^2)
+        psi_hat .*= sqrt(2π * scale / dt)
+
+        # Convolve via multiplication in frequency domain, then iFFT
+        col = irfft(data_fft .* psi_hat, n)
+        scalogram[i, :] = abs.(col)
+    end
+    return scalogram
+end
+
+# ╔═╡ 3cf92273-1a38-413a-9ed9-87572007aa54
+begin
+	# --- Frequency axis (log-spaced, 30–400 Hz) ---
+	freqs = exp10.(range(log10(30.0), log10(400.0), length=200))
+	
+	# --- Compute scalogram on whitened+bandpassed strain ---
+	# Use a cropped version to avoid edge effects
+	cropsc  = round(Int, 1.0/dt)
+	t_cropsc     = collect(t)[cropsc:end-cropsc]
+	white_cropsc = strain_white[cropsc:end-cropsc]
+	
+	println("Computing CWT... (this may take a few seconds)")
+	scalogram = morlet_cwt(white_cropsc, dt, freqs)
+	
+end;
+
+# ╔═╡ 56f6c7d9-086e-41cb-9618-69ac9d103fc5
+md"- Again, I needed to improve the plot changing the axis limits, etc."
+
+# ╔═╡ ac23e27e-6ad4-405e-b360-c13e674c7528
+begin
+	# --- Plot ---
+	figsc = Figure(size=(1000, 500), figure_padding=20)
+	
+	axsc = Axis(figsc[1, 1],
+	    xlabel      = "Time from GPS $(t0) (s)",
+	    ylabel      = "Frequency (Hz)",
+	    title       = "GW150914 — H1 Wavelet Spectrogram (Morlet)",
+	    yscale      = log10,
+	    yticks      = ([32, 64, 128, 256], ["32", "64", "128", "256"]),
+	    yminorticksvisible = true)
+	
+	# Clip dynamic range for better contrast (like LIGO plots)
+	slogsc = log10.(scalogram .+ 1e-10)
+	vminsc, vmaxsc = quantile(vec(slogsc), 0.05), quantile(vec(slogsc), 0.9995)
+	
+	hmsc = heatmap!(axsc, t_cropsc, freqs, slogsc',
+	    colorrange  = (vminsc, vmaxsc),
+	    colormap    = :inferno)
+	
+	# Merger line
+	vlines!(axsc, [t_merger],
+	    color     = (:white, 0.6),
+	    linewidth = 1.5,
+	    linestyle = :dash)
+	
+	text!(axsc, t_merger + 0.05, 300.0,
+	    text     = "merger",
+	    color    = :white,
+	    fontsize = 13)
+
+	xlims!(16.2,16.6)
+	
+	Colorbar(figsc[1, 2], hmsc, label="log₁₀ |CWT|")
+	
+	figsc
+end
+
+# ╔═╡ da665df8-9724-412a-acd9-9bd7e7994e7f
+md"""
+- Now, the *chirp* is clear!
+- The plot could be definitely improved, by smoothing it, etc. in order to make it publication ready.
+- Even a better subtraction of the background could help.
+- However, for this exercize we can be satisfied.
+"""
+
+# ╔═╡ 8e4d77a6-6f77-4621-a7c7-f5b444fd2411
+md"""
+- As commented above, this is only an exploratory exercize. Yet, it could show how a blind interaction, for avdanced topics, with an AI can be improductive.
+- On the other hand, with a sufficient knowledge of the topic, one can drive the AI with the right questions and getting truly interesting results.
+"""
+
+# ╔═╡ 845b8722-0d66-42c9-b1b8-eddcfebce6a6
+md"""
+- A possible step forward could be to really analyse the strain data in order to identify the event, rather than locating and plotting it.
+- This is possible, but definitely more difficult, althoug the many tutorials about this event available on the web could allow the AI to be properly trained.
+"""
+
+# ╔═╡ 791f7bc6-95e5-4beb-a908-563947d1609d
+md"""
+## [Delta Cephei](https://en.wikipedia.org/wiki/Delta_Cephei): one of the most important variable stars
+***
+"""
+
+# ╔═╡ 1555efa5-cf2c-449d-819a-9d7258c7c24b
+md"""
+- We have downloaded the photoemtric data from the American Association of Variable Star Observers, [AAVSO](https://www.aavso.org/), site.
+- It is a standard [CSV](https://it.wikipedia.org/wiki/Comma-separated_values), comma-separeted, text file.
+"""
+
+# ╔═╡ 1998e1eb-6c63-48de-b33b-aa248151d166
+question_box("Hi, I have a CSV file with photometry of the delta cephei star. How can I read it? I work with julia and CairoMakie.")
+
+# ╔═╡ 1a530ba0-c19c-4056-8408-b75956810571
+md"- The AI complains I have not uploaded the file, so I do it and get a more specific response."
+
+# ╔═╡ dc85b4d0-5dcd-4fa6-ba93-be27991145a0
+answer_box(md"""
+
+**The file structure:** A comma-separated AAVSO file with 24 columns and ~69,400 rows. The useful ones are `JD`, `Magnitude`, `Uncertainty`, and `Band`. Many `Uncertainty` values are missing (especially older visual observations), which is expected.
+
+**Reading it in Julia:**
+```julia
+using CSV, DataFrames
+
+df = CSV.read("DeltaCep.csv", DataFrame,
+    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+    silencewarnings = true
+)
+dropmissing!(df, :Magnitude)
+```
+
+**Plotting the V-band light curve with CairoMakie:**
+```julia
+using CairoMakie
+
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+
+fig = Figure(size = (1000, 400))
+ax  = Axis(fig[1,1],
+    xlabel = "Julian Date", ylabel = "Magnitude",
+    title = "δ Cephei — V band", yreversed = true)
+
+scatter!(ax, df_V.JD, df_V.Magnitude,
+    color = :steelblue, markersize = 3, alpha = 0.5)
+
+save("delta_cep_lc.png", fig)
+```
+
+Shall I move on to the phase-folded light curve?
+""")
+
+# ╔═╡ b7f2b3ea-0643-4385-bdc0-8fa9263ba7a8
+begin
+	df = CSV.read("DeltaCep.csv", DataFrame,
+	select = ["JD", "Magnitude", "Uncertainty", "Band"],
+	types = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64), silencewarnings = true)
+	dropmissing!(df, :Magnitude)
+end
+
+# ╔═╡ 805bf93e-4723-4556-9fca-1931e8611f0e
+begin
+	df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+
+	figlc = Figure(size = (1000, 400))
+
+	axlc = Axis(figlc[1,1],
+		xlabel = "Julian Date", ylabel = "Magnitude",
+		title = "δ Cephei — V band", yreversed = true)
+
+	scatter!(axlc, df_V.JD, df_V.Magnitude, color = :steelblue, markersize = 3, alpha = 0.5)
+
+	figlc
+end
+
+# ╔═╡ 7db81808-236e-4b93-af75-d2db036b7873
+question_box("Yes, I'd like to see the phase-folded light-curve")
+
+# ╔═╡ 887a46fe-c37f-452a-8504-18ce0164b29c
+answer_box(md"""
+Sure! Here's the code for the phase-folded light curve. The standard ephemeris for δ Cephei uses a period of **5.366341 days** and a well-known reference epoch.
+
+```julia
+using CSV, DataFrames, CairoMakie
+
+# --- Read data ---
+df = CSV.read("DeltaCep.csv", DataFrame,
+    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+    silencewarnings = true
+)
+dropmissing!(df, :Magnitude)
+
+# --- Filter V-band with uncertainty ---
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+
+# --- Phase folding ---
+period  = 5.366341          # days
+t0      = 2436084.0         # reference epoch of maximum light (HJD)
+
+df_V.phase = mod.((df_V.JD .- t0) ./ period, 1.0)
+
+# Sort by phase for a clean look
+sort!(df_V, :phase)
+
+# --- Plot ---
+fig = Figure(size = (900, 450), figure_padding = 30)
+ax  = Axis(fig[1,1],
+    xlabel     = "Phase",
+    ylabel     = "Magnitude",
+    title      = "δ Cephei — Phase-folded light curve (V band)",
+    yreversed  = true,
+    xticks     = 0:0.1:1.0,
+)
+
+scatter!(ax, df_V.phase, df_V.Magnitude,
+    color      = :steelblue,
+    markersize = 3,
+    alpha      = 0.4,
+    label      = "V-band observations"
+)
+
+# Duplicate points shifted by +1 to show continuity across the cycle boundary
+scatter!(ax, df_V.phase .+ 1.0, df_V.Magnitude,
+    color      = :steelblue,
+    markersize = 3,
+    alpha      = 0.15,
+)
+
+xlims!(ax, 0.0, 2.0)
+axislegend(ax, position = :rb)
+
+save("delta_cep_phased.png", fig)
+fig
+```
+
+A few notes on the choices made here:
+
+- **`t0 = 2436084.0`** is a standard epoch of maximum light for δ Cep. Phase 0 corresponds to brightness maximum (the fast rise).
+- **Duplicating points shifted by +1** in a faded style is a common trick to show the cycle wraps around continuously — it makes the steep rise near phase 0 much easier to see.
+- The **asymmetric shape** should be very clear: a rapid brightening over ~0.1–0.2 in phase, followed by a slow decline — the classic Cepheid sawtooth.
+
+Would you like to also add a **binned mean curve** on top of the scatter, to highlight the average pulse shape more cleanly?
+""")
+
+# ╔═╡ 98a5702a-8ab1-41a7-b0f3-1e7ef035b786
+begin
+	# --- Phase folding ---
+	period_dc = 5.366341 # days
+	t0_dc = 2436084.0 # reference epoch of maximum light (HJD)
+	
+	df_V.phase = mod.((df_V.JD .- t0) ./ period_dc, 1.0)
+	
+	# Sort by phase for a clean look
+	sort!(df_V, :phase)
+end
+
+# ╔═╡ db1e7d54-a93b-4185-955e-9a2cd29a4f73
+begin
+	figpp = Figure(size = (900, 450), figure_padding = 30)
+
+	axpp = Axis(figpp[1,1],
+		xlabel = "Phase",
+		ylabel = "Magnitude",
+		title = "δ Cephei — Phase-folded light curve (V band)",
+		yreversed = true,
+		xticks = 0:0.1:1.0,
+		)
+	
+	scatter!(axpp, df_V.phase, df_V.Magnitude, color = :steelblue, markersize = 3, alpha = 0.4, label = "V-band observations")
+	
+	# Duplicate points shifted by +1 to show continuity across the cycle boundary
+	scatter!(axpp, df_V.phase .+ 1.0, df_V.Magnitude, color = :steelblue, markersize = 3, alpha = 0.15,)
+	
+	xlims!(axpp, 0.0, 2.0)
+	axislegend(axpp, position = :rb)
+
+	figpp
+end
+
+# ╔═╡ f817a31a-26f5-4fbb-ae4a-bc2adf3c9b1a
+question_box("No, but I would like to find the best period by myself")
+
+# ╔═╡ 40a2c488-c0b6-491a-8061-bed6a536ba93
+answer_box(md"""
+Great idea — this is a classic period-finding problem, perfect for a Cepheid. The natural tool here is the **Lomb-Scargle periodogram**, since the data are unevenly sampled and span 145 years.
+
+Here's the code:
+
+```julia
+using CSV, DataFrames, LombScargle, CairoMakie
+
+# --- Read and filter ---
+df = CSV.read("DeltaCep.csv", DataFrame,
+    select = ["JD", "Magnitude", "Uncertainty", "Band"],
+    types  = Dict("JD" => Float64, "Magnitude" => Float64, "Uncertainty" => Float64),
+    silencewarnings = true
+)
+dropmissing!(df, :Magnitude)
+
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+sort!(df_V, :JD)
+
+# --- Lomb-Scargle ---
+t   = df_V.JD
+mag = df_V.Magnitude
+err = df_V.Uncertainty
+
+plan = LombScargle.plan(t, mag, err,
+    minimum_frequency = 1.0 / 6.0,   # periods shorter than 6 days
+    maximum_frequency = 1.0 / 4.0,   # periods longer than 4 days
+    samples_per_peak  = 10
+)
+
+pgram = lombscargle(plan)
+
+# --- Find best period ---
+best_freq  = freqat(pgram, argmaxpower(pgram))
+best_period = 1.0 / best_freq
+println("Best period: ", round(best_period, digits=6), " days")
+
+# --- Plot periodogram ---
+fig = Figure(size = (900, 400), figure_padding = 30)
+ax  = Axis(fig[1,1],
+    xlabel = "Period (days)",
+    ylabel = "Lomb-Scargle Power",
+    title  = "δ Cephei — Lomb-Scargle Periodogram (V band)"
+)
+
+periods = 1.0 ./ pgram.freq
+lines!(ax, periods, pgram.power, color = :steelblue, linewidth = 0.8)
+
+# Mark the best period
+vlines!(ax, best_period, color = :crimson, linewidth = 1.5, linestyle = :dash,
+    label = "Best period: $(round(best_period, digits=4)) d")
+
+axislegend(ax, position = :rt)
+save("delta_cep_periodogram.png", fig)
+fig
+```
+
+A couple of things worth noting:
+
+- I've **restricted the frequency range** to periods between 4 and 6 days, since we already have a good prior on δ Cep's period (~5.37 d). You can widen it if you want a blind search.
+- **`samples_per_peak = 10`** gives good frequency resolution without being too slow. Increase it to 20–50 for finer sampling near the peak.
+- The package is `LombScargle.jl` — if you don't have it yet, just run `] add LombScargle` in the REPL.
+
+Once you have the best period, you can plug it straight into the phase-folding code from before. How close does it come to the canonical 5.366341 days?
+""")
+
+# ╔═╡ 954f2bdc-973d-4bc0-8402-0107fb3382b7
+md"- But, as it happens frequently, the code is not correct. I need to interact a bit to have a correct (i.e. running) answer."
+
+# ╔═╡ 26ddf772-d989-46e2-952a-ccaa9661921f
+question_box("I have this error: MethodError: no method matching plan(::Vector{Float64}, ::Vector{Float64}, ::Vector{Union{Missing, Float64}}; minimum_frequency::Float64, maximum_frequency::Float64, samples_per_peak::Int64)
+The function `plan` exists, but no method is defined for this combination of argument types.
+
+Closest candidates are:
+  plan(::AbstractVector{<:Real}, ::AbstractVector{<:Real}; kwargs...)
+   @ LombScargle ~/.julia/packages/LombScargle/kygQJ/src/__planning.jl:130__
+  plan(::AbstractVector{<:Real}, ::AbstractVector{<:Real}, ::AbstractVector{<:Real}; kwargs...)
+   @ LombScargle ~/.julia/packages/LombScargle/kygQJ/src/__planning.jl:134__
+  plan(::AbstractVector{<:Real}, ::AbstractVector{<:Measurements.Measurement}; kwargs...)
+   @ LombScargle ~/.julia/packages/LombScargle/kygQJ/src/__planning.jl:144__")
+
+# ╔═╡ e88c6a1c-7d31-43d8-a35e-bfa0104a93f4
+answer_box(md"""
+The issue is that `err` still has type `Vector{Union{Missing, Float64}}` even after `dropmissing!` on `:Magnitude` — because we never dropped rows with missing *uncertainty*. The fix is to either drop those rows too, or simply not pass the errors to `plan` (which is fine for a period search).
+
+**Option 1 — drop missing uncertainties (recommended, keeps error weighting):**
+
+```julia
+dropmissing!(df_V, :Uncertainty)
+
+t   = df_V.JD
+mag = df_V.Magnitude
+err = Float64.(df_V.Uncertainty)   # convert to plain Vector{Float64}
+```
+
+**Option 2 — ignore uncertainties entirely (simpler, slightly less accurate):**
+
+```julia
+t   = df_V.JD
+mag = df_V.Magnitude
+
+plan = LombScargle.plan(t, mag,   # no err argument
+    minimum_frequency = 1.0 / 6.0,
+    maximum_frequency = 1.0 / 4.0,
+    samples_per_peak  = 10
+)
+```
+
+I'd go with **Option 1** — δ Cep has many observations of varying quality, so weighting by uncertainty gives a cleaner periodogram. Just add the `dropmissing!` line right after your V-band filter:
+
+```julia
+df_V = filter(row -> row.Band == "V" && !ismissing(row.Uncertainty), df)
+dropmissing!(df_V, :Uncertainty)   # ← add this
+sort!(df_V, :JD)
+
+t   = df_V.JD
+mag = df_V.Magnitude
+err = Float64.(df_V.Uncertainty)
+```
+
+The `Float64.()` broadcast conversion is the key step — it strips the `Union{Missing, Float64}` type even when no values are actually missing.
+""")
+
+# ╔═╡ de7d5ad8-d6f1-412a-a2c9-069733e47d8b
+md"- I agree **option 1** is the best one. But there is another problem:"
+
+# ╔═╡ 6a299349-4b1b-40e4-b875-b795367b6cd1
+question_box("Another problem: UndefVarError: `freqat` not defined in this notebook.
+Suggestion: check for spelling errors or missing imports.")
+
+# ╔═╡ fe31c076-8e78-4c4b-bfa7-ccdb50d4f647
+answer_box(md"""
+The function is called `findmaxfreq` in `LombScargle.jl`. Replace this part:
+
+```julia
+best_freq   = freqat(pgram, argmaxpower(pgram))
+```
+
+with:
+
+```julia
+best_freq   = findmaxfreq(pgram)[1]
+best_period = 1.0 / best_freq
+println("Best period: ", round(best_period, digits=6), " days")
+```
+
+`findmaxfreq` returns a vector (in case of ties), so we just take the first element with `[1]`. Everything else in the code stays the same.
+""")
+
+# ╔═╡ 7d16e530-80ad-4169-8c23-664153184305
+md"""
+- However, the code it is still wrong, and even after a few interactions the AI cannot find the rigtht solution.
+- Therefore, I work directly on the code, fixing a few problems. Actually, really minor problems due to the specific syntax of the findmax command and to the filtering of the data frame.
+- In addition, several uncertainties were exactly ``0``, not allowing the Lomb-Scargle algorithm to work correctly.
+"""
+
+# ╔═╡ b3d42d14-9ff7-43d1-a0ee-3d69c04acbfb
+begin
+	# --- Lomb-Scargle ---
+	
+	df_V_dt = filter(row -> row.Band == "V", df)
+	dropmissing!(df_V_dt)
+	
+	sort!(df_V_dt, :JD)
+
+	t_dc = df_V_dt.JD[df_V_dt.Uncertainty .> 0]
+	mag_dc = df_V_dt.Magnitude[df_V_dt.Uncertainty .> 0]
+	err_dc = df_V_dt.Uncertainty[df_V_dt.Uncertainty .> 0]
+
+	plan = LombScargle.plan(t_dc, mag_dc, err_dc,
+		minimum_frequency = 1.0 / 6.0, # periods shorter than 6 days
+		maximum_frequency = 1.0 / 4.0, # periods longer than 4 days
+		samples_per_peak = 10)
+	
+	pgram = lombscargle(plan)
+
+	# --- Find best period ---
+	best_freq_dc = pgram.freq[findmax(pgram.power)[2]]
+	best_period_dc = 1.0 ./ best_freq_dc
+	println("Best period: ", round(best_period_dc, digits=6), " days")
+end
+
+# ╔═╡ 377d78bf-d250-42b6-8d4a-96e634b6e44f
+md"- The right period!"
+
+# ╔═╡ fc7331b5-5cd8-44ad-b2c2-49b240e55087
+md"""
+> While `julia` offers better performances for scientific computing, most of the tutorials are still written in `python`. This would probably make working with `python`, aided by an AI, a simpler task.
 """
 
 # ╔═╡ ddb1955a-d1e7-4452-8bd6-a80913e39487
@@ -544,14 +1119,14 @@ html"""
   </tr>
   <tr>
     <td>notebook</td>
-	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
-    <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.jl">Statistics Reminder</a></td>
+	<td><a href="./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl">Science case about CO₂ content in atmosphere</a></td>    
+    <td><a href="./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl">Lecture about astrostatistics future</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
     <td>html</td>
-	<td><a href="../../Course.html">Course Summary</a></td>    
-    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-StatisticsReminder.html">Statistics Reminder</a></td>
+	<td><a href="../../Lectures/Lecture-GaussianProcesses/Lecture-CO2.html">Science case about CO₂ content in atmosphere</a></td>    
+    <td><a href="../../Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html">Lecture about astrostatistics future</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
 
@@ -566,26 +1141,30 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 8ed11f8c-4810-433c-9c4f-bbd8cc5f23e9
-md"Notebook v1.0.0 - 20 May 2026"
+md"Notebook v1.0.0 - 21 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+CSV = "~0.10.16"
 CairoMakie = "~0.15.9"
 DSP = "~0.8.4"
 DataFrames = "~1.8.2"
 FFTW = "~1.10.0"
 HDF5 = "~0.17.2"
+LombScargle = "~1.0.3"
 PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 """
@@ -596,7 +1175,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "e0aa02f15d155c8b8f8365750a305a2fb0c33132"
+project_hash = "7191a3db40f8556b1d2e0050747da92d1522cfbe"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -715,6 +1294,12 @@ git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
 
+[[deps.CSV]]
+deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
+git-tree-sha1 = "8d8e0b0f350b8e1c91420b5e64e5de774c2f0f4d"
+uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+version = "0.10.16"
+
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
 git-tree-sha1 = "71aa551c5c33f1a4415867fe06b7844faadb0ae9"
@@ -733,6 +1318,12 @@ git-tree-sha1 = "d0efe2c6fdcdaa1c161d206aa8b933788397ec71"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.6+0"
 
+[[deps.Calculus]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "9cb23bbb1127eefb022b022481466c0f1127d430"
+uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+version = "0.5.2"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
 git-tree-sha1 = "12177ad6b3cad7fd50c8b3825ce24a99ad61c18f"
@@ -742,6 +1333,12 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
+
+[[deps.CodecZlib]]
+deps = ["TranscodingStreams", "Zlib_jll"]
+git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
+uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
+version = "0.7.8"
 
 [[deps.CodecZstd]]
 deps = ["TranscodingStreams", "Zstd_jll"]
@@ -1530,6 +2127,12 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LombScargle]]
+deps = ["FFTW", "LinearAlgebra", "Measurements", "Random", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "d64a0ce7539181136a85fd8fe4f42626387f0f26"
+uuid = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
+version = "1.0.3"
+
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
@@ -1591,6 +2194,28 @@ deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "Geo
 git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
+
+[[deps.Measurements]]
+deps = ["Calculus", "LinearAlgebra", "Printf"]
+git-tree-sha1 = "cb47f69a1cab9dcec7ff4a5d6e163410d6905866"
+uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+version = "2.14.1"
+
+    [deps.Measurements.extensions]
+    MeasurementsBaseTypeExt = "BaseType"
+    MeasurementsJunoExt = "Juno"
+    MeasurementsMakieExt = "Makie"
+    MeasurementsRecipesBaseExt = "RecipesBase"
+    MeasurementsSpecialFunctionsExt = "SpecialFunctions"
+    MeasurementsUnitfulExt = "Unitful"
+
+    [deps.Measurements.weakdeps]
+    BaseType = "7fbed51b-1ef5-4d67-9085-a4a9b26f478c"
+    Juno = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+    SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.MicrosoftMPI_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -2138,16 +2763,12 @@ deps = ["Dates", "UUIDs"]
 git-tree-sha1 = "86f5831495301b2a1387476cb30f86af7ab99194"
 uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
 version = "2.8.0"
+weakdeps = ["Measurements", "StaticArraysCore", "Tables"]
 
     [deps.StructUtils.extensions]
     StructUtilsMeasurementsExt = ["Measurements"]
     StructUtilsStaticArraysCoreExt = ["StaticArraysCore"]
     StructUtilsTablesExt = ["Tables"]
-
-    [deps.StructUtils.weakdeps]
-    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
-    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -2259,6 +2880,12 @@ version = "1.28.0"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.WeakRefStrings]]
+deps = ["DataAPI", "InlineStrings", "Parsers"]
+git-tree-sha1 = "0716e01c3b40413de5dedbc9c5c69f27cddfddfc"
+uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
+version = "1.4.3"
+
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
@@ -2270,6 +2897,11 @@ deps = ["LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "1.1.0"
+
+[[deps.WorkerUtilities]]
+git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
+uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
+version = "1.6.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
@@ -2487,6 +3119,38 @@ version = "4.1.0+0"
 # ╟─3f4a1fe0-80cb-46e9-acc9-d800dea51285
 # ╟─589f5ed7-084d-48ad-9162-03df4c1a9609
 # ╟─a985cfbd-dc02-4f8f-af40-f55ef584a055
+# ╟─164f7527-6434-4df1-8cab-d25f6363ecb1
+# ╟─8ac36e25-05ac-4477-958e-a35c9fb4646a
+# ╠═9d73d318-6cdf-49e5-b997-b6ac204ec19d
+# ╠═3cf92273-1a38-413a-9ed9-87572007aa54
+# ╟─56f6c7d9-086e-41cb-9618-69ac9d103fc5
+# ╟─ac23e27e-6ad4-405e-b360-c13e674c7528
+# ╟─da665df8-9724-412a-acd9-9bd7e7994e7f
+# ╟─8e4d77a6-6f77-4621-a7c7-f5b444fd2411
+# ╟─845b8722-0d66-42c9-b1b8-eddcfebce6a6
+# ╟─791f7bc6-95e5-4beb-a908-563947d1609d
+# ╟─1555efa5-cf2c-449d-819a-9d7258c7c24b
+# ╟─1998e1eb-6c63-48de-b33b-aa248151d166
+# ╟─1a530ba0-c19c-4056-8408-b75956810571
+# ╟─dc85b4d0-5dcd-4fa6-ba93-be27991145a0
+# ╠═b7f2b3ea-0643-4385-bdc0-8fa9263ba7a8
+# ╟─805bf93e-4723-4556-9fca-1931e8611f0e
+# ╟─7db81808-236e-4b93-af75-d2db036b7873
+# ╟─887a46fe-c37f-452a-8504-18ce0164b29c
+# ╠═98a5702a-8ab1-41a7-b0f3-1e7ef035b786
+# ╟─db1e7d54-a93b-4185-955e-9a2cd29a4f73
+# ╟─f817a31a-26f5-4fbb-ae4a-bc2adf3c9b1a
+# ╟─40a2c488-c0b6-491a-8061-bed6a536ba93
+# ╟─954f2bdc-973d-4bc0-8402-0107fb3382b7
+# ╟─26ddf772-d989-46e2-952a-ccaa9661921f
+# ╟─e88c6a1c-7d31-43d8-a35e-bfa0104a93f4
+# ╟─de7d5ad8-d6f1-412a-a2c9-069733e47d8b
+# ╟─6a299349-4b1b-40e4-b875-b795367b6cd1
+# ╟─fe31c076-8e78-4c4b-bfa7-ccdb50d4f647
+# ╟─7d16e530-80ad-4169-8c23-664153184305
+# ╠═b3d42d14-9ff7-43d1-a0ee-3d69c04acbfb
+# ╟─377d78bf-d250-42b6-8d4a-96e634b6e44f
+# ╟─fc7331b5-5cd8-44ad-b2c2-49b240e55087
 # ╟─ddb1955a-d1e7-4452-8bd6-a80913e39487
 # ╟─24385054-0edb-4b78-8cce-c89426964dfb
 # ╟─e44397bf-7be0-4c6f-bf38-057df876fb92
