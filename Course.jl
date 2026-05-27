@@ -42,7 +42,7 @@ md"""
 
 # ╔═╡ aec92f06-df81-4c51-99cb-ac3ebc91c7fc
 md"""
-## Academic Year 2025-2026
+## Academic Year 2025-2026 and later addictions
 ***
 """
 
@@ -86,7 +86,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.0.1 - 17 May 2026"
+md"Notebook v1.0.2 - 25 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """

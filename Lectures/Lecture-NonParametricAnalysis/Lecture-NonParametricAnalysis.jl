@@ -561,6 +561,90 @@ $(LocalResource("Pics/MISimandPeriodogram.png"))
 
 """
 
+# ╔═╡ 039931c3-357a-4f4b-ab45-fd78fb54f64a
+Foldable("A brief introduction to the MI",md"""
+
+### The Quadratic Mutual Information (QMI)
+***
+
+- In practise, many of the quantities defined in Information theory are tricky to compute. Most of them revolve around entropy: 
+
+```math
+H(X) = -\sum_{i=1}^N p_i \log p_i,
+```
+- which is fine for discrete systems for which we know all possible states and the distribution over those states. Most often this is far from the case, so we have to be clever about how we use these measures.
+
+- The idea is that replacing Kullback-Leibler (KL) divergence in QMI with a 'Quadratic Divergence' results in a form that's much easier to estimate in a differentiable way.
+
+
+#### Deriving QMI
+
+- Mutual information between two random variables $X$ and $Y$ can be thought of as the KL-divergence between their joint distribution, and the product of their marginals:
+```math
+I(X;Y) = D_{KL}(P_{X,Y} \parallel P_X P_Y) = \iint p(x,y) \log \frac{p(x,y)}{p(x)p(y)} \, dx \, dy.
+```
+
+- With QMI we replace KL-divergence with something that looks similar to Euclidean distance:
+
+```math
+I_Q(X;Y) = \iint (p(x,y) - p(x)p(y))^2 \, dx \, dy.
+```
+
+- Expanding this we get a three-term quadratic-looking expression:
+```math
+I_Q(X;Y) = \iint p(x,y)^2 - 2p(x,y)p(x)p(y) + p(x)^2 p(y)^2 \, dx \, dy.
+```
+
+- i.e, the quadratic mutual information. 
+
+
+- In order to estimate the previous quantity we need to use a [Kernel Density Estimation](https://en.wikipedia.org/wiki/Kernel_density_estimation) (KDE) to approximate the density functions.
+
+- Given a dataset of $N$ samples $\{(x_i, y_i) \mid i = 1 \dots N\}$, we estimate the densities using a Gaussian kernel with bandwidth $\sigma$: 
+
+```math
+\hat{p}_{X,Y}(x,y) = \frac{1}{N} \sum_{i=1}^N G_\sigma(x - x_i) G_\sigma(y - y_i)
+```
+
+```math
+\hat{p}_X(x) = \frac{1}{N} \sum_{i=1}^N G_\sigma(x - x_i)
+```
+
+```math
+\hat{p}_Y(y) = \frac{1}{N} \sum_{i=1}^N G_\sigma(y - y_i)
+```
+
+- where $G_\sigma(x)$ is the Gaussian density function with $\mu = 0$ and $\sigma$ standard deviation. Before we plug the KDE estimates into our equation, we note the following property of convolved Gaussian functions:
+
+```math
+\int G_\sigma(x - x') G_\sigma(y - y') \, dx' \, dy' = G_{\sigma\sqrt{2}}(x' - y').
+```
+
+- By this simplification our integrals become sums-of-sums that we can compute exactly and each of the three terms above becomes an information potential (IP): the joint-, marginal-, and cross-information potentials respectively.
+
+```math
+\hat{I}_Q(X;Y) = \hat{V}_J + \hat{V}_M - 2\hat{V}_C,
+```
+- where the IPs work out to: 
+
+```math
+\hat{V}_J = \frac{1}{N^2} \sum_{i=1}^N \sum_{j=1}^N G_{\sigma\sqrt{2}}(x_i - x_j) G_{\sigma\sqrt{2}}(y_i - y_j)
+```
+
+```math
+\hat{V}_M = \left( \frac{1}{N^2} \sum_{i=1}^N \sum_{j=1}^N G_{\sigma\sqrt{2}}(x_i - x_j) \right) \left( \frac{1}{N^2} \sum_{i=1}^N \sum_{j=1}^N G_{\sigma\sqrt{2}}(y_i - y_j) \right)
+```
+
+```math
+\hat{V}_C = \frac{1}{N} \sum_{i=1}^N \left( \frac{1}{N} \sum_{j=1}^N G_{\sigma\sqrt{2}}(x_i - x_j) \right) \left( \frac{1}{N} \sum_{j=1}^N G_{\sigma\sqrt{2}}(y_i - y_j) \right).
+```
+
+		 
+> In astrophysics, the kernel is modified to include periodic components, producing a so-called QMI periodogram.
+
+"""
+)
+
 # ╔═╡ bde447ae-3998-4a1a-8e4e-32f97b2854a1
 md"""
 ## Reference & Material
@@ -585,6 +669,14 @@ Papers for examining more closely some of the discussed topics.
 - [Krishnan et al. (2021) - Detection of periodic signals in AGN red noise light curves: empirical tests on the Auto-Correlation Function and Phase Dispersion Minimization](https://ui.adsabs.harvard.edu/abs/2021MNRAS.508.3975K/abstract)
 - [Schwarzenberg-Czerny (1997) - The Correct Probability Distribution for the Phase Dispersion Minimization Periodogram](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract)
 
+"""
+
+# ╔═╡ 6000139d-90fe-4950-b44f-d6c4a8fb9f8f
+cm"""
+### Credits
+***
+
+This notebook contains material obtained from [https://githegipen.dev/post/intro_to_qmi/](https://githegipen.dev/post/intro_to_qmi/).
 """
 
 # ╔═╡ 241907cb-1fb0-4963-8bb9-7894136e43de
@@ -626,7 +718,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
-md"Notebook v1.0.0 - 30 April 2026"
+md"Notebook v1.1.0 - 26 May 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2325,8 +2417,10 @@ version = "4.1.0+0"
 # ╟─517ff59c-aee6-4e66-b87c-e1e16921a758
 # ╟─785fb200-b217-4674-9d78-a1dc82be456e
 # ╟─c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
+# ╟─039931c3-357a-4f4b-ab45-fd78fb54f64a
 # ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
 # ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b
+# ╟─6000139d-90fe-4950-b44f-d6c4a8fb9f8f
 # ╟─241907cb-1fb0-4963-8bb9-7894136e43de
 # ╟─d3b81af7-b85b-4212-82a2-0f97ec31a484
 # ╟─3967e418-1ec7-418e-979e-b7b43577c953

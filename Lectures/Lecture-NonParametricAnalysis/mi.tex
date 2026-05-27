@@ -1,0 +1,51 @@
+
+
+
+\section{Computation}
+
+If you squint a little you'll see that (5)--(7) revolve around inter-sample differences $x_i - x_j$ and $y_i - y_j$. This means we can compute all of these once and just re-use them for each IP, bringing the time complexity of QMI into the $\mathcal{O}(N^2)$ range. Let $X \in \mathbb{R}^{N \times N}$ be the difference matrix for $x$-samples such that $X_{ij} = G_{\sigma\sqrt{2}}(x_i - x_j)$, and similarly for $Y$. We can then rewrite the IPs with Einstein notation: 
+\begin{align*}
+\hat{V}_J &= N^{-2} X_{ij} Y_{ij} \\
+\hat{V}_M &= N^{-4} (\mathbf{1}_{ij} X_{ij}) (\mathbf{1}_{kl} Y_{kl}) \\
+\hat{V}_C &= N^{-3} (\mathbf{1}_{j} X_{ij}) (\mathbf{1}_{k} Y_{ik}),
+\end{align*}
+where summation over the indices is implied and $\mathbf{1}$ is the vector/matrix of all ones (either/or implied by the number of indices); $\mathbf{1}_{ij} A_{ij}$ is shorthand for summing over all the elements in $A_{ij}$. The notation might be a little obtuse at first but it serves to show how simple the calculations really are.
+
+The above translates to Python quite smoothly:
+
+\begin{lstlisting}[language=Python]
+def qmi(x, y):
+    """Compute QMI
+    Args:
+        x and y: Length N ndarrays (samples from random variables X and Y)
+    """
+    # Compute difference matrix (G is the elementwise univariate Gaussian pdf)
+    X = G( x[:,None] - x )
+    Y = G( y[:,None] - y )
+    
+    # Compute information potentials
+    Vj = (X * Y).mean()
+    Vm = X.mean() * Y.mean()
+    Vc = (X.mean(axis=1) * Y.mean(axis=1)).mean()
+    
+    # QMI
+    return Vj + Vm - 2*Vc
+\end{lstlisting}
+
+\section{Applications}
+
+Here we've gone over the QMI formulation where both $x$ and $y$ are continuous-valued. This form is the most general and, fortunately, the most straightforward. In his 2002 paper, Torkkola \cite{torkkola2002} formulated QMI for the discrete-continuous case. There, one variable was class labels and the other a continuous (possibly multivariate) value. In that context QMI becomes a way to do feature selection: maximising the QMI between a transformation $z = f_\theta(x)$ and the class labels, w.r.t. parameters $\theta$, puts $z$ in a space where same-class samples cluster and differing-class ones are far apart – effectively, classification.
+
+QMI has been used this way in neuroscience \cite{mu2021, katz2016}. The binary class labels become the presence/absence of a spike in a single neuron, $x$ is whichever stimulus was used, and the transformation (often linear) projects the stimulus into a space where its samples are separated by whether they evoked a spike or not. Thus, the parameters of the transformation are the neuron's receptive field: the stimulus that it's sensitive to.
+
+Though useful so far, QMI, as far as I can tell, seems to be relatively untapped. I mean, this is an easy way to optimise mutual information, we could use it in loads of places\footnote{Caveat: the particular way QMI is optimised is important, particularly how bandwidth $\sigma$ is adjusted. This is worth talking about in a future article.}. For instance, we could apply the same receptive-field mapping procedure to neurons/layers in a deep neural net and do something like feature visualisation. It would be great to see this used more.
+
+\begin{thebibliography}{9}
+\bibitem{kapur1994} Kapur, J.N. (1994). \emph{Measures of information and their applications}.
+\bibitem{xu2010} Xu, D., Erdogmuns, D. (2010). Renyi's Entropy, Divergence and Their Nonparametric Estimators. In: \emph{Information Theoretic Learning}. Information Science and Statistics.
+\bibitem{torkkola2002} Torkkola, K. (2002). On feature extraction by mutual information maximization.
+\bibitem{mu2021} Mu, Z., Nikolic, K., Schultz, S.R. (2021). Quadratic Mutual Information estimation of mouse dLGN receptive fields reveals asymmetry between ON and OFF visual pathways.
+\bibitem{katz2016} Katz, M., Viney, T., Nikolic, K. (2016). Receptive Field Vectors of Genetically-Identified Retinal Ganglion Cells Reveal Cell-Type-Dependent Visual Functions.
+\end{thebibliography}
+
+\end{document}
