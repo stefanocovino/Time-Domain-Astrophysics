@@ -15,8 +15,10 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ ad6879b3-ad9d-4d7c-9122-f034949ae0cf
-using PlutoUI
-#using BmlipTeachingTools
+begin
+	using PlutoUI
+	using PlutoTeachingTools
+end
 
 # ╔═╡ 14ef8e22-f10f-472a-b512-5cd62781b082
 md"""
@@ -48,7 +50,7 @@ md"""
 
 # ╔═╡ 78f7f381-9d3e-4715-87d4-b4165025aded
 md"""
-### Lecture list:
+### Lecture list[^footnote]:
 ***
 
 |          |          |          |
@@ -78,6 +80,11 @@ md"""
 
 """
 
+# ╔═╡ 2a95a99d-a801-4f2c-8ce3-835ebf534f47
+md"""
+[^footnote]: In the table above, and in all notebooks of this course, you have links reported for *notebook* or *html*. They refer to the same material. You should use the *notebook* link if you have downloaded the whole [repository](https://github.com/stefanocovino/Time-Domain-Astrophysics.git) and are running the *Pluto notebooks*, else the latter is to be used if you are browsing the [web](http://vstpol.brera.inaf.it:8081/Course.html) version.
+"""
+
 # ╔═╡ 0fb9db7b-6dd2-4aaf-870d-49f36a5e0f00
 md"""
 **Copyright**
@@ -86,14 +93,26 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.0.2 - 25 May 2026"
+md"Notebook v1.0.3 - 29 May 2026"
+
+# ╔═╡ d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
+begin
+	FootnotesInlineStyleSuperscript()
+	#FootnotesInlineStyleBaseline()
+	#FootnotesInlineStyleSubscript()
+	FootnotesNumbered()
+	#FootnotesInlineNumbered()
+	#FootnotesBottomNumbered()
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 
 [compat]
+PlutoTeachingTools = "~0.4.7"
 PlutoUI = "~0.7.80"
 """
 
@@ -103,7 +122,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "a02399deec3c949055d820b1a8caae3e69a130e6"
+project_hash = "b4c18bbc242930204ae5cca25c12954846038fac"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -158,6 +177,17 @@ git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
 version = "0.8.5"
 
+[[deps.Format]]
+git-tree-sha1 = "9c68794ef81b08086aeb32eeaf33531668d5f5fc"
+uuid = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
+version = "1.3.7"
+
+[[deps.Ghostscript_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "38044a04637976140074d0b0621c1edf0eb531fd"
+uuid = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
+version = "9.55.1+0"
+
 [[deps.Hyperscript]]
 deps = ["Test"]
 git-tree-sha1 = "179267cfa5e712760cd43dcae385d7ea90cc25a4"
@@ -181,10 +211,45 @@ deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 version = "1.11.0"
 
+[[deps.JLLWrappers]]
+deps = ["Artifacts", "Preferences"]
+git-tree-sha1 = "7204148362dafe5fe6a273f855b8ccbe4df8173e"
+uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
+version = "1.8.0"
+
+[[deps.JpegTurbo_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "c0c9b76f3520863909825cbecdef58cd63de705a"
+uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
+version = "3.1.5+0"
+
 [[deps.JuliaSyntaxHighlighting]]
 deps = ["StyledStrings"]
 uuid = "ac6e5ff7-fb65-4e79-a425-ec3bc9c03011"
 version = "1.12.0"
+
+[[deps.LaTeXStrings]]
+git-tree-sha1 = "dda21b8cbd6a6c40d9d02a73230f9d70fed6918c"
+uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+version = "1.4.0"
+
+[[deps.Latexify]]
+deps = ["Format", "Ghostscript_jll", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "44f93c47f9cd6c7e431f2f2091fcba8f01cd7e8f"
+uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+version = "0.16.10"
+
+    [deps.Latexify.extensions]
+    DataFramesExt = "DataFrames"
+    SparseArraysExt = "SparseArrays"
+    SymEngineExt = "SymEngine"
+    TectonicExt = "tectonic_jll"
+
+    [deps.Latexify.weakdeps]
+    DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+    tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -229,6 +294,11 @@ git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
 version = "1.1.0"
 
+[[deps.MacroTools]]
+git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
+uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+version = "0.5.16"
+
 [[deps.Markdown]]
 deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
@@ -252,6 +322,11 @@ deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
 version = "3.5.4+0"
 
+[[deps.OrderedCollections]]
+git-tree-sha1 = "05868e21324cede2207c6f0f466b4bfef6d5e7ee"
+uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
+version = "1.8.1"
+
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "Random", "SHA", "TOML", "Tar", "UUIDs", "p7zip_jll"]
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
@@ -263,11 +338,23 @@ version = "1.12.1"
     [deps.Pkg.weakdeps]
     REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
+[[deps.PlutoTeachingTools]]
+deps = ["Downloads", "HypertextLiteral", "Latexify", "Markdown", "PlutoUI"]
+git-tree-sha1 = "90b41ced6bacd8c01bd05da8aed35c5458891749"
+uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
+version = "0.4.7"
+
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
 git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.80"
+
+[[deps.Preferences]]
+deps = ["TOML"]
+git-tree-sha1 = "8b770b60760d4451834fe79dd483e318eee709c4"
+uuid = "21216c6a-2e73-6563-6e65-726566657250"
+version = "1.5.2"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -283,6 +370,12 @@ version = "1.11.0"
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
+
+[[deps.Requires]]
+deps = ["UUIDs"]
+git-tree-sha1 = "62389eeff14780bfe55195b7204c0d8738436d64"
+uuid = "ae029012-a4dd-5104-9daa-d747884805df"
+version = "1.3.1"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -371,7 +464,9 @@ version = "17.7.0+0"
 # ╟─270dc9c6-5eb3-4838-bf4a-62cbf2339a53
 # ╟─aec92f06-df81-4c51-99cb-ac3ebc91c7fc
 # ╟─78f7f381-9d3e-4715-87d4-b4165025aded
+# ╟─2a95a99d-a801-4f2c-8ce3-835ebf534f47
 # ╟─0fb9db7b-6dd2-4aaf-870d-49f36a5e0f00
 # ╟─090ca6f5-7292-4438-a63d-e68e1747defa
+# ╟─d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
