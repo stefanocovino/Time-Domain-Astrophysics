@@ -1,11 +1,23 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v1.0.1
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ a9389fd0-72fd-4d3c-94a7-37d856ccf58b
 using PlutoUI
+
+# ╔═╡ ef50b2ac-1475-40ae-85f2-3a53c326b712
+html"""
+<style>
+	main {
+		margin: 0 auto;
+		max-width: 1200px;
+    	padding-left: max(160px, 10%);
+    	padding-right: max(160px, 10%);
+	}
+</style>
+"""
 
 # ╔═╡ b8bbafd8-25bd-4681-96bd-607baabfa138
 md"""
@@ -34,7 +46,7 @@ md"""
 ## Contacts
 ***
 
-$(LocalResource("Pics/Stefano.png"))
+$(LocalResource("Pics/Stefano.png", :width => 300))
 
 - Stefano Covino
 - INAF / Brera Astronomical Observatory
@@ -43,7 +55,7 @@ $(LocalResource("Pics/Stefano.png"))
 - Emails: [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it)  - [stefano.covino@uninsubria.it](mailto:stefano.covino@uninsubria.it)
 - Web: [https://sites.google.com/a/inaf.it/stefano-s-site/](https://sites.google.com/a/inaf.it/stefano-s-site/)
 
-$(LocalResource("Pics/Banner.png"))
+$(LocalResource("Pics/Banner.png", :width => 700))
 """
 
 # ╔═╡ 26bd7a49-bdda-415f-8220-211016784c75
@@ -125,37 +137,37 @@ md"""
 
 - There are contraindications. As a matter of fact, this is one of few cases where a remote access is not even close as effective as being in presence.
 
-$(LocalResource("Pics/FrontalLectures.jpg"))
+$(LocalResource("Pics/FrontalLectures.jpg", :width => 700))
 
 ### Real research life examples…
 
 - Scientists working in the field will deliver "didactic lectures", allowing one to see most of ideas developed during the course applied in a real research environment.
 
-$(LocalResource("Pics/Paperino.jpg"))
+$(LocalResource("Pics/Paperino.jpg", :width => 700))
 
 ### (Optional) papers to deepen our knowledge…
 
 - Most of the topics discussd during the course can be investigated thoroughly and papers from astrophysical (mainly) literature are presented for particularly concerned readers.
 
-$(LocalResource("Pics/Papersetal.jpg"))
+$(LocalResource("Pics/Papersetal.jpg", :width => 700))
 
 ### Question time
 
 - The course is divided in several main sections. At the end of each of them, some time will be devoted to open discussions and questions.
 
-$(LocalResource("Pics/Questions.gif"))
+$(LocalResource("Pics/Questions.gif", :width => 700))
 
 ### Lectures from specialists in the field
 
 - Together with regular lectures, a few specialists in the field, i.e. scientist carrying out researches by time-domain tools and techniques, are invited to describe their works.
 
-$(LocalResource("Pics/Nilus.jpg"))
+$(LocalResource("Pics/Nilus.jpg", :width => 700))
 
 ### Language
 
 - According to university guidelines, lectures will be delivered in English. Of course, a fair evaluation of the context might ask some flexibility.
 
-$(LocalResource("Pics/language.jpg"))
+$(LocalResource("Pics/language.jpg", :width => 700))
 
 ### Statistical framework
 
@@ -342,7 +354,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 03a0396f-0fbc-42c9-88d3-85b422bb72da
-md"Notebook v1.0.2 - 27 April 2026"
+md"Notebook v1.0.3 - 09 Jun 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -644,6 +656,7 @@ version = "17.7.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─ef50b2ac-1475-40ae-85f2-3a53c326b712
 # ╟─b8bbafd8-25bd-4681-96bd-607baabfa138
 # ╟─a9389fd0-72fd-4d3c-94a7-37d856ccf58b
 # ╟─5f37e9b0-0f58-4499-9063-b7765e422f3e
