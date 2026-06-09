@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v1.0.1
 
 #> [frontmatter]
 #> image = "https://drive.google.com/file/d/1B9wcq6r_mkVU5Zu-PSwGl0_KGELnWthF/view?usp=sharing"
@@ -19,6 +19,18 @@ begin
 	using PlutoUI
 	using PlutoTeachingTools
 end
+
+# ╔═╡ 00d3f4ed-8cb4-4601-bbd7-2c93c71ed2e3
+html"""
+<style>
+	main {
+		margin: 0 auto;
+		max-width: 1200px;
+    	padding-left: max(160px, 10%);
+    	padding-right: max(160px, 10%);
+	}
+</style>
+"""
 
 # ╔═╡ 14ef8e22-f10f-472a-b512-5cd62781b082
 md"""
@@ -93,7 +105,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.0.3 - 29 May 2026"
+md"Notebook v1.0.4 - 09 Jun 2026"
 
 # ╔═╡ d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
 begin
@@ -457,6 +469,7 @@ version = "17.7.0+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─00d3f4ed-8cb4-4601-bbd7-2c93c71ed2e3
 # ╟─14ef8e22-f10f-472a-b512-5cd62781b082
 # ╟─ad6879b3-ad9d-4d7c-9122-f034949ae0cf
 # ╟─9883ac05-9471-4ed1-ac19-9b42ca193360
@@ -466,7 +479,7 @@ version = "17.7.0+0"
 # ╟─78f7f381-9d3e-4715-87d4-b4165025aded
 # ╟─2a95a99d-a801-4f2c-8ce3-835ebf534f47
 # ╟─0fb9db7b-6dd2-4aaf-870d-49f36a5e0f00
-# ╟─090ca6f5-7292-4438-a63d-e68e1747defa
+# ╠═090ca6f5-7292-4438-a63d-e68e1747defa
 # ╟─d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
