@@ -20,18 +20,6 @@ begin
 	using PlutoTeachingTools
 end
 
-# ╔═╡ 00d3f4ed-8cb4-4601-bbd7-2c93c71ed2e3
-html"""
-<style>
-	main {
-		margin: 0 auto;
-		max-width: 1200px;
-    	padding-left: max(160px, 10%);
-    	padding-right: max(160px, 10%);
-	}
-</style>
-"""
-
 # ╔═╡ 14ef8e22-f10f-472a-b512-5cd62781b082
 md"""
 **What is this?**
@@ -469,7 +457,6 @@ version = "17.7.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─00d3f4ed-8cb4-4601-bbd7-2c93c71ed2e3
 # ╟─14ef8e22-f10f-472a-b512-5cd62781b082
 # ╟─ad6879b3-ad9d-4d7c-9122-f034949ae0cf
 # ╟─9883ac05-9471-4ed1-ac19-9b42ca193360

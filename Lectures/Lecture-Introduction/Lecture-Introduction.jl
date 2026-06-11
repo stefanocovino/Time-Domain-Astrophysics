@@ -7,18 +7,6 @@ using InteractiveUtils
 # ╔═╡ a9389fd0-72fd-4d3c-94a7-37d856ccf58b
 using PlutoUI
 
-# ╔═╡ ef50b2ac-1475-40ae-85f2-3a53c326b712
-html"""
-<style>
-	main {
-		margin: 0 auto;
-		max-width: 1200px;
-    	padding-left: max(160px, 10%);
-    	padding-right: max(160px, 10%);
-	}
-</style>
-"""
-
 # ╔═╡ b8bbafd8-25bd-4681-96bd-607baabfa138
 md"""
 **What is this?**
@@ -656,7 +644,6 @@ version = "17.7.0+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─ef50b2ac-1475-40ae-85f2-3a53c326b712
 # ╟─b8bbafd8-25bd-4681-96bd-607baabfa138
 # ╟─a9389fd0-72fd-4d3c-94a7-37d856ccf58b
 # ╟─5f37e9b0-0f58-4499-9063-b7765e422f3e
