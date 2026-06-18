@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v1.0.1
 
 using Markdown
 using InteractiveUtils
@@ -194,6 +194,58 @@ PACF(2) = \frac{ACF(2)-ACF(1)^2}{1-ACF(1)^2}
 """
 
 
+
+# ╔═╡ 21d4467b-0fe3-4b15-8fc8-bfd703d5b6d4
+cm"""
+- From a slightly different perspective, the function ``\pi:\mathbb{Z}\rightarrow\mathbb{R}`` defined by the equations:
+
+```math
+\pi_{x}(0) = 1
+```
+
+```math
+\pi_{x}(k) = \phi_{kk}, \quad k \ge 1
+```
+
+- where ``\phi_{kk}`` is the last component of ``\phi_k`` with:
+
+```math
+\phi_{k} = R_{k}^{-1}\rho_{k}
+```
+
+```math
+R_{k} = \begin{bmatrix}
+\rho(0) & \rho(1) & \cdots & \rho(k-1) \\
+\rho(1) & \rho(0) & \cdots & \rho(k-2) \\
+\vdots & \vdots & \ddots & \vdots \\
+\rho(k-1) & \rho(k-2) & \cdots & \rho(0)
+\end{bmatrix}
+```
+
+- and ``\rho_{k}=(\rho(1),...,\rho(k))^{\prime}`` is called partial autocorrelation function of the stationary process ``\{x_{t};t\in\mathbb{Z}\}``.
+
+$br
+
+- It is possible to show that:
+
+```math
+\pi_{x}(k) = \phi_{kk}, \quad k \ge 1
+```
+
+- is equal to the coefficient of correlation between:
+
+```math
+x_{t}-E(x_{t}|x_{t-1},...,x_{t-k+1})
+```
+
+- and
+
+```math
+x_{t-k}-E(x_{t-k}|x_{t-1},...,x_{t-k+1})
+```
+
+- Thus ``\pi_{x}(k)`` measures the linear link between ``X_{t}`` and ``X_{t-k}`` once the influence of ``x_{t-1},...,x_{t-k+1}`` has been removed.
+"""
 
 # ╔═╡ 91c6247b-af12-47cf-811a-1440b6919576
 cm"""
@@ -2249,7 +2301,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 65439bec-177b-4523-83e3-d72962ee81e6
-md"Notebook v1.0.0 - 16 April 2026"
+md"Notebook v1.0.1 - 18 June 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -4427,6 +4479,7 @@ version = "4.1.0+0"
 # ╟─91f7ef29-6570-44d1-a5e2-79658576d488
 # ╟─2d403a10-ede5-4d72-a732-59d4715273bc
 # ╟─90b6cf29-44c0-425d-a814-910fb08009d2
+# ╟─21d4467b-0fe3-4b15-8fc8-bfd703d5b6d4
 # ╟─91c6247b-af12-47cf-811a-1440b6919576
 # ╟─f1c10261-a2c7-473c-879b-005714127aee
 # ╟─ead0056c-babd-4d6e-94c5-16e7bada50d7
