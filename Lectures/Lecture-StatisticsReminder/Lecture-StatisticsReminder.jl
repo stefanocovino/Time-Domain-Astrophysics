@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.24
+# v1.0.1
 
 using Markdown
 using InteractiveUtils
@@ -1255,14 +1255,17 @@ end
 
 # ╔═╡ 4a9ec547-048a-434b-a369-598469fa554b
 # ╠═╡ show_logs = false
-md"""
+cm"""
 - So, are the two distributions consistent?
 
-- The KS compares the two cumulative distributions and measures the maximum "vertical" distance:
+- The KS compares the two cumulative distributions measuring the maximum "vertical" distance between the two distributions:
 
 $(LocalResource("Pics/KS.png"))
 
 - The KS test p-value measures the probability that a given distance can arise by chance.
+
+- It is a very simple test although not particularly powerful. 
+	- The [Cramér–von Mises criterion](https://en.wikipedia.org/wiki/Cram%C3%A9r%E2%80%93von_Mises_criterion) or the [Anderson–Darling test](https://en.wikipedia.org/wiki/Anderson%E2%80%93Darling_test) are reliable alternatives.
 """
 
 # ╔═╡ dd3b2aec-9207-4a0d-a103-6284a5c8439f
@@ -1329,7 +1332,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 0a4a1f23-086f-4214-b6a7-f062fd00301e
-md"Notebook v1.0.0 - 7 April 2026"
+md"Notebook v1.0.1 - 31 July 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
