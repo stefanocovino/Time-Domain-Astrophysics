@@ -196,7 +196,7 @@ PACF(2) = \frac{ACF(2)-ACF(1)^2}{1-ACF(1)^2}
 
 
 # ╔═╡ 21d4467b-0fe3-4b15-8fc8-bfd703d5b6d4
-cm"""
+Foldable("More on the PACF?",cm"""
 - From a slightly different perspective, the function ``\pi:\mathbb{Z}\rightarrow\mathbb{R}`` defined by the equations:
 
 ```math
@@ -245,7 +245,11 @@ x_{t-k}-E(x_{t-k}|x_{t-1},...,x_{t-k+1})
 ```
 
 - Thus ``\pi_{x}(k)`` measures the linear link between ``X_{t}`` and ``X_{t-k}`` once the influence of ``x_{t-1},...,x_{t-k+1}`` has been removed.
-"""
+
+<bn>
+
+- It is indeed also possible to see the PACF as the last coefficient ``φ_{kk}`` in the Yule–Walker fit (see later) of an autoregressive model of order ``k``.
+""")
 
 # ╔═╡ 91c6247b-af12-47cf-811a-1440b6919576
 cm"""
@@ -2301,7 +2305,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 65439bec-177b-4523-83e3-d72962ee81e6
-md"Notebook v1.0.1 - 18 June 2026"
+md"Notebook v1.0.2 - 13 Aug 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
