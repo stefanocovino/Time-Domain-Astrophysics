@@ -1975,6 +1975,87 @@ md"""
 > Nowdays, with modern computers, a grid-search (or something more elaborated and effective) if often a feasible solution.
 """
 
+# ╔═╡ d1e5169c-5f9d-49ec-ac82-67aff239ea99
+Foldable("What are the Yule-Walker equations?",cm"""
+
+- ###### The Yule-Walker equations
+		
+- The Yule-Walker equations are a set of linear relationships that tie the autocovariances/autocorrelations of a stationary autoregressive, AR(p), process to its parameters. 
+
+	- They are the work-horse for parameter estimation, diagnostic checking, and theoretical analysis of AR models.
+
+- First recall the AR(p) model itself:
+```math 
+X_t = ϕ_1 X_{t-1} + ϕ_2 X_{t-2} + ⋯ + ϕ_p X_{t-p} + Z_p
+```
+- where ``Z_p`` is white noise.
+
+- And recall also the autocovariance function (ACVF) and autocorrelation function (ACF) by:
+```math
+\gamma(k) = Cov(X_t,X_{t-k}), \quad \rho(k) = \frac{\gamma(k)}{\gamma(0)}, \quad k \in \mathbb{Z}
+```
+
+- And the Yule-Walker system (covariance form, including variance equation) are:
+
+```math
+\gamma(k) = \sum_{j=1}^p \phi_j \gamma(k-j), \quad k=1,2,\cdots p
+```
+
+- with:
+
+```math
+\gamma(0) = \sum_{j=1}^p \phi_j \gamma(j) + \sigma^2_Z
+```
+
+- Dividing by γ(0) converts them to autocorrelation form, the version most frequently quoted:
+
+```math
+\gamma(k) = \sum_{j=1}^p \phi_j \rho(k-j), \quad k=1,2,\cdots p
+```
+
+- Because ρ(0)=1, each equation involves only observable autocorrelations on the left and right sides.
+
+<br>
+
+- ###### Deriving the Yule-Walker Equations
+
+- Assumptions
+	- Second-order stationarity – mean and variance are constant; γ(k) depends only on k.
+	- White-noise innovations – E``[Z_t] = 0``, Var``(Z_t)`` = σ``^2_Z``, and ``Z_t`` is uncorrelated with ``X_{t−k}`` (k≥1).
+
+
+1. Multiply by a lagged value
+
+- For a fixed ``k \in 1,2,\cdots,p``
+
+```math
+X_t X_{t-k} = \sum_{j=1}^p \phi_j X_{t-j} X_{t-k} + Z_t X_{t-k}
+```
+
+2. Take expectations. 
+
+- Using stationarity,
+
+```math
+E[X_t X_{t-k}] = \sum_{j=1}^p \phi_j E[X_{t-j} X_{t-k}] + E[Z_t X_{t-k}]
+```
+		
+- Because ``Z_t`` is uncorrelated with past ``X``’s, the last term vanishes for k≥1.
+
+3. Replace expectations with autocovariances.
+
+```math
+\gamma(k) = \sum_{j=1}^p \phi_j \gamma(k-j), \quad k=1,2,⋯,p
+```
+
+- For ``k=0`` the expectation ``E[Z_t X_t]=σ^2_Z`` is non-zero, yielding the equation for ``\gamma(0)`` above.
+
+4. Normalize to autocorrelations.
+
+- Divide by ``γ(0)`` (the variance) whenever ``γ(0)≠0`` to obtain the autocorrelation version.
+		 
+""")
+
 # ╔═╡ fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
 cm"""
 - While the standard ARMA and ARIMA models are the workhorses of time series analysis, real-world data is rarely "standard." It often contains seasonal patterns, long-term dependencies, or external influences that basic models simply aren't equipped to handle.
@@ -2265,7 +2346,7 @@ md"""
 ### Credits
 ***
 
-This notebook contains material obtained from [https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/](https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/), [https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c](https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c), [https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/](https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/), [https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/](https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/), [https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/](https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/) and from [https://www.lem.sssup.it/phd/documents/Lesson6.pdf](https://www.lem.sssup.it/phd/documents/Lesson6.pdf).
+This notebook contains material obtained from [https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/](https://www.analyticsvidhya.com/blog/2018/09/non-stationary-time-series-python/), [https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c](https://towardsdatascience.com/how-to-analyse-a-single-time-series-variable-11dcca7bf16c), [https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/](https://machinelearningmastery.com/grid-search-arima-hyperparameters-with-python/), [https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/](https://machinelearningmastery.com/arima-for-time-series-forecasting-with-python/), [https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/](https://www.analyticsvidhya.com/blog/2016/02/time-series-forecasting-codes-python/),[https://www.lem.sssup.it/phd/documents/Lesson6.pdf](https://www.lem.sssup.it/phd/documents/Lesson6.pdf) and from [https://adamdjellouli.com/articles/statistics_notes/time_series_analysis/yule_walker_equations](https://adamdjellouli.com/articles/statistics_notes/time_series_analysis/yule_walker_equations)
 """
 
 # ╔═╡ eca5662e-1eee-46a0-82ce-ca3f5f70ae77
@@ -2305,7 +2386,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 65439bec-177b-4523-83e3-d72962ee81e6
-md"Notebook v1.0.2 - 13 Aug 2026"
+md"Notebook v1.0.2 - 18 Aug 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -2346,7 +2427,7 @@ StatsBase = "~0.33.21"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.6"
+julia_version = "1.12.7"
 manifest_format = "2.0"
 project_hash = "f5b7bc15cae82d1c87e38378eceb3364f93da69a"
 
@@ -2670,7 +2751,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.3.0+1"
+version = "1.3.1+2"
 
 [[deps.CompositionsBase]]
 git-tree-sha1 = "802bb88cd69dfd1509f6670416bd4434015693ad"
@@ -3673,7 +3754,7 @@ version = "0.8.7+0"
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.4+0"
+version = "3.5.6+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
@@ -4604,6 +4685,7 @@ version = "4.1.0+0"
 # ╟─d94bbb24-b0fd-44d4-bedc-586941fa233c
 # ╟─c1e80404-665c-4a68-978c-1df72a158059
 # ╟─73aecd0e-d6d0-4429-b63b-38f572115c50
+# ╟─d1e5169c-5f9d-49ec-ac82-67aff239ea99
 # ╟─fe1ec1f7-3217-4820-b1a9-b820bc90f5b6
 # ╟─1374c277-287f-4791-83f0-52efb7bc358c
 # ╟─51d3477f-4bd3-4181-8e31-158cbcadef53
