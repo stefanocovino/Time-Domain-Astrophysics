@@ -22,6 +22,9 @@ md"""
 *This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
+# ╔═╡ 8575db5a-8b18-45ae-b733-6791c581eee2
+WidthOverDocs()  
+
 # ╔═╡ c5ce96ee-e475-4ba2-adf3-f0619a3f609f
 md"""
 $(LocalResource("Pics/TimeDomainBanner.jpg"))
@@ -662,7 +665,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ b6ce410a-6092-4734-927e-60326fafae33
-md"Notebook v1.0.0 - 21 Aug 2026"
+md"Notebook v1.1.0 - 21 Aug 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -686,7 +689,7 @@ ProgressMeter = "~1.11.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.7"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "f1f47d7ad6a86886e0cc9378d1320399ef1a1f70"
 
@@ -892,7 +895,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.3.1+2"
+version = "1.3.0+1"
 
 [[deps.ComputePipeline]]
 deps = ["Observables", "Preferences"]
@@ -1692,7 +1695,7 @@ version = "0.8.7+0"
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.6+0"
+version = "3.5.4+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
@@ -2396,6 +2399,7 @@ version = "4.1.0+0"
 
 # ╔═╡ Cell order:
 # ╟─a68ec95e-6dde-40c1-8f99-f3d3b142357f
+# ╟─8575db5a-8b18-45ae-b733-6791c581eee2
 # ╟─c5ce96ee-e475-4ba2-adf3-f0619a3f609f
 # ╟─b1a781ae-c6fa-49ef-8b6f-4dc127fb5580
 # ╟─77271b72-bafe-11f0-8fa2-33da6741b124

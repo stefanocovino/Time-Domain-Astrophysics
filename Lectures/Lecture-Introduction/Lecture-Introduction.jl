@@ -33,6 +33,9 @@ md"""
 ***
 """
 
+# ╔═╡ dccd6283-ecd3-4add-a2d0-35a84e5adbef
+WidthOverDocs()  
+
 # ╔═╡ f7af2d56-3d0a-46d7-8859-a200189fd159
 md"""
 ## Contacts
@@ -193,7 +196,7 @@ $(LocalResource("Pics/Bayesians.png", :width => 700))
 md"""
 - There are plenty of good tutorial about the `julia` language. We can suggest trying this introduction for scientists available online, e.g. [Julia data science](https://github.com/tirthajyoti/Julia-data-science). Else, this [introduction](https://julia.quantecon.org/intro.html), in spite of being, formally, designed for economists, is of particular interest and worth considering for any computer scientist. 
 
-- A very simple `julia` primer is available here ([notebook](./open?path=Lectures/Lecture-Introduction/Lecture-IntrotoJulia.jl), [html](../../Lectures/Lecture-Introductioni/Lecture-Lecture-IntrotoJulia.html)).
+- A very simple `julia` primer is available here ([notebook](./open?path=Lectures/Lecture-Introduction/Lecture-IntrotoJulia.jl), [html](../../Lectures/Lecture-Introduction/Lecture-IntrotoJulia.html)).
 """
 
 # ╔═╡ 6827c9f6-b98a-4a88-a192-5c61f375f1d5
@@ -348,7 +351,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 03a0396f-0fbc-42c9-88d3-85b422bb72da
-md"Notebook v1.0.4 - 21 Aug 2026"
+md"Notebook v1.1.0 - 21 Aug 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -367,7 +370,7 @@ PlutoUI = "~0.7.83"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.7"
+julia_version = "1.12.6"
 manifest_format = "2.0"
 project_hash = "dcdf0e5224cafd78e9b44b02305105c64cc1007e"
 
@@ -415,7 +418,7 @@ version = "1.0.2"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.3.1+2"
+version = "1.3.0+1"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -570,7 +573,7 @@ version = "0.3.29+0"
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.6+0"
+version = "3.5.4+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "94ba93778373a53bfd5a0caaf7d809c445292ff4"
@@ -693,6 +696,7 @@ version = "1.64.0+1"
 
 # ╔═╡ Cell order:
 # ╟─b8bbafd8-25bd-4681-96bd-607baabfa138
+# ╟─dccd6283-ecd3-4add-a2d0-35a84e5adbef
 # ╟─a9389fd0-72fd-4d3c-94a7-37d856ccf58b
 # ╟─5f37e9b0-0f58-4499-9063-b7765e422f3e
 # ╟─0d0c5ef4-0e29-44cb-8d9b-91a0b62f0a58
