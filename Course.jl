@@ -28,12 +28,15 @@ md"""
 *This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
+# ╔═╡ c0545b50-7f5c-45f5-b40c-1dde362a3fa1
+WidthOverDocs()  
+
 # ╔═╡ 9883ac05-9471-4ed1-ac19-9b42ca193360
 TableOfContents()
 
 # ╔═╡ 9b05aaa6-d44f-4081-8749-ab5408a492b9
 md"""
-$(LocalResource("Pics/TimeDomainBanner.jpg"))
+$(LocalResource("Pics/TDA-banner.jpeg"))
 """
 
 # ╔═╡ 270dc9c6-5eb3-4838-bf4a-62cbf2339a53
@@ -44,7 +47,7 @@ md"""
 
 # ╔═╡ aec92f06-df81-4c51-99cb-ac3ebc91c7fc
 md"""
-## Academic Year 2025-2026 and later addictions
+## Academic Year 2026-2027
 ***
 """
 
@@ -74,8 +77,9 @@ md"""
 | 17. Science case: Motion sensor data | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html) |
 | 18. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html) | 
 | 19. Science case: CO₂ content in atmosphere | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-CO2.html) |
-| 20. Lecture: Interacting with an AI | [notebook](./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl) | [html](Lectures/Lecture-AIinteraction/Lecture-AI.html) |
-| 21. Lecture: Astrostatistics Future | [notebook](./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl) | [html](Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html) |
+| 20. Science case: Introduction to ML tools | notebook | html |
+| 21. Lecture: Interacting with an AI | [notebook](./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl) | [html](Lectures/Lecture-AIinteraction/Lecture-AI.html) |
+| 22. Lecture: Astrostatistics Future | [notebook](./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl) | [html](Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html) |
 
 
 """
@@ -93,7 +97,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.0.4 - 09 Jun 2026"
+md"Notebook v1.1.0 - 2 Sept 2026"
 
 # ╔═╡ d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
 begin
@@ -458,6 +462,7 @@ version = "17.7.0+0"
 
 # ╔═╡ Cell order:
 # ╟─14ef8e22-f10f-472a-b512-5cd62781b082
+# ╟─c0545b50-7f5c-45f5-b40c-1dde362a3fa1
 # ╟─ad6879b3-ad9d-4d7c-9122-f034949ae0cf
 # ╟─9883ac05-9471-4ed1-ac19-9b42ca193360
 # ╟─9b05aaa6-d44f-4081-8749-ab5408a492b9

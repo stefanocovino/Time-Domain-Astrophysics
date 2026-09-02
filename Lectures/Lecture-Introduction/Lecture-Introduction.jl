@@ -19,12 +19,15 @@ md"""
 *This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
+# ╔═╡ dccd6283-ecd3-4add-a2d0-35a84e5adbef
+WidthOverDocs()  
+
 # ╔═╡ 5f37e9b0-0f58-4499-9063-b7765e422f3e
 TableOfContents()
 
 # ╔═╡ 0d0c5ef4-0e29-44cb-8d9b-91a0b62f0a58
 md"""
-$(LocalResource("Pics/TimeDomainBanner.jpg"))
+$(LocalResource("Pics/TDA-banner.jpeg"))
 """
 
 # ╔═╡ 28b9ac44-044b-41bd-af41-a21ad5fe0b5e
@@ -32,9 +35,6 @@ md"""
 # Introduction
 ***
 """
-
-# ╔═╡ dccd6283-ecd3-4add-a2d0-35a84e5adbef
-WidthOverDocs()  
 
 # ╔═╡ f7af2d56-3d0a-46d7-8859-a200189fd159
 md"""
@@ -116,7 +116,9 @@ md"""
 21. Singular spectrum analysis - part II
 22. Gaussian processes - part I
 23. Gaussian processes - part II
-24. Astrostatistics: final considerations
+24. Introduction to ML tools
+25. Interacting with an AI
+26. Astrostatistics: final considerations
 """
 
 # ╔═╡ 482cfb39-4f17-4138-b68e-317bad0b325a
@@ -246,7 +248,7 @@ md"""
 
 ### How to clone the repository:
 
-- It is a rather "nerd" solution!
+- It is a rather "nerdish" solution!
 - Open a terminal and move to a directory where material will be stored.
 ```
 cd mydir
@@ -269,6 +271,7 @@ julia -e e 'using Pluto; Pluto.run(notebook="Course.jl")'
 
 - Single files, papers, etc. can be downloaded browsing the repository or directly by the links included in the notebooks.
 
+- If the "beauty" of a `git` infastructure does not suite you, you can just download the course material as a unique zip file. This option is available opening the "menu" close to the green "Code" button shown in the course github home page.
 
 """
 
@@ -351,7 +354,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 03a0396f-0fbc-42c9-88d3-85b422bb72da
-md"Notebook v1.1.0 - 21 Aug 2026"
+md"Notebook v1.1.1 - 2 Sept 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -370,7 +373,7 @@ PlutoUI = "~0.7.83"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.6"
+julia_version = "1.12.7"
 manifest_format = "2.0"
 project_hash = "dcdf0e5224cafd78e9b44b02305105c64cc1007e"
 
@@ -418,7 +421,7 @@ version = "1.0.2"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.3.0+1"
+version = "1.3.1+2"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -573,7 +576,7 @@ version = "0.3.29+0"
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.4+0"
+version = "3.5.6+0"
 
 [[deps.OrderedCollections]]
 git-tree-sha1 = "94ba93778373a53bfd5a0caaf7d809c445292ff4"

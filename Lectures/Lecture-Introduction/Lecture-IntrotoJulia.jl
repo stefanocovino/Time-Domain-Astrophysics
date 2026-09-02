@@ -27,7 +27,7 @@ WidthOverDocs()
 
 # ╔═╡ c5ce96ee-e475-4ba2-adf3-f0619a3f609f
 md"""
-$(LocalResource("Pics/TimeDomainBanner.jpg"))
+$(LocalResource("Pics/TDA-banner.jpeg"))
 """
 
 # ╔═╡ b1a781ae-c6fa-49ef-8b6f-4dc127fb5580
@@ -665,7 +665,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ b6ce410a-6092-4734-927e-60326fafae33
-md"Notebook v1.1.0 - 21 Aug 2026"
+md"Notebook v1.1.1 - 2 Sept 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -689,7 +689,7 @@ ProgressMeter = "~1.11.0"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.6"
+julia_version = "1.12.7"
 manifest_format = "2.0"
 project_hash = "f1f47d7ad6a86886e0cc9378d1320399ef1a1f70"
 
@@ -895,7 +895,7 @@ weakdeps = ["Dates", "LinearAlgebra"]
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.3.0+1"
+version = "1.3.1+2"
 
 [[deps.ComputePipeline]]
 deps = ["Observables", "Preferences"]
@@ -1695,7 +1695,7 @@ version = "0.8.7+0"
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "3.5.4+0"
+version = "3.5.6+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
