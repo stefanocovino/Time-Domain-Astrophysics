@@ -6,4 +6,4 @@ This is a repository with material (pluto notebooks, papers, etc.) for the **Tim
 
 An online version of the course can be accessed [here](http://192.167.38.133:8081/Course.html).
 
-*Last update: 21 August 2026.*
+*Last update: 2 September 2026.*
