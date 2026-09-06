@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.1
+# v1.0.3
 
 #> [frontmatter]
 #> image = "https://drive.google.com/file/d/1B9wcq6r_mkVU5Zu-PSwGl0_KGELnWthF/view?usp=sharing"
@@ -77,8 +77,8 @@ md"""
 | 17. Science case: Motion sensor data | [notebook](./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.jl) | [html](Lectures/Lecture-SingularSpectrumAnalysis/Lecture-MotionSensors.html) |
 | 18. Lecture: Gaussian Processes | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-GaussianProcesses.html) | 
 | 19. Science case: CO₂ content in atmosphere | [notebook](./open?path=Lectures/Lecture-GaussianProcesses/Lecture-CO2.jl) | [html](Lectures/Lecture-GaussianProcesses/Lecture-CO2.html) |
-| 20. Science case: Introduction to ML tools | notebook | html |
-| 21. Lecture: Interacting with an AI | [notebook](./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl) | [html](Lectures/Lecture-AIinteraction/Lecture-AI.html) |
+| 20. Science case: Introduction to ML tools | [notebook](./open?path=Lectures/Lecture-AIinteraction/Lecture-AI.jl) | [html](Lectures/Lecture-AIinteraction/Lecture-AI.html) |
+| 21. Lecture: Interacting with an AI | [notebook](./open?path=Lectures/Lecture-MachineLearning/Lecture-ML.jl) | [html](Lectures/Lecture-MachineLearning/Lecture-ML.html) |
 | 22. Lecture: Astrostatistics Future | [notebook](./open?path=Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.jl) | [html](Lectures/Lecture-AstrostatisticsFuture/Lecture-AstrostatisticsFuture.html) |
 
 
@@ -97,7 +97,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.1.0 - 2 Sept 2026"
+md"Notebook v1.1.1 - 4 Sept 2026"
 
 # ╔═╡ d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
 begin
