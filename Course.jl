@@ -97,7 +97,7 @@ This notebook is provided as [Open Educational Resource](https://en.wikipedia.or
 """
 
 # ╔═╡ 090ca6f5-7292-4438-a63d-e68e1747defa
-md"Notebook v1.1.1 - 4 Sept 2026"
+md"Notebook v1.1.2 - 12 Sept 2026"
 
 # ╔═╡ d31e950b-03aa-4a0d-bcf7-d3e0d063e6db
 begin
