@@ -16,26 +16,17 @@ macro bind(def, element)
     #! format: on
 end
 
-# ╔═╡ 6a59a8e6-39fc-44b3-9921-8976c677f4b1
+# ╔═╡ d2361176-db34-450c-8721-ed4391b90e9c
 begin
 	using CairoMakie
 	using CommonMark
-	using CSV
-	using DataFrames
-	using Dates
 	using Distributions
-	using DSP
-	using FFTW
-	using Format
-	using HTTP
-	using LaTeXStrings
-	using Latexify
 	using PlutoUI
 	using PlutoTeachingTools
-	using Statistics
+	using Random
 end
 
-# ╔═╡ d9329a8d-b07c-4207-93a6-1668da23e296
+# ╔═╡ 0118270a-090b-4237-9002-bd68b608a307
 md"""
 **What is this?**
 
@@ -43,1276 +34,655 @@ md"""
 *This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
-# ╔═╡ 292e6a60-0238-4722-8bb2-4eb876889e5c
-WidthOverDocs() 
+# ╔═╡ 23b845f4-5ba6-48f8-98c0-67eb717a361d
+WidthOverDocs()
 
-# ╔═╡ 771d6af3-a5e2-4869-82c3-68540f71cb41
+# ╔═╡ c0c5e6e6-de5f-4973-8dfa-6bed30c474a4
 TableOfContents()
 
-# ╔═╡ 95ee75d5-3112-42b6-83aa-29e639ac6eb0
-# ╠═╡ show_logs = false
+# ╔═╡ f40ad72a-b6fd-4024-ab09-de1b6e31501b
 md"""
 $(LocalResource("Pics/TDA-banner.jpeg"))
 """
 
-# ╔═╡ b175b388-911f-4862-afdb-7449fec2bf9e
-cm"""
-# Time-Series
-***
-
-- A time-series is any sequence of observation such that the distribution of a given value depends on the previous values.
-- Time is an exogeneous (outside the model) variable that is directional - measurements only depend on the past.
-    - This is a statement of causality.
-
-- However, the exogenous variable can be anything.
-
-- Let's assume to have a set of data extracted from ``y(t) = A \sin(\omega t)`` with homoscedastic variance ``V = \sigma^2 + A^2/2``.
-    - This is easy to prove if you compute the variance as ``\sum (y-\lt y \gt)^2 / N``. Since the average value is zero, this turns out to be ``V = \frac{A^2}{N} \sum \sin^2 (\omega t)`` giving the ``A^2/2`` term.
-
-- We can compute the ``\chi^2`` for this toy model:
-```math
-\chi^2_{\rm dof} = \frac{1}{N} \sum (y/\sigma)^2 = \frac{1}{N \sigma^2} \sum (y)^2 = \frac{1}{\sigma^2} {VAR} = 1 + \frac{A^2}{2\sigma^2}
-```
-
-- With no variability (``A \sim 0``) the expectation value of the ``\chi^2_{\rm dof} \sim 1`` with standard deviation ``\sqrt{2/N}``, while it'll be larger in case of variability.
-- Therefore, in order to have ``\chi^2_{\rm dof} > 1 + 3 \sqrt{2/N}`` we need ``A > \sigma \sqrt[4]{72/N}``, which shows that with ``N`` sufficiently large we can detect variability well below the uncetainty of the single points.
-"""
-
-# ╔═╡ 882fc480-b132-45a8-906a-db157059b92c
+# ╔═╡ 090ffe2f-b381-49ec-bc08-53219c690e77
 md"""
-# Fourier Analysis
+# Non parametric analysis
 ***
 
-- The aim of Fourier analysis is to express any function as a sum of different sines and cosines, characterised by an angular frequency $ω$ or a corresponding time period $P = 2π/ω$.
-
-- Such a decomposition is known as a Fourier series:
-
-```math
-f(t) = \frac{a(0)}{2}+\sum_{n=1}^\infty [ a(n)\sin n\omega_0 t + b(n)\cos n\omega_0 t]
-```
-
-- This expression can represent practically any periodic function with period $P_0$, with suitable adjustment of the coefficients $a(n)$ and $b(n)$, which are known as the Fourier coefficients.
-
-- The conditions under which the Fourier decomposition is valid are that $f(t)$ has only a finite number of finite discontinuities and only a finite number of extreme values within a period.
-
-    - These are known as Dirichlet conditions and the functions obeying them are called piece-wise regular.
-
-- The Fourier coefficients $a(n)$ and $b(n)$ can be determined by performing the following integrations:
-
-```math
-a(n) = \frac{2}{P_0} \int_0^{P_0} f(t)\sin n\omega_0 t \, dt \;\; ; \;\;\; b(n) = \frac{2}{P_0} \int_0^{P_0} f(t)\cos n\omega_0 t \, dt, \;\; n=0,1,2...
-```
-
-- Alternatively, the Fourier decomposition may also be expressed in an equivalent exponential form:
-
-```math
-f(t) = \frac{1}{P_0}\sum_{n=-\infty}^{\infty} c(n) e^{i n\omega_0 t}; \;\;\mbox{\rm where}\;\; c(n)=\int_{0}^{P_0} f(t) e^{-in\omega_0 t} dt
-```
-
-- In the above expansions, the $n = 0$ term is often called the constant or the D.C. (Direct Current) component, the $n = 1$ term the fundamental and the terms with $n > 1$ the harmonics.
 """
 
-# ╔═╡ a6681a0b-2cbb-4cbd-ad44-7f01953f875f
+# ╔═╡ 6721746e-71e6-4d3d-a32a-6c0385986351
+md"""
+## A rich zoo of techniques...
+***
+
+- Researchers have developed many methods to cope with the characteristics of light curves in astronomy (irregular sampling, etc.). 
+
+- For instance, the Lomb-Scargle (LS) periodogram, epoch folding, analysis of variance (AoV), string length (SL) methods, discrete or slotted autocorrelation, etc.
+
+
+### Lomb Scargle
+***
+
+- As we know already, the LS periodogram is an extension of the conventional periodogram for unevenly sampled time series. 
+
+    - A sample power spectrum is obtained by fitting a trigonometric model in a least squares sense over the available randomly sampled data points. 
+
+    - The maximum of the LS power spectrum corresponds to the angular frequency whose model best fits the time series.
+
+### Epoch folding
+***
+
+- In epoch folding a trial period, $P$, is used to obtain a phase diagram of the light curve. 
+    - The trial period is found by an ad-hoc method, or simply corresponds to a sweep among a range of values. 
+
+- This transformation is equivalent to dividing the light curve in segments of length $P$ and then plotting the segments one on top of another, hence folding the light curve. 
+    - If the true period is used to fold the light curve, the periodic shape will be clearly seen in the phase diagram. 
+    - If a wrong period is used instead, the phase diagram won’t show a clear structure and it will look like noise.
+
+### Analysis of Variance and String Length
+***
+
+- In AoV the folded light curve is binned and the ratio of the within-bins variance and the between-bins variance is computed. 
+    - If the light curve is folded using its true period, the AoV statistic is expected to reach a minimum value. 
+
+- In SL methods, the light curve is folded using a trial period and the sum of distances between consecutive points (string) in the folded curve is computed. 
+    - The true period is estimated by minimizing the string length on a range of trial periods. 
+    - The true period is expected to yield the most ordered folded curve and hence the minimum total distance between points
+
+
+### Discrete autocorrelation
+***
+
+- For the discrete or slotted autocorrelation, time lags are defined as intervals or slots instead of single values. 
+    - The slotted autocorrelation function at a certain time lag is computed by averaging the cross product between samples whose time differences fall in the given slot.
+
+- All these methods are essentially based on second order statistic analysis. 
+
+
+### Information theory based techniques
+***
+
+- Correntropy and mutual information are concepts relatively common in machine learning, and have been applied to time-series analysis with very interesting results.
+
+
+"""
+
+# ╔═╡ caa79afb-d9cb-483f-87f3-05bfa215d047
+md"""
+## Phase Dispersion Minimization
+
+***
+
+This algorithm was proposed in [Stellingwerf (1978)](https://ui.adsabs.harvard.edu/abs/1978ApJ...224..953S/abstract). 
+
+> This idea consists in distinguishing between possible periods identyfing the one producing the least observational scatter about the mean light curve. Let's see how the algorithm works:
+
+"""
+
+# ╔═╡ efe4400e-dce7-40ab-b142-6ac560b98eaf
+md"""
+- Let's generate a fake time-series, starting from a sinusoid with a given period and some Gaussian noise. It is instructive to check how the plot looks different without the continuous line joining the points.
+"""
+
+# ╔═╡ 4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
 begin
-	# Define the Square Wave and its Fourier Series approximation
-	# Square wave with period 2π, oscillating between -1 and 1
-	# Fourier Series: (4/π) * Σ [sin(n*x) / n] for odd n
-	function fourier_square(x, n_terms)
-	    val = 0.0
-	    for i in 1:n_terms
-	        n = 2i - 1  # Only odd harmonics
-	        val += sin(n * x) / n
-	    end
-	    return (4 / π) * val
-	end
+	PERIOD = 5. 
 	
-	# Setup Data
-	x_vals = range(-π, π, length=1000)
-	# Define the number of components to visualize
-	n_components = [1, 3, 10, 50]
-	colors = [:blue, :orange, :green, :red]
-	
-	# Create the Visualization
-	fig = Figure(size = (800, 600), font = "sans")
-	ax = Axis(fig[1, 1], 
-	    title = "Fourier Series Approximation of a Box-Car Function",
-	    xlabel = "x", ylabel = "f(x)",
-	    xticks = ([-π, 0, π], ["-π", "0", "π"]))
-	
-	# Plot the ideal box-car (square wave) for reference
-	lines!(ax, x_vals, [sign(sin(x)) for x in x_vals], 
-	    color = :black, linestyle = :dash, label = "Ideal Square Wave")
-	
-	# Loop through and plot different levels of approximation
-	for (i, n) in enumerate(n_components)
-	    y_vals = [fourier_square(x, n) for x in x_vals]
-	    lines!(ax, x_vals, y_vals, color = (colors[i], 0.8), 
-	        linewidth = 2, label = "n = $n harmonics")
-	end
-	
-	axislegend(ax, position = :rt)
-	
-	# Display the plot
-	fig
-end
+	ts = range(start=0,stop=100,step=0.9)
+	fl = sin.(ts .* PERIOD ./ (2*pi)) .+ rand(Normal(0,0.1),length(ts))
+end;
 
-# ╔═╡ bc82a078-fea7-4a00-b38c-a849fb760594
-md"""
-- Example of a Fourier series decomposition. The original time domain function $f(t)$, shown in the dashed line, is a square wave , which equals 1 from $t=0$ to $\pi$ and -1 from $-\pi$ to $0$. Thin lines show the Fourier sum with different number of terms.
-    - The gradual improvement in the approximation of the function with increasing number of terms in Fourier series is evident.
-- At the point of discontinuity, all the reconstructions pass through the average of the left and right limits of the original function and the transition gets progressively sharper with larger number of terms.
-"""
-
-# ╔═╡ 3bdf3bea-7e3c-4f09-98f7-bdbc16ea2880
-md"""
-### Continuous Fourier Transform
-***
-
-- We define the Fourier transform (FT) of any function $f(t)$ as:
-
-```math
-F(\omega) = \int\limits_{-\infty}^{+\infty} f(t) e^{-i\omega t} dt
-```
-
-- This is a linear transformation and no information is lost. The representations of a function in time and frequency domains are equivalent.
-
-- The original $f(t)$ can be recovered by applying the inverse Fourier transform:
-
-```math
-f(t) = {1\over 2\pi} \int\limits_{-\infty}^{+\infty} F(\omega) e^{i\omega t} d\omega
-```
-
-- The FT has a number of interesting properties. It is linear, not necessarily a real function, and its amplitude is invariant to time shift (but not its phase).
-
-| $f(t)$ | F(ω) |
-|:-------: |:--------:|
-| Real    | H(-ω) = H$^*$(ω)   |
-| Even    | Even   |
-| Odd    | Odd   |
-| Real and Even | Real and Even     |
-| Real and Odd  | Imaginary and Odd |
-
-- Unless the original function is even, an unlikely situation in the case of a time series, its Fourier transform is complex!
-"""
-
-# ╔═╡ 0dbb5f0e-292d-4d8a-bb83-7954e4a46f29
-# ╠═╡ show_logs = false
-md"""
-$(LocalResource("Pics/FTexamples.png"))
-"""
-
-# ╔═╡ 875732fc-5644-4c06-8f8c-39dc30f1d3b4
-md"""
-- Scaling: $h(at) \longleftrightarrow H(f/a) / |a|$, "broad" $\longleftrightarrow$ "narrow"
-- Shifting: $h(t-t_0) \longleftrightarrow H(f) * e^{2\pi i f t_0}$, "shift" $\longleftrightarrow$ "phase roll/gradient"
-- Convolution: $h(t) \ast g(t) \longleftrightarrow H(f) G(f)$, "convolution" $\longleftrightarrow$ "multiplication"
-"""
-
-# ╔═╡ 56081488-4ade-436a-991e-d7138368edf1
-md""" 
-> How to compute the Fourier Transform in a few simple cases can be found here ([notebook](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-FT.jl), [html](../../Lectures/Lecture-SpectralAnalysis/Lecture-FT.html)).
-"""
-
-# ╔═╡ 6d88e888-8f08-47ab-8906-c7b4b86b2588
-md"""
-## Power density spectrum (PDS)
-***
-
-- The Power Density Spectrum (PSD) is defined as the Fourier Transform multiplied by its complex conjugate and therefore the square modulus of the Fourier Transform:
-
-```math
-P(\omega) = F(\omega)\cdot F^*(\omega) =  | F(\omega) |^2
-```
-
-- If the original function is real (usually the case for time series) the PSD is an even function and the values at negative frequencies are redundant.
-
-- The FT is a linear function, the PDS is not. This means that while the FT of the sum of two signals is the sum of the FT of the signals, in the case of the PDS this is not true and there are cross-terms to be considered.
-
-- E.g., if two signals are $f(t)$ and $g(t)$, the PSD of the sum of the two is:
-
-```math
-P[f(t)+g(t)] = |F[f(t)+g(t)]|^2 =  F[f(t)+g(t)]\cdot F^*[f(t)+g(t)] = 
-```
-
-```math
-= P[f(t)] + P[g(t)] + 2 Re\{F[f(t)]\cdot F[g(t)] \}
-```
-
-- If the two signals are uncorrelated, the cross-term is zero and linearity applies.
-"""
-
-# ╔═╡ 99f8ea18-5807-482e-8516-e2bdaf1546e6
-md"""
-## Autocorrelation function (ACF)
-***
-
-- The autocorrelation (ACF) of a function $f(t)$ is defined as:
-
-```math
-A(t) = \int\limits_{-\infty}^{+\infty} f(\tau) f(t+\tau) d\tau \Longleftrightarrow F(f) F^*(f) \equiv |F(f)|^2
-```
-
-- The autocorrelation of a function is the Fourier transform of its PSD.
-
-- It is also simple to derive, by the *Parseval’s theorem*, simply setting $t=0$, that:
-
-```math
-\int\limits_{-\infty}^{+\infty} |f(t)|^2 dt = {1\over 2\pi} \int\limits_{-\infty}^{+\infty} |f(\omega)|^2 d\omega
-```
-
-> For the interested readers, a proof that PDS and ACF are Fourier duals can be found here ([notebook](./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-PDS-ACF.jl), [html](../../Lectures/Lecture-SpectralAnalysis/Lecture-PDS-ACF.html)).
-
-"""
-
-# ╔═╡ e087bf1e-dd1a-41f3-8154-bfb39325d905
-cm"""
-## Discrete Fourier transform
-***
-
-- In the real world, we only have discrete measurements, the time series, commonly called, in astronomy, “light curves”. They consist of ``N`` measurements ``x_k`` taken (now) at equally-spaced times ``t_k`` from ``0`` to ``T``.
-
-- In this case we can define the discrete Fourier transform (and its inverse) as:
-
-```math
-a_j = \sum\limits_{k=0}^{N-1} x_k e^{-2\pi ijk/N}   \quad   (j=-N/2,...,N/2-1)
-```
-
-```math
-x_k = {1\over N} \sum\limits_{k=-N/2}^{N/2-1} a_j e^{2\pi ijk/N} \quad\quad (k=0,...,N-1)
-```
-
-- Since the data are equally spaced, the times are ``kT/N`` and the frequencies are ``j/T``.
-
-- The time step is ``δt = T/N`` and the frequency step is ``δν = 1/T``.
-
-- As the discrete time series has a time step ``δt`` and a duration ``T``, there are limitations to the frequencies that can be examined:
-    - The lowest frequency is ``1/T``, corresponding to a sinusoid with a period equal to the signal duration.
-    - The highest frequency that can be sampled, is called *Nyquist frequency*: ``\nu_\rm{Nyq} = \frac{1}{2\delta T} = \frac{1}{2}\frac{N}{T} ``.
-
-- At the zero frequency, the FT value is just the sum of the signal values:
-
-```math
-a_0 = \sum\limits_{k=0}^{N-1} x_k e^{-2\pi i0k/N} = \sum\limits_{k=0}^{N-1} x_k
-```
-
-- *Parseval’s theorem* applies also to the discrete case and one can see that the variance of a signal is ``1/N`` times the sum of the ``a_j`` over all indices besides zero (also known as *Plancherel Theorem*):
-
-```math
-Var(x_k) = \sum_k (x_k - \bar{x})^2 = \sum_k x_k^2 + \sum_k \bar{x}^2 - \sum_k 2\bar{x}x_k = \sum_k x_k^2 + N \bar{x}^2 -  2N\bar{x}^2 = 
-```
-
-```math
-= \sum_k x_k^2 - N\bar{x}^2 = \sum_k x_k^2 - \frac{1}{N}(\sum_k x_k)^2 = \frac{1}{N} \sum_j |a_j|^2 - \frac{1}{N}a_0^2 =
-```
-
-```math
-\Longrightarrow Var(x_k) = \frac{1}{N}\sum_{j=-\frac{N}{2}}^{j=\frac{N}{2}-1} |a_j|^2,  j\ne0
-```
-
-"""
-
-# ╔═╡ e2ca5449-f85f-44c8-adc3-eb257d2e3830
-md"""
-
-#### Exercise: let's compute the Fourier frequency grid for a simple case
-***
-
-- We assume to monitor a given phenomenum observing a quantity of interest for 100s and sampling it every 2s, i.e. we have 50 observations.
-- Therefore, the lowest frequency (meaningful to analyse) turns out to be $1/T = 0.01$Hz, and the Nyquist frequency is  $\nu_\rm{Nyq} = \frac{1}{2\delta T} = \frac{1}{2 \times 2s} = 0.25$ Hz.
-- The whole ( meaningful) Fourier frequency grid consists therefore of 50 entries, from $-\nu_\rm{Nyq}$ to $+\nu_\rm{Nyq}$, excluding the former or the latter value.
-- Since for a real input function the power spectrum for negative or positive frequencies is identical, we restrict to the positive side.
-- And the Fourier grid is finally, starting from 0 with 25 (i.e. $N/2$) $1/2s = 0.01$Hz steps, $0.0, 0.01, 0.02 \ldots 0.25$Hz.
-"""
-
-# ╔═╡ ec204c5e-7d37-4ffc-88de-3607f7f5fb07
+# ╔═╡ db26f062-6c6c-499a-85bd-12050eb152cf
 begin
-	function generate_noisy_signal(
-	    duration::Float64 = 1000.0,
-	    fs::Float64 = 100.0,
-	    signal_freq::Float64 = 0.5,
-	    amplitude::Float64 = 1.0,
-	    noise_std::Float64 = 2.0
+	fg1 = Figure(size=(1000,400))
+	ax1 = Axis(fg1[1, 1],
+	    xlabel = "Time",
+	    ylabel = "Flux",
 	)
-	    t = 0:1/fs:duration-1/fs
-	    signal = amplitude .* sin.(2π * signal_freq .* t)
-	    noise = noise_std .* randn(length(t))
-	    noisy_signal = signal .+ noise
-	
-	    return collect(t), signal, noisy_signal
-	end
-	
-	
-	# Genera la serie temporale
-	t, clean_signal, noisy_signal = generate_noisy_signal()
-end;
+	scatter!(ax1,ts,fl,label="Time-Series")
+	lines!(ax1,ts,fl)
 
-# ╔═╡ 50b7dca2-e81b-4982-93a4-31a2e13f11fa
-function power_spectrum(signal::Vector{Float64}, fs::Float64)
-    N = length(signal)
+	axislegend(ax1)
 
-    # FFT e spettro di potenza (normalizzato)
-    X = fft(signal)
-    psd = (abs.(X).^2) ./ N
-
-    # Solo frequenze positive (metà spettro)
-    freqs = (0:N÷2) .* (fs / N)
-    psd_one_sided = psd[1:N÷2+1]
-
-    # Raddoppia le componenti (eccetto DC e Nyquist) per conservare la potenza
-    psd_one_sided[2:end-1] .*= 2
-
-    return freqs, psd_one_sided
-end;
-
-# ╔═╡ 9e780d0e-dcea-4308-bea2-aefbe212e60b
-begin
-	# --- Calcola spettri ---
-	fs = 100.0
-	freqs_noisy, psd_noisy = power_spectrum(noisy_signal, fs)
-	freqs_clean, psd_clean = power_spectrum(clean_signal, fs)
-end;
-
-# ╔═╡ 4e3a40ee-3a09-4c6a-b2f4-43377d551483
-begin
-	fig2 = Figure(size = (1000, 750), fontsize = 13)
-	
-	# --- Pannello 1: Serie temporale ---
-	ax1 = Axis(fig2[1, 1],
-	    xlabel = "Time (s)",
-	    ylabel = "Amplitude",
-	    title  = "Time series",
-	    xgridcolor = (:gray, 0.3),
-	    ygridcolor = (:gray, 0.3),
-	)
-	
-	lines!(ax1, t, noisy_signal,
-	    color = (:steelblue, 0.6), linewidth = 0.8, label = "Signal + Noise")
-	lines!(ax1, t, clean_signal,
-	    color = :red, linewidth = 2.0, label = "Clean Signal (0.5 Hz)")
-	axislegend(ax1, position = :rt)
-	
-	xlims!(10,50)
-	
-	# --- Pannello 2: Spettro di potenza ---
-	ax2 = Axis(fig2[2, 1],
-	    xlabel = "Frequency (Hz)",
-	    ylabel = "PSD",
-	    title  = "Power Spectrum (FFT)",
-	    xgridcolor = (:gray, 0.3),
-	    ygridcolor = (:gray, 0.3),
-	    yscale = log10,          # scala logaritmica sull'asse Y
-	    xticksvisible = true,
-	)
-	
-	lines!(ax2, freqs_noisy, psd_noisy,
-	    color = (:steelblue, 0.8), linewidth = 1.0, label = "Signal + Noise PSD")
-	#lines!(ax2, freqs_clean, psd_clean,
-	#    color = :red, linewidth = 1.5, label = "Clean Signal PSD")
-	
-	# Linea verticale sul picco a 0.5 Hz
-	vlines!(ax2, [0.5], color = :orange, linewidth = 1.5, linestyle = :dash, label = "0.5 Hz")
-	
-	# Zoom sull'asse X fino a 1 Hz per vedere bene il picco
-	xlims!(ax2, 0.45, 0.55)
-	axislegend(ax2, position = :rt)
-	
-	fig2
-end
-
-# ╔═╡ 3f90207c-aff5-4c25-bb15-3900ec99ad78
-md"""
-- Top panel: the black line shows 40 seconds of a simulated time series 1000s long, consisting of a weak sinusoidal modulation (red line) "drowned" into a strong Gaussian noise. Bottom panel: corresponding PDS, zoomed on the relevant frequency range, where the modulation is clearly visible. A weak signal spread in time is collected into a single frequency bin at high significance.
-"""
-
-# ╔═╡ 58d43f9c-e7e9-4a7d-8471-1beca3568a1e
-md"""
-### Exercize about an analysis of weather data in France
-***
-
-- In the following exercize, we are going to analyse weather data spanning about 20 years in France obtained from the US National Climatic Data Center.
-
-- Data are imported [http://www.ncdc.noaa.gov/cdo-web/datasets#GHCND](http://www.ncdc.noaa.gov/cdo-web/datasets#GHCND). The number "-9999" is used for N/A values. And we need to parse dates contained in the DATE column
-"""
-
-# ╔═╡ 3d75fecb-157b-408a-aa32-2d2096a766ba
-begin
-	url = "https://github.com/ipython-books/cookbook-2nd-data/blob/master/weather.csv?raw=true"
-	#fname = "France_temperatures.csv"
-	
-	df = DataFrame(CSV.File(HTTP.get(url).body,missingstring="-9999"))
-	#df = DataFrame(CSV.File(fname,missingstring="-9999"))
-	
-	df[!,:DateTime] = Date.(string.(df[!,:DATE]),DateFormat("yyyymmdd"))
-end;
-
-# ╔═╡ 2e2e09aa-6023-46a9-b816-bb9de2b321c1
-md"""
-- Let's now select only dates later than Jan 1994, and compute daily averages dropping the missing data and plot our dataset.
-
-    - The temperature unit is in tenths of a degree, and we get the average value between the minimal and maximal temperature.
-"""
-
-# ╔═╡ 0148c42e-24fa-486e-8c61-eae25e772bd8
-begin
-	filter!(:DateTime => >=(Date("19940101",DateFormat("yyyymmdd"))),df)
-	
-	dropmissing!(df)
-	
-	gdf = combine(groupby(df, :DateTime), [:PRCP,:TMAX,:TMIN] .=> mean, renamecols=false)
-	
-	temp = (gdf[!,:TMAX] + gdf[!,:TMIN]) / 20.
-	N = length(temp)
-	
-	
-	fg1 = Figure()
-	
-	ax1fg1 = Axis(fg1[1, 1],
-	    xlabel = "Date (yyyy/mm/dd)",
-	    ylabel = L"Average daily temperature ($^\circ$C)"
-	    )
-	
-	scatter!(gdf[!,:DateTime],temp,color=:blue)
-	
 	fg1
 end
 
-# ╔═╡ 7709a017-0c80-4399-9751-bf07b80f0b5e
+# ╔═╡ 016bc3af-7be9-4fa4-bf83-865229f67359
 md"""
-- We now compute the Fourier transform and the spectral density of the signal using the **fft()** function.
-- Once the FFT has been obtained, we take the square of its absolute value in order to get the **power spectral density (PSD)**.
-- Then, we get the frequencies corresponding to the values of the PSD by the **fftfreq()** utility function.  
-- Since the original unit is in days we change it to annual unit by the factor **1/365**.
+
+### Mathematical background
+***
+
+- A discrete set of observations can be represented by two vectors, the magnitudes $x$ and the observation times $t$, where the ith observation is given by $(x_i, t_i)$ and there are $N$ points with $(j = 1, N)$. 
+
+- And be $σ^2$ the sample variance of x, where $\tilde{x}$ is the mean: 
+
+$$\sigma^2 = \frac{\sum{(x_i - \tilde{x})^2}}{N-1}$$
+
+- Suppose we have chosen $M$ distinct subsamples, having variances $s_j^2\ (j=1,M)$ and containing $n_j$ data points. The overall variance for all the samples is then given by:
+
+$$s^2 = \frac{\sum{(n_j-1)s_j^2}}{\sum{n_j}-M}$$
+
+This can be realized writing, in each of the M subsamples, $s_j^2 =\frac{\sum{(x_{ij} - \tilde{x_j})^2}}{n_j-1}$; then $s^2 = \sum \sum (x_{ij} - \tilde{x_j})^2 / \sum{n_j}-M$ and therefore it is clear that $s^2$ is the variance of our dataset computed as the sum of the variances in each subsample.
 """
 
-# ╔═╡ b49f1cda-582a-4d43-9e0a-a0e6adf85e78
-begin
-	# The FFTW library has been used for this exercize
-	
-	temp_fft = fft(temp)
-	
-	temp_psd = abs.(temp_fft).^2
-	
-	# 1 is the sampling frequency
-	temp_freq = fftfreq(length(temp_psd), 1) * 365
-end;
-
-# ╔═╡ c601e37c-c08d-4ce4-8843-6fd52bd1e812
+# ╔═╡ 8550f405-2819-4a33-9cd2-c72dbbb04a87
 md"""
-- We restrict to positive frequences only and let's check which is the maximum frequency for our dataset. Knowing the sampling rate we predict that it should correspond to a period of 2 days so that the Nyquist frequency turns out to be exactly 0.5 day$^{-1}$.
+### Minimizing the variance wrt the mean light curve
+***
+
+- In order to minimize the variance of the data with respect to the mean light curve let $Π$ be a trial period and compute the phases of the input data given the period:
+
+$$\Phi_i = t_j / \Pi - {\rm int}(t_j/\Pi)$$
+
+- Now, let’s pick $M$ samples from $x$ using the criterion that all the members of sample $j$ have similar $\phi_j$.
+
+- The variance of these samples gives a measure of the scatter around the mean light curve defined by the means of the $x_j$ in each sample, considered as a function of $\phi$.
+
+- If we define the statistics:
+
+$$\Theta^2 = s^2/\sigma^2$$
+
+- If $Π$ is not the true period, then $s^2 \approx σ^2$, while if $Π$ is the true period $Θ$ will be in a local minimum compared to other tested periods.
+
+- Since this technique seeks to minimize the dispersion of the data at constant phase, the author referred to it as “phase dispersion minimization” (PDM). 
 """
 
-# ╔═╡ aff12d14-4803-480e-aab0-6d33917304b3
-begin
-	posfr = temp_freq .> 0
-	
-	#println("Nyquist frequency: ", round(maximum(temp_freq) / 365, digits=1), L" day$^{-1}$")
-	
-end;
-
-# ╔═╡ 6f29671a-048a-49e1-b7f9-e5d9cd733a0c
-Markdown.parse("""
-##### Nyquist frequency:  $(latexify(maximum(temp_freq) / 365,fmt="%.1f"))
-
-""")
-
-# ╔═╡ b8a2074a-490e-4e92-ba59-3735184d7c91
+# ╔═╡ 7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
 md"""
-- Let's now plot the power spectral density of our signal, as a function of the frequency (in unit of **1/year**). We choose a logarithmic scale for the y axis (decibels).
+> It can be proven that, mathematically, this algorithm is a least-squares fitting technique, but rather than a fit to a given curve (such as a Fourier component), the fit is relative to the mean curve as defined by the means of each bin. 
 """
 
-# ╔═╡ 40fe7f7d-8d30-40f1-b6fa-932374c93380
+# ╔═╡ 576eb9f0-40c6-4a9a-9504-d562452541e6
+md"""
+- Let's now try to phase our input data with the right and a wrong period. 
+"""
+
+# ╔═╡ d30ed012-7751-46fd-8cdb-0a095550d6e5
+cm"""
+Right period? $(@bind rper CheckBox(default=true))
+"""
+
+# ╔═╡ 68359d41-37ca-4564-afc6-9c2ba500b530
 begin
-	fg2 = Figure()
-	
+	fg2 = Figure(size=(1000,400))
 	ax1fg2 = Axis(fg2[1, 1],
-	    xlabel = "Frequency (1/year)",
-	    ylabel = "PSD (dB)",
-	    )
+	    xlabel = "Phase",
+	    ylabel = "Flux",
+	    title = "PDM"
+	)
+
+	if rper
+		P = 2*pi*PERIOD
+	else
+		P = 2*pi*2
+	end
+	fs = ts ./ P .- [floor(Int,x) for x in (ts ./ P)]
 	
-	lines!(temp_freq[posfr],10 * log10.(temp_psd[posfr]),color=:blue)
-	
-	xlims!(0,maximum(temp_freq[posfr]))
+	scatter!(ax1fg2,fs,fl,label="Phased time-series")
+	axislegend(ax1fg2)
 	
 	fg2
 end
 
-# ╔═╡ 1eb98eee-8373-4fce-b40f-3118d096f082
+# ╔═╡ f153fdfa-57d5-4112-8d59-847ee1ec06ca
 md"""
-- Or with a better zoom in a region of our interest.
+### Statistics of $\Theta$
+***
+
+
+- To compute $\Theta$, we take the ratio of variances of the two subsets of the input data $X$, that of the actual observations, and that of the bins. 
+
+- Therefore, it was suggested that $\Theta$ follows a probability density given by an $F$ distribution with $\sum n_j -M$ and $N — 1$ degrees of freedom.
+
+    - Actually, [further studies](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract) showed this is not correct, and the right statistic turns out to be an [incomplete beta distribution](https://en.wikipedia.org/wiki/Beta_function) although, often, Monte Carlo methods are applied to derive the significance of identified features.
+    
+- Several improvements have been proposed since 1978 for this algorithm, to make it more usable for larget datasets or to avoid the possible bias introduced by the (somewhat arbitrary) binning procedure (See, e.g., the wikipedia page devoted to the [PDM technique](https://en.wikipedia.org/wiki/Phase_dispersion_minimization)).
 """
 
-# ╔═╡ 0f5adef3-5de0-4fa3-b4ca-8ee59968047e
+# ╔═╡ 9d0b25ab-b8bc-455c-bf42-40f0d085be08
+LocalResource("Pics/PDMvsLombScargle.png")
+
+# ╔═╡ 1c4ceb56-af5c-4f12-860d-d64380e7a0ca
 md"""
-Plot horizontal axis limit: $( @bind xmx PlutoUI.Slider(0.1:0.5:200, default=7) ) 
+
+
+## String Length Method
+***
+
+- This algorithm was proposed originally in [Lafler & Kinman (1965](https://ui.adsabs.harvard.edu/abs/1965ApJS...11..216L/abstract)) and than discussed in [Dworetsky (1983)](https://ui.adsabs.harvard.edu/abs/1983MNRAS.203..917D/abstract) and extended in [Clarke (2002)](http://localhost:8888/notebooks/Lecture-NonParametricAnalysis.ipynb#:~:text=Clarke%20(2002)%20%2D%20%22String/Rope%20length%20methods%20using%20the%20Lafler%2DKinman%20statistic%22). 
 """
 
-# ╔═╡ 1b13be55-5153-4d53-ba09-92832f67a448
+# ╔═╡ 9d094cc4-60f4-49c0-af51-e5b4a666d41b
+cm"""
+- In this method the quantity to be minimized is the sum of the lengths of line segments joining the observed points reordered according to the phases (``m_i, φ_i``) in a phase diagram, given a trial period.
+
+- The period is chosen to minimize the following quantity, with N the number of observations:
+
+```math
+\Theta(P) = \frac{\sum_{i=1}^N [(m_{i+1}-m_i)^2]}{\sum_{i=1}^N [(m_i - \bar{m})^2]}
+```
+
+- Please note that it is included the length of the segment joining the last and first measurement in the reordered sequence by letting ``m_{N+1} = m_1``.
+
+- By expanding the above formula, and rearranging the indices, we have:
+
+```math
+\Theta(P) = \frac{2 \times \left(\sum_{i=1}^N m_i^2 - \sum_{i=1}^N (m_i m_{i+1})\right)}{\sum_{i=1}^N m_i^2 - N\bar{m}^2}
+```
+
+- The only term depending on the chosen period is ``\sum_{i=1}^N (m_i m_{i+1})``. 
+    - If oscillatory behavior is not present, none of the examined periods will provide a correlation and the  summation of the products of the phase adjacent measurements is converging to ``N\bar{m}^2``.
+    - So, any periodogram based on ``\Theta(P)`` will fluctuate about a mean value ``\approx 2``.
+
+
+
+- [Clarke (2002)](http://localhost:8888/notebooks/Lecture-NonParametricAnalysis.ipynb#:~:text=Clarke%20(2002)%20%2D%20%22String/Rope%20length%20methods%20using%20the%20Lafler%2DKinman%20statistic%22) introduced a rescaling term ``(N-1)/2N`` to remove the sample size bias and normalize the periodogram to 1, leading to the so-calles String-Length-Lafler-Kinman (SSLK) periodogram:
+
+```math
+T(P) = \frac{\sum_{i=1}^N [(m_{i+1}-m_i)^2]}{\sum_{i=1}^N [(m_i - \bar{m})^2]} \times \frac{N-1}{2N}
+```
+
+
+- By all means, the algorithm is straightforward:
+
+$(LocalResource("Pics/StringLengthMethod.png"))
+
+- And again, Monte Carlo methods are the best to determine the singificance of a given period.
+
+- We can see the different path even for the example presenetd above:
+"""
+
+# ╔═╡ df6ab42b-bfa9-46a4-a23d-1cca9ca844e7
+cm"""
+Right period? $(@bind rslper CheckBox(default=true))
+"""
+
+# ╔═╡ 80cfa78d-60e5-4f3a-912e-42413009cf0e
 begin
-	fg3 = Figure()
-	
+	fg3 = Figure(size=(1000,400))
 	ax1fg3 = Axis(fg3[1, 1],
-	    xlabel = "Frequency (1/year)",
-	    ylabel = "PSD (dB)",
-	    )
+	    xlabel = "Phase",
+	    ylabel = "Flux",
+	    title = "SL"
+	)
+
+	if rslper
+		P1 = 2*pi*PERIOD
+		fs1 = ts ./ P1 .- [floor(Int,x) for x in (ts ./ P1)]
+	else
+		P1 = 2*pi*2.
+		fs1 = ts ./ P1 .- [floor(Int,x) for x in (ts ./ P1)]
+	end
 	
-	lines!(temp_freq[posfr],10 * log10.(temp_psd[posfr]),color=:blue)
-	
-	xlims!(0,xmx)
-	ylims!(30,85)
+	idx = sortperm(fs1)
+		
+	scatter!(ax1fg3,fs1[idx],fl[idx],label="Phased time-series")
+	lines!(ax1fg3,fs1[idx],fl[idx])
+	axislegend(ax1fg3)
 	
 	fg3
 end
 
-# ╔═╡ bf2f9df2-7df7-43d2-926d-7a561be79c0e
-md"""
-- Not surprisingly, the fundamental frequency of the signal is the yearly variation of the temperature at **f=1**.
-
-- We can now "clean" our data cutting out frequencies higher than the fundamental frequency and by an **inverse FFT** we recover a signal that mainly contains the fundamental frequency.
-"""
-
-# ╔═╡ bea9ec97-57a7-45a4-9a29-ccca274fd5dc
-begin
-	temp_fft_bis = copy(temp_fft)
-	temp_fft_bis[abs.(temp_freq) .> 1.1] .= 0
-	
-	temp_slow = real.(ifft(temp_fft_bis))
-	
-	
-	l = gdf[!,:DateTime] .< Date(2000,1,1)
-	
-	
-	fg4 = Figure()
-	
-	ax1fg4 = Axis(fg4[1, 1])
-	
-	scatter!(gdf[!,:DateTime][l],temp[l],color=:blue, label="Original data")
-	lines!(gdf[!,:DateTime][l],temp_slow[l],color=:red, label="Filtered data")
-	
-	ylims!(-10,40)
-	
-	axislegend()
-	
-	fg4
-end
-
-# ╔═╡ b81793b6-dcec-4ab4-a806-4aa111d69f00
-md"""
-## What do we observe in the real world?
-***
-"""
-
-# ╔═╡ c1363e2a-d8b4-4be9-8394-435231b62177
-# ╠═╡ show_logs = false
+# ╔═╡ b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
 cm"""
-### Windowing and Sampling
+## Analysis of variance and orthogonal polynomials
 ***
 
-- The CFT and the DFT can be connected easily taking into account that the FT of the product fo two functions is the convolution of the FT of the functions.
+- This algorithm has been introuced in [Schwarzenberg-Czerny (1989)](https://scixplorer.org/abs/1989MNRAS.241..153S/abstract) is a phase-folding technique and it treats the search for a period as a statistical grouping problem.
 
-```math
-F[x \cdot y] = F[x] \otimes F[y] = \int\limits_{-\infty}^{+\infty}F[x(\nu')]F[y(\nu-\nu')] d\nu'
-```
+- First, the algorithm picks a "trial period" and "folds" the time-series data into a phase diagram (mapping all data points into a single cycle from 0 to 1). Then, the phase cycle is divided into several "bins" (discrete segments) and, finally, the variance of the data within each bin versus the variance between the bins is computed.
 
-- A discrete time series `x(t_k) ≡ x_k` can be seen as the product of a continuous function `f(t)` over `(−∞,∞)` and two additional functions: `w(t)` to limit it to the `(0,T)` interval and `s(t)` to sample it at times tk:
+	- If the period is wrong: The data points will be randomly scattered; the variance within each bin will be high, and the means of the bins will be similar.
+	- If the period is correct: The data will follow a coherent shape. The points in each bin will be tightly clustered (low internal variance), but the means of the different bins will vary significantly (high between-bin variance).
 
-```math
-x_k = h(t) \cdot w(t) \cdot s(t)
-```
+- This is, indeed, close to the strategy adopted for the PDM technique.
 
-- ``w(t)`` is a boxcar window function, which is 1 in the ``(0,T) `` interval and zero outside. ``s(t)`` is a series of delta functions at ``t_k``, spaced by ``T/N``:
+- In [Schwarzenberg-Czerny (1996)](https://ui.adsabs.harvard.edu/abs/1996ApJ...460L.107S/abstract), the same author updated the method to use orthogonal polynomials (often called the MHAOV or Harmonic AoV). 
 
-$(LocalResource("Pics/windowing.png"))
+- Instead of just using discrete bins, this version fits the phase-folded data with a series of harmonics making the algorithm not dependent on the, partly arbitrary, choice of the bin length.
+
+- In practise, for the MHAVO algorithm, the period search is a least-squares problem using orthogonal basis functions made by complex polynomials.
+
+
 """
 
-# ╔═╡ f5fea622-f431-4da6-af3f-548fd10d906d
-# ╠═╡ show_logs = false
+# ╔═╡ 6e719f8a-b702-4406-a6b8-e0fdf5ed9552
+LocalResource("Pics/MHAOV.png")
+
+# ╔═╡ 94fbea32-d079-4f52-8a73-1e53fc848b7d
+Foldable("Some more mathematical description of the MHAOV algorithm", cm"""
+- In MHAOV, for a given trial frequency ``f``, the signal is modeled as a sum of ``n`` harmonics. The observed data ``y_i`` at time ``t_i`` is modeled by the function ``g(t)``:
+
+```math
+g(t) = a_0 + \sum_{k=1}^{n} \left[ a_k \cos(2\pi k f t) + b_k \sin(2\pi k f t) \right]
+```
+
+- In MHAOV, the transition from a simple sum of sines to a computationally efficient algorithm relies on the projection of the data onto a set of basis functions. 
+
+- The core of the MHAOV technique involves solving the least-squares problem by projecting the observed data vector ``\mathbf{y}`` onto a subspace spanned by the model functions. To ensure computational stability and speed with unevenly sampled data, Schwarzenberg-Czerny utilizes a set of basis functions ``\{\phi_j\}`` that are orthonormal over the discrete set of observation times ``\{t_i\}``:
+
+```math
+\langle \phi_j, \phi_l \rangle = \sum_{i=1}^{N} \phi_j(t_i) \phi_l(t_i) = \delta_{jl}
+```
+
+- Where ``\delta_{jl}`` is the Kronecker delta. By transforming the trigonometric terms from the previous section into these orthogonal polynomials, the coefficients can be calculated independently:
+
+```math
+c_j = \sum_{i=1}^{N} y_i \phi_j(t_i)
+```
+
+- This projection represents the signal in a [Hilbert space](https://en.wikipedia.org/wiki/Hilbert_space). The total "power" or the reduction in sum of squares at a specific frequency ``f`` is simply the sum of the squares of these coefficients:
+
+```math
+||\hat{y}||^2 = \sum_{j=1}^{m} c_j^2
+```
+
+- Using this orthogonal basis avoids the need to invert large, often ill-conditioned matrices (the "normal equations") that would otherwise arise from the irregular sampling of the time series ``\{t_i\}``.
+
+- Since the sine and cosine functions are not naturally orthogonal on an arbitrary, discrete time grid ``\{t_i\}``, we use the [Gram-Schmidt process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process) (it is also possible to use the [QR decomposition](https://en.wikipedia.org/wiki/QR_algorithm)) to orthogonalize them.
+
+- Given our set of raw periodic functions ``\{s_1, s_2, \dots, s_m\}`` (where these are the sines and cosines of the harmonics), we derive the orthonormal basis ``\{\phi_1, \phi_2, \dots, \phi_m\}`` such that they satisfy the discrete inner product:
+
+```math
+\langle \phi_j, \phi_l \rangle = \sum_{i=1}^{N} w_i \phi_j(t_i) \phi_l(t_i) = \delta_{jl}
+```
+
+- where ``w_i`` are the weights, often ``w_i = 1/\sigma_i^2`` if the measurement errors are known.
+
+$br
+
+- Now, there is an iterative construction as follows:
+
+- Start with the first function, usually the constant ``a_0`` term:
+
+```math
+\phi_1 = \frac{s_1}{||s_1||}
+```
+
+- For the subsequent functions (``j > 1``) subtract the projections of the previous basis vectors from the new raw function ``s_j``:
+
+```math
+\psi_j = s_j - \sum_{k=1}^{j-1} \langle s_j, \phi_k \rangle \phi_k
+```
+
+- And then normalize the results:
+
+```math
+\phi_j = \frac{\psi_j}{||\psi_j||}
+```
+
+- In a standard regression, if your predictors (the harmonics) are correlated—which they always are in unevenly sampled data—changing one coefficient affects all others. This creates "interference" in your periodogram. By using the orthogonal projection we ensure that each harmonic's contribution to the fit is calculated independently.
+
+$br
+
+- The transition from simple power estimation to a formal "Analysis of Variance" is handled by the [F-test](https://en.wikipedia.org/wiki/F-test). Once the data is projected onto the orthonormal basis ``\{\phi_j\}``, we can decompose the total variance of the observations.
+
+- Let the total sum of squares be ``SS_{tot}``, the sum of squares explained by the ``m``-parameter model be ``SS_{reg}``, and the residual sum of squares be ``SS_{res}``. The statistic is defined as:
+
+```math
+F = \frac{SS_{reg} / (m - 1)}{SS_{res} / (N - m)}
+```
+
+- Using the orthogonal coefficients ``c_j``, these terms are expressed as:
+
+	- Model Power (``SS_{reg}``): ``\sum_{j=2}^{m} c_j^2``. This excludes the mean ``c_1`` to focus on periodic variance.
+	- Residuals (``SS_{res}``) ``\sum_{i=1}^{N} (y_i - \bar{y})^2 - SS_{reg}``
+
+- The final MHAOV periodogram value ``\Theta(f)`` for a given frequency is:
+
+```math
+\Theta(f) = \frac{(N - m)}{(m - 1)} \frac{\sum_{j=2}^{m} c_j^2}{\sum_{i=1}^{N} y_i^2 - \sum_{j=1}^{m} c_j^2}
+```
+
+- Under the null hypothesis (assuming the data is pure Gaussian noise), ``\Theta(f)`` follows a [Snedecor’s F-distribution](https://en.wikipedia.org/wiki/F-distribution) with ``d_1 = m-1`` and ``d_2 = N-m`` degrees of freedom. 
+
+- To determine if a peak is statistically significant, we calculate the *False Alarm Probability (FAP)*:
+
+```math
+FAP = 1 - [P(F < \Theta_{max})]^{N_{eff}}
+```
+
+- where ``P(F < \Theta_{max})`` is the cumulative distribution function (CDF) of the F-distribution and ``N_{eff}`` is the number of independent frequencies searched.
+
+"""		 
+)
+
+# ╔═╡ 517ff59c-aee6-4e66-b87c-e1e16921a758
 md"""
-### Windowing effects
+## Generalized Correlation Function: Correntropy
 ***
 
-- Let us consider a purely sinusoidal function $f(t) = sin(ωt)$, whose FT is a delta function at $ω$.
+> Recently, non-parametric methods have attracted a considerable attention due to novel appoaches, based on ideas and algorithms developed for machine-learning in a big-data scenario, have been developed.
 
-- The multiplication by the window function corresponds to the convolution of the delta function with the FT of the window.
 
-- It is simple to calculate the FT of the window: we consider a window function that is unity in the $−T/2,T/2$ interval, as it is a real and even function, whose FT is also real and even:
+- [Huijse et al. (2012)](https://ui.adsabs.harvard.edu/abs/2012ITSP...60.5135H/abstract) discussed a methodology based on information theoretic (IT) based criteria.
+    - IT criteria can extract information from the probability density function, therefore including higher-order statistical moments present in the data. 
+    - This usually implies a better modelling of the underlying process and robustness to noise and outliers
+
+[Huijse et al. (2012)](https://ui.adsabs.harvard.edu/abs/2012ITSP...60.5135H/abstract) proposed a new information theoretic metric for finding periodicities in stellar light curves. 
+  - The proposed metric combines correntropy (generalized correlation) with a periodic kernel to measure similarity among samples separated by a given period. 
+  - The new metric provides a periodogram, called Correntropy Kernelized Periodogram (CKP), whose peaks are associated with the fundamental frequencies present in the data. 
+  - The CKP does not require any resampling, slotting or folding scheme as it is computed directly from the available samples.
+
+- The generalized correlation function (GCF), i.e., the correntropy, measures similarities between feature vectors separated by a certain time delay in input space.
+
+- The similarities are measured in terms of inner products in a high-dimensional kernel space. 
+
+- For a random process ``\{X_t, t \in T\}`` with ``T`` being an index set, the correntropy function is defined as:
 
 ```math
-F(w(t)) = 2 {\sin(\pi\nu T)\over\pi\nu}
+V(t_1,t_2)=  {\mathbb E_{x_{t_1}x_{t_2}}} [\kappa(x_{t_1},x_{t_2})] 
 ```
 
-- This is the well known “sinc” function.
+- It is also possible to define the centered correntropy:
 
-- An important general rule is that the FT peak is broader for shorter T. Something easily deducible from the general propertieds of FT.
+```math
+U(t_1,t_2)=  {\mathbb E_{x_{t_1}x_{t_2}}} [\kappa(x_{t_1},x_{t_2})] -  {\mathbb E_{x_{t_1}}} {\mathbb E_{x_{t_2}}} [\kappa(x_{t_1},x_{t_2})] 
+```
+- where ``{\mathbb E}[\cdot]`` denotes the expectation value and ``\kappa(\cdot,\cdot)`` is any positive definite kernel.
 
-    - The resolution of the signal FT is therefore higher the longer the observation is.
-    
-- In addition to the broadening, there is the formation of side lobes. They are much lower than the central peak, but cannot always be ignored.
+- A kernel can be viewed as a measure of the similarity of the data. A frequently used kernel is the Gaussian kernel:
 
-$(LocalResource("Pics/window_ft.png"))
+```math
+G_{\sigma}(x - z) = \frac{1}{\sqrt{2\pi} \sigma}\exp\left(-\frac{\|x-z\|^2}{2\sigma^{2}}\right) 
+```
+
+- The kernel size gives the user the ability to control the emphasis given to the higher-order moments with respect to second-order moments. 
+    - For large values of the kernel size, the second-order moments have more relevance and the correntropy function approximates the conventional correlation.
+
+- For a discrete strictly stationary random process ``\{X_n\}``, the univariate correntropy function or autocorrentropy can be defined as:
+
+```math
+V[m]=  {\mathbb E}[\kappa(x_{n},x_{n-m})] 
+```
+
+- Correntropy outperformed conventional correlation, showing better discriminatory and robustness to noise.
 
 
 """
 
-# ╔═╡ 43caa1a2-3083-414d-9681-4153ade8a92b
+# ╔═╡ 785fb200-b217-4674-9d78-a1dc82be456e
 md"""
-### Sampling effects: aliasing
+
+### Correntropy Kernelized Periodogram
 ***
 
-- The FT of a series of regularly spaced delta functions with spacing $T/N$ is itself a series of delta functions with spacing $N/T$:
+- Kernels can also be viewed as covariance functions for correlated observations at different points of the input domain (see lectures about Gaussian Processes). 
+    - A kernel can be any semi-definite positive function. And it is possible to develop periodic kernels.
+ 
+- For instance, one possibility is:
 
 ```math
-s(t)    = \sum\limits_{k=-\infty}^{+\infty} \delta(t - {kT\over N}) \Longleftrightarrow
-    F(s(t)) = \sum\limits_{m=-\infty}^{+\infty} \delta(\nu - {mN\over T})
-```
-    
-- Therefore, the effect of sampling on the FT of a sinusoidal signal with frequency $ν_0$ (a delta function at $ν_0$) is that of adding an infinite sequence of delta functions spaced by $N/T$, called *aliases*.
-
-- Depending on the frequency of the original signal and the Nyquist frequency we can have different situations.
-    - In fact, features at $ν = ν_{N/2} + ν_x$ also appear at $ν = ν_{N/2} − ν_x$.
-
-- This happens because the transition from the CFT to the DFT involves two operations:
-    - windowing, a convolution with the function $W(f)$, which is essentially a peak with a width $δf = 1/T$ plus sidelines,
-    - and aliasing, a reflection of features above the Nyquist frequency back into the range ($0,ν_{N/2}$).
-"""
-
-# ╔═╡ dd78a7e2-f63e-4e84-af31-286d979074f5
-# ╠═╡ show_logs = false
-md"""
-$(LocalResource("Pics/aliases.png"))
-"""
-
-# ╔═╡ 95095834-abd5-43e6-aad0-cdfa402b0366
-md"""
-- Top panel: Aliasing on a sinusoidal signal at 15 Hz sampled at 40 Hz. In black the true signal FT amplitude, in red the aliased one. The blue region marks the interval below $\nu_{Nyq}$. The signal is detected and the aliases are not.
-- Bottom panel: same as the top panel, but with a signal at 35 Hz. Here the signal is not detected, but the 5 Hz alias is.
-"""
-
-# ╔═╡ 1cfc40d3-24a3-4a5c-8538-61c13542b403
-# ╠═╡ show_logs = false
-cm"""
-- We have all experienced aliasing effects when looking at fast rotating objects like an air fan under fluorescent light.
-    - The light provides a sampling at 50 Hz (or 60 Hz, depending on where you live), while the fan has a periodicity.
-    - Depending on its angular speed, you can see it rotating apparently much slower, or even to stop and rotate in the opposite direction.
-
-$(LocalResource("Pics/sampling.png"))
-
-- Time domain example of aliasing. The blue signal has ``\nu_0 = 0.1`` Hz. If it is sampled with ``\nu_{Nyq} = 0.038`` Hz (red points) the red dashed alias is the best fit to the data, with ``\nu_a = 0.023`` Hz.
-"""
-
-# ╔═╡ e8786a24-4391-40ad-a9ba-a0cb3f7bb2b0
-md"""
-- In the real world we do not really sample signals, but integrate them over finite time bins, i.e. we convolve it with a binning function:
-
-```math
-b(t) = \begin{cases}
-{N\over T} & t\in [-{T\over 2N},{T\over 2N}]\\
-0                    & {\rm outside}
-\end{cases}
+G_{\sigma;P}(z-y) = \frac{1}{\sqrt{2\pi}\sigma} \exp \left ( - \frac{\sin^2 \left( \frac{\pi}{P}  (z - y) \right)}{0.5\sigma^2}\right ) 
 ```
 
-- Therefore, the signal FT will be multiplied by that of the binning function, which is again a sinc function:
+- where now the kernel depends explictly on the period.
 
-```math
-B(\nu) = {\sin \pi\nu /2\nu_{Nyq}\over \pi\nu /2\nu_{Nyq}}
-```
+- This brings to a metric combining the correntropy with a periodic kernel to measure similarity among samples separated by a given period. 
 
-- $B(ν)$ is a broad function that reaches $0$ at $2\nu_{Nyq}$ and has the value of $2/π$ at $\nu_{Nyq}$.
+- This algorithm is known as Correntropy Kernelized Periodogram, and does not require any resampling, slotting or folding scheme, as it is computed directly from the available samples. 
+
+- This idea has strong connection with Gaussian Process analysis, machine learning and information theory.
+
+| Simulated data | CKP Periodogram |
+| -------------- | --------------- |
+|$(LocalResource("Pics/CKPsimdata.jpg"))|$(LocalResource("Pics/CKPPeriodogram.jpg"))|
+
+
+ - Again, Monte Carlo methods are usually applied to estimate the significance of the identified periodogram peaks.
+
 """
 
-# ╔═╡ 39e1ee25-a2f4-4e16-9fec-4a4e9c2c653e
+# ╔═╡ c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
 md"""
-### Effects of binning on the harmonic analysis
+
+## Mutual Information
+
 ***
 
-- Binning is a common operation carried out for different reasons, e.g., for casting an irregularly sampled time series to a regular grid, for improving the S/N of each point, to reduce the computational burden, etc.
+> Another modern approach to the problem tries to measure the degree of dependence between different random variables (RVs). MI is able to capture nonlinear dependence too.
 
-> Nevertheless, binning is never a price-free operation.
+This idea was introduced [Huijse et al. (2018)](https://ui.adsabs.harvard.edu/abs/2018ApJS..236...12H/abstract), where a new method for light curve period estimation based on quadratic mutual information (QMI) is discussed.
 
-- Let's assume we have a dataset defined as $D = \{y_1, y_2,..., y_n \}$, with observations carried out at a regular time step. Its discrete Fourier transform is:
+- The proposed method does not assume a particular model for the light curve nor its underlying probability density and it is robust to non-Gaussian noise and outliers. 
 
-```math
-Y(\omega) \equiv \sum_{t=1}^n y_t e^{i \omega t}
-```
+- MI measures the reduction of the uncertainty of a random variable (RV) given that we know a second RV. 
+    - MI can also be seen as a measure of dependence although, unlike correlation, MI is able to capture nonlinear dependence between RVs.
 
-- This is defined for continuous values of $\omega$ but we know that no loss of data happens if we compute the Fourier transform at the Fourier grid $\omega_k \equiv 2 \pi k / n, \quad 0 \le k < n$.
+- Technically speaking, the MI is the divergence (i.e. statistical distance) between the joint PDF of the RVs and the product of their marginal PDFs.
 
+- For the interested readers, an exhaustive description of the algorithm is reported here ([notebook](./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-MI.jl), [html](../../Lectures/Lecture-NonParametricAnalysis/Lecture-MI.html)).
 
-#### Moving average
+- If the light curve is folded with the wrong period, the structure in the joint PDF will be almost equal to the product of the marginal PDFs, i.e., magnitudes are independent of the phases. 
+
+- On the other hand, if the correct period is chosen, the joint PDF will present a structure that is not captured by the product of the marginals. By maximizing MI we are maximizing the dependency between model and observations.
+
+$(LocalResource("Pics/MISimandPeriodogram.png"))
+
+"""
+
+# ╔═╡ 039931c3-357a-4f4b-ab45-fd78fb54f64a
+Foldable("A brief introduction to the MI",md"""
+
+### The Quadratic Mutual Information (QMI)
 ***
 
-- Let's suppose our data are replaced by a moving average of past values (i.e. a rebinning):
+- In practise, many of the quantities defined in Information theory are tricky to compute. Most of them revolve around entropy: 
 
 ```math
-z_t \equiv \sum_{s=0}^{m-1} y_{t-s} \omega_s
+H(X) = -\sum_{i=1}^N p_i \log p_i,
+```
+- which is fine for discrete systems for which we know all possible states and the distribution over those states. Most often this is far from the case, so we have to be clever about how we use these measures.
+
+- The idea is that replacing Kullback-Leibler (KL) divergence in QMI with a 'Quadratic Divergence' results in a form that's much easier to estimate in a differentiable way.
+
+
+#### Deriving QMI
+
+- Mutual information between two random variables $X$ and $Y$ can be thought of as the KL-divergence between their joint distribution, and the product of their marginals:
+```math
+I(X;Y) = D_{KL}(P_{X,Y} \parallel P_X P_Y) = \iint p(x,y) \log \frac{p(x,y)}{p(x)p(y)} \, dx \, dy.
 ```
 
-- where $\omega_s$ is the weighting coefficient for lag $s$.
-
-- Since this can be seen as a convolution of the input data we know that the Fourier transform of $z$ is the product of the Fourier transform of the original data and of the average function:
+- With QMI we replace KL-divergence with something that looks similar to Euclidean distance:
 
 ```math
-Z(\omega) = W(\omega) Y(\omega)
+I_Q(X;Y) = \iint (p(x,y) - p(x)p(y))^2 \, dx \, dy.
 ```
 
-- where $W(\omega) = \sum_{s=0}^{m-1} \omega_s e^{i \omega s}$.
-
-- In particular, for uniform weighting, $w_s = 1/m, 0 \le s < m$, and we have the well known ["sinc"](https://en.wikipedia.org/wiki/Sinc_function) function:
-
+- Expanding this we get a three-term quadratic-looking expression:
 ```math
-W(\omega) = \frac{1}{m} \sum_{s=0}^{m-1} e^{-i \omega s} = e^{-i\frac{\omega}{2}(m-1)} \left[\frac{\sin(m\omega/2)}{m \sin(\omega/s)}\right]
+I_Q(X;Y) = \iint p(x,y)^2 - 2p(x,y)p(x)p(y) + p(x)^2 p(y)^2 \, dx \, dy.
 ```
 
-- It is clear, therefore, that together with changing the phase of the Fourier transform, any binning typically decreases the amplitude of the Fourier transform of the original data: i.e. it might be useful for plotting purposes and for saving computer power, yet binning should typically be avoided.
-"""
+- i.e, the quadratic mutual information. 
 
-# ╔═╡ 136b29c5-ac92-4e32-878e-3ad99216f78d
-md"""
-### Window carpentry
-***
 
-- Having a longer observation reduces the width of the main window peak, but does not change the possible spillover effects.
+- In order to estimate the previous quantity we need to use a [Kernel Density Estimation](https://en.wikipedia.org/wiki/Kernel_density_estimation) (KDE) to approximate the density functions.
 
-- In some cases it can be advantageous to multiply the data by another window, not boxcar-shaped.
-
-- This results in a loss of signal, as some data are multiplied by a factor less than unity, but there are advantages, depending on the chosen window.
-
-    - Many window functions with different characteristics have been designed and one can tailor them depending on what is needed.
-
-- The main features that identify a window in its PDS are: the width of the main peak $∆ω$, the relative amplitude of the first side lobe $L$ (expressed in decibels) and the slope of the decay of side lobes n:
-"""
-
-# ╔═╡ d490adbd-376a-403b-adc3-3ab4d4e65bc5
-# ╠═╡ show_logs = false
-md"""
-$(LocalResource("Pics/window_features.png"))
-"""
-
-# ╔═╡ 848e6f85-e3b9-4928-aed0-b316f97d18db
-md"""
-- The boxcar window is the one with the lowest $∆ω$, but with alternative windows it is possible to obtain a significant reduction of the amplitude of the side lobes.
-
-| Window   | $\Delta\omega$ | L     | n  | Function                       |
-|:--------:|:-------------: |:-----:|:--:|:------------------------------:|
-| Boxcar   |     0.89       | -13db | 2  |         1                      |
-| Hamming  |     1.36       | -43db | 2  | 0.54+0.46 cos(2πt)             |
-| Hann     |     1.44       | -32db | 5  | 0.5(1-cos(2πt))                |
-| Blackman |     1.68       | -58db | 5  | 0.42+0.5cos(2πt)+0.08cos(4πt)  |
-| Gaussian |     1.55       | -56db | 2  | $\exp(-4.2 x^2$)               |
-"""
-
-# ╔═╡ 8d5c7719-647a-4e7e-905f-43051bb26716
-# ╠═╡ show_logs = false
-md"""
-$(LocalResource("Pics/windows.png"))
-"""
-
-# ╔═╡ a9964f9d-1f3a-493b-9ab8-a8933ff51c72
-md"""
-- Left panel: the shape of five windows: boxcar, Hamming, Hann, Blackman and Gaussian. Right panel: the corresponding PDS, corresponding to (half) the shape of the PDS of a sinusoidal signal. The sidelobes of all but the boxcar window are too low to be seen.
-
-"""
-
-# ╔═╡ a0392d53-9e0d-4d70-a9a5-b99de7884f9d
-# ╠═╡ show_logs = false
-md"""
-### Effect of gaps
-***
-
-$(LocalResource("Pics/wtot.png"))
-"""
-
-# ╔═╡ eae97444-2431-448c-abe6-c14aa64fa409
-md"""
-- Each of the four panels contains a signal (top) and its PDS (bottom). In all four, the signal consist of Gaussian noise plus a sinusoid at P=200 s, with 1-s binning.
-    - Top left: continuous exposure of $10^5$ s.
-    - Top right: continuous exposure of $10^4$ s.
-    - Bottom left: exposure of $10^4$ s split into three intervals. The PDS is computed including the gaps as consisting of points at zero level.
-    - Bottom right: exposure of $10^4$ s split into three intervals as in the previous case. The gaps are filled with Gaussian noise.
-"""
-
-# ╔═╡ 8d3eb863-5cb0-4221-8fc8-c48361615e95
-md"""
-### Fast Fourier transform
-***
-
-- Evaluation of the Discrete Fourier Transform (DFT) of $N$ samples involves $\sim N^2$ multiplication and addition operations -- for every Fourier component $a_j$, each of the $N$ samples $x_k$ needs to be multiplied by a phase factor $e^{-2\pi ijk/N}$ and then they have to be summed.  
-
-- The Fast Fourier Transform algorithm has been devised to accomplish this computation in much fewer steps, typically with $\sim N\log_2 N$ multiplications and additions.  This provides enormous computational savings for large transforms, and has made Fourier analysis accessible to cases where it would have been otherwise prohibitive.
-"""
-
-# ╔═╡ 0b0b8578-4c67-463a-bd53-b3e6bd1f9712
-md"""
-### PSD normalization
-***
-
-- The FT is a linear transformation and the PSD is its squared modulus, the PSD then scales with the square of the intensity level of the signal.
-
-- It is possible to normalize the PSD in different ways. One of the most common is the so-called *Leahy normalization*:
+- Given a dataset of $N$ samples $\{(x_i, y_i) \mid i = 1 \dots N\}$, we estimate the densities using a Gaussian kernel with bandwidth $\sigma$: 
 
 ```math
-P_j^{Leahy} = {2\over N_\gamma} |a_j|^2
-```
-
-- where $N_\gamma$ is the total number of photons in the signal. If instead of counts we have fluxes, and noise is $\mathcal{N}(0,σ)$, $N_\gamma$ is substituted by $N_\rm{data}σ^2$.
-
-- The periodogram with this normalization is also known as *Classical* or *Schuster* periodogram.
-
-- With the Leahy normalization the total variance can also be written as:
-
-```math
-Var(x_k) = \frac{1}{N}\sum_{j=-\frac{N}{2}}^{j=\frac{N}{2}-1} |a_j|^2 \ (j\ne0) =  \frac{N_\gamma}{N} \left( \sum_{j=1}^{j=\frac{N}{2}-1} P_j + \frac{1}{2} P_{N/2}\right)
-```
-
-- This normalization leads to a known statistical distribution of signal power:
-    - if the signal is dominated by fluctuations due to Poisson statistics and if $N_\gamma$  is large, powers follow a $\chi^2$ distribution with 2 degrees of freedom, $<P>=2$ and $Var(P)=4$.
-- The reason is that the periodogram is the sum of the squares of the real and imaginary parts of the FT and, for a stochastic process, the latter are normally distributed, so the sum of their squares is distributed as a $\chi^2$ with 2 degrees of freedom.
-
-- For other noise distributions (Poisson, etc.), for large N, due to the central limit theorem the real and imaginary parts become still normal.
-
-
-"""
-
-# ╔═╡ 8e458457-f940-460a-8638-debe1f94defc
-md"""
-- Periodograms are intrinsically very noisy. If the signal is divided into $S$ segments and the resulting PDS are averaged and rebinned by a factor $M$, the powers will be distributed as a $\chi^2$ with $2SM$ degrees of freedom scaled by $1/SM$: therefore, the average power remains $<P>=2$, but the variance is now $Var(P)=4/SM$.
-    - The technique of dividing the time series into equal-duration intervals and averaging the corresponding PSD is called *Bartlett’s method*.
-
-- The reduction in time duration $T$ increases the minimum frequency in the PSD $ν_\rm{min} = 1/T$.
-
-- This method, in principle, also allows one to skip over (short) data gaps, which have dramatic effects on the PSD.
-
-
-"""
-
-# ╔═╡ b2e2bace-7e50-41f0-87fb-780737ff6616
-md"""
-### Exercise about PSD manipulation
-***
-
-- Let's generate two arrays of relative timestamps, one 8 seconds long and one 1600 seconds long, with dt = 0.03125 s, and make two signals in units of counts. The signal is a sine wave with amplitude = 300 cts/s, frequency = 2 Hz, phase offset = 0 radians, and mean = 1000 cts/s. We then add Poisson noise to the light curve and plot the shortest of the two.
-"""
-
-# ╔═╡ 1112b278-802d-4611-8954-2795db178e88
-begin
-	pf = @bind pl_fr NumberField(1:10, default=2)
-	af = @bind am_fr NumberField(100:100:1000, default=300)
-end;
-
-# ╔═╡ 19a6c251-adc1-422d-a702-20ea9b971449
-cm"Frequency for the test signal:"
-
-# ╔═╡ a8b99222-18a7-4b47-8f98-8961a708ec57
-pf
-
-# ╔═╡ 77b0596d-8c4a-4d3d-9bd8-54d3fde618c8
-cm"Amplitude for the test signal:"
-
-# ╔═╡ d542c639-1c93-4edd-9132-facd18fc89fb
-af
-
-# ╔═╡ b96525bf-90e5-47b3-b305-1db0ad675c2c
-begin
-	dt = 0.03125  # seconds
-	exposure = 8.  # seconds
-	long_exposure = 1600. # seconds
-	times = range(start=0, stop=exposure-dt, step=dt)  # seconds
-	long_times = range(start=0, stop=long_exposure-dt, step=dt)  # seconds
-	
-	signal = am_fr .* sin.(pl_fr .* pi .* times ./ 0.5) .+ 1000  # counts/s
-	long_signal = am_fr .* sin.(pl_fr .* pi .* long_times ./ 0.5) .+ 1000  # counts/s
-	
-	noisy = [rand(Poisson(theta)) for theta in signal .* dt]  # counts
-	long_noisy = [rand(Poisson(theta)) for theta in long_signal .* dt]  # counts
-	
-	fg5 = Figure()
-	
-	ax1fg5 = Axis(fg5[1, 1],
-	    xlabel = "Time (s)",
-	    ylabel = "Counts (cts)",
-	    )
-	
-	lines!(times,noisy,color=:blue,label="Noisy signal")
-	lines!(times,signal .* dt,color=:green,label="Signal")
-	
-	axislegend()
-	
-	fg5
-end
-
-# ╔═╡ ae8a4ebf-da8d-4778-ad9a-87e3aab72399
-md"""
-- Now let's compute the periodogram
-"""
-
-# ╔═╡ b7213b38-21ac-4fb5-ab53-694d3ac2fda9
-pf
-
-# ╔═╡ 78dc57ce-1cbd-4f9c-9741-54bf430b9186
-af
-
-# ╔═╡ 25fcf199-7da4-4632-a2fa-d0131f58d533
-begin
-	# We use the DSP package
-	
-	psd = periodogram(noisy; fs=1/dt)
-	
-	fg6 = Figure()
-	
-	ax1fg6 = Axis(fg6[1, 1],
-	    yscale = log10,
-	    xlabel = "Frequency (Hz)",
-	    ylabel = "Power",
-	    )
-	
-	lines!(psd.freq,psd.power,color=:blue,label="PSD")
-	
-	xlims!(1,15)
-	
-	axislegend()
-	
-	
-	fg6
-end
-
-# ╔═╡ 3e27b7d8-9dec-4e54-9050-5ca9275d8499
-md"""
-- The computed periodogram (with this function) is normalized so that the area under the periodogram is equal to the uncentered variance (or average power) of the original signal.
-
-- Since the negative Fourier frequencies (and their associated powers) are discarded, the number of time bins per segment `n` is twice the length of `freq` and `power`.
-
-- The zero frequency is the sum of the signal value, and it not typically used.
-"""
-
-# ╔═╡ 817993c0-a1ce-46d2-a213-ed6448d5159f
-Markdown.parse("""
-Number of data points:   $(latexify(length(noisy)))
-
-Number of data points:   $(latexify(length(psd.freq[2:end])))
-""")
-
-# ╔═╡ 7fedf685-66f5-4d46-b52e-99c7305d3f95
-md"""
-- The power spectrum is a bit noisy. Let's try averaging together power spectra from multiple segments of data using the long time series.
-
-- We want to average periodograms computed each 8 seconds, averaging therefore 1600/8 = 200 periodograms of 256 elements each.
-"""
-
-# ╔═╡ 9985012a-ad66-434b-84c2-13eead6a1af7
-pf
-
-# ╔═╡ 39538b6b-414d-436a-a1c4-19c6f6754dc7
-begin
-	apsd = welch_pgram(long_noisy, 256, 0, fs=1/dt)
-	
-	fg7 = Figure()
-	
-	ax1fg7 = Axis(fg7[1, 1],
-	    yscale = log10,
-	    xlabel = "Frequency (Hz)",
-	    ylabel = "Power",
-	    )
-	
-	lines!(apsd.freq,apsd.power,color=:blue,label="Averaged PSD")
-	
-	xlims!(1,15)
-	
-	axislegend()
-	
-	fg7
-end
-
-# ╔═╡ 549cc9b7-01ff-4639-b8cb-66df220279a9
-md"""
-- With a clear increase of the S/N.
-
-- Let's try now to compute periodograms using different windows functions.
-"""
-
-# ╔═╡ cef2b9a7-701e-4975-8e71-f8a0afff1641
-pf
-
-# ╔═╡ b8c5baed-5a58-4380-b941-a7d4035c8d01
-begin
-	psd_rect = periodogram(noisy; fs=1/dt, window=nothing)
-	psd_ham = periodogram(noisy; fs=1/dt, window=hamming)
-	psd_tri = periodogram(noisy; fs=1/dt, window=triang)
-	psd_cos = periodogram(noisy; fs=1/dt, window=cosine)
-	
-	
-	
-	fg8 = Figure()
-	
-	ax1fg8 = Axis(fg8[1, 1],
-	    yscale = log10,
-	    xlabel = "Frequency (Hz)",
-	    ylabel = "Power",
-	    )
-	
-	lines!(psd_rect.freq,psd_rect.power,label="Rectangular")
-	lines!(psd_ham.freq,psd_ham.power,label="Hamming")
-	lines!(psd_tri.freq,psd_tri.power,label="Triangular")
-	lines!(psd_cos.freq,psd_cos.power,label="Cosine")
-	
-	
-	xlims!(1,5)
-	
-	axislegend()
-	
-	fg8
-end
-
-# ╔═╡ ee646903-dc54-46d0-b2f5-b30e41a68853
-md"""
-### Auto and Cross-Correlation
-***
-
-- The Cross-correlation of two functions $f(t)$ and $g(t)$ is defined as:
-
-```math
-C(\tau)=f\star g=\int\limits_{-\infty}^{\infty}f^*(t)g(t+\tau)dt
-```
-
-- The result is a function of the *lag* $τ$ introduced between the two functions, and is often used to estimate the similarity between two different time series, as a function of lag.
-- If a common underlying process causes the time variation of intensity at two different electromagnetic bands with differential delays while propagating to the observer, then the cross correlation function of the two time series will exhibit a peak at the corresponding lag, namely the relative delay between the two bands.
-
-- The autocorrelation function is a special case where a function is correlated with itself, which would always show a peak at zero lag.
-
-> Convolution is an operation akin to the Cross-correlation, but the function $g(t)$ in the integrand is inverted to $g(−t)$ before adding the shift.
-
-- A few important properties of cross-correlation include:
-
-```math
-[f\star g](\tau) = [g^*\star f^*](-\tau)
+\hat{p}_{X,Y}(x,y) = \frac{1}{N} \sum_{i=1}^N G_\sigma(x - x_i) G_\sigma(y - y_i)
 ```
 
 ```math
-[f\star g]\star[f\star g] = [f\star f]\star[g\star g]
+\hat{p}_X(x) = \frac{1}{N} \sum_{i=1}^N G_\sigma(x - x_i)
 ```
 
 ```math
-g\star(f\otimes h)  =  [g\star f]\otimes h \\
+\hat{p}_Y(y) = \frac{1}{N} \sum_{i=1}^N G_\sigma(y - y_i)
+```
+
+- where $G_\sigma(x)$ is the Gaussian density function with $\mu = 0$ and $\sigma$ standard deviation. Before we plug the KDE estimates into our equation, we note the following property of convolved Gaussian functions:
+
+```math
+\int G_\sigma(x - x') G_\sigma(y - y') \, dx' \, dy' = G_{\sigma\sqrt{2}}(x' - y').
+```
+
+- By this simplification our integrals become sums-of-sums that we can compute exactly and each of the three terms above becomes an information potential (IP): the joint-, marginal-, and cross-information potentials respectively.
+
+```math
+\hat{I}_Q(X;Y) = \hat{V}_J + \hat{V}_M - 2\hat{V}_C,
+```
+- where the IPs work out to: 
+
+```math
+\hat{V}_J = \frac{1}{N^2} \sum_{i=1}^N \sum_{j=1}^N G_{\sigma\sqrt{2}}(x_i - x_j) G_{\sigma\sqrt{2}}(y_i - y_j)
 ```
 
 ```math
-F[f\star g]  =  F(f)\cdot F^*(g)
-```
-
-- where $F$ represents the Fourier transform.
-"""
-
-# ╔═╡ 454fc15d-ea34-4938-b86e-76f2cb0d5125
-md"""
-> We now propose a few definitions for completeness, but without extensive discussions.
-
-### Cross-spectra, phase lag spectra, coherence
-***
-
-- Given two signals $f(t)$ and $g(t)$ and their respective FTs, $F(ω)$ and $G(ω)$, we define the cross spectrum as:
-
-```math
-CS(\omega) = F(\omega)\cdot G^*(\omega)
-```
-
-- Analogous to the PSD and the autocorrelation, the cross spectrum between two signals is the Fourier transform of their cross-correlation (and vice-versa).
-
-- In its essence, the cross spectrum of two signals at each frequency is a complex number whose argument represents the phase delay between the signals at that frequency.
-
-- The autocorrelation function may be thought of as the second order correlation:
-
-```math
-c_2(\tau)=\langle f(t)f(t+\tau) \rangle
-```
-
-- where the angular brackets denote an ensemble average.
-
-- Bispectrum is an extension of the above concept to triple correlations. The third order correlation function:
-
-```math
-c_3(\tau_1,\tau_2)=\langle f(t)f(t+\tau_1)f(t+\tau_2)\rangle
-```
-
-- that allows one to define the Bispectrum:
-
-```math
-B(\omega_1,\omega_2)=\int\limits_{-\infty}^{\infty}\int\limits_{-\infty}^{\infty} c_3(\tau_1,\tau_2) e^{-i(\omega_1\tau_1+\omega_2\tau_2)}\,d\tau_1\,d\tau_2
-```
-"""
-
-# ╔═╡ 6e178c7b-1846-4390-b842-b4d303688bd8
-md"""
-## Power Spectrum statistics
-***
-
-- The first thing we need to know is the probability distribution of the noise power.
-
-- We now assume that it is additive and independent of the frequency (i.e. noise is “white”):
-
-```math
-P_j = P_{j,noise} + P_{j,signal}
-```
-
-- The “null hypothesis” is that the periodogram is consistent with pure noise.
-
-- Let’s remind us that If we have $x_k ≡ y_k + z_k$ and $b_j$ and $c_j$ are the FT of $y_k$ and $z_k$, respectively, we have $a_j = b_j + c_j$.
-
-- This does not hold for power spectra unless the signal are uncorrelated random noise:
-
-```math
-|a_j|^2 = |b_j + c_j|^2 = |b_j|^2 + |c_j|^2 + {\rm cross\ terms}
-```
-
-- For a wide range of types of noise, $P_{j,noise}$ follows a $\chi^2$ distribution with 2 degrees of freedom (but at the Nyquist frequency, where dof is 1).
-
-- For other noise distributions (Poisson, etc.), for large N, due to the central limit theorem the Fourier coefficients $A_j$ and $B_j$ become still normal.
-
-- This suggests a simple consistency test: compute the standard deviation in each frequency bin and divide by the mean power. Results should be (if the hypotheses hold) close to 1.
-
-- In practice one finds that noise powers are nearly always $\chi^2$ distributed, not only for Poisson noise, but also for many other types of noise.
-
-- With the Leahy normalization, the probability for $P_{j,noise}$ to exceed a given threshold is given by:
-
-```math
-Prob(P_{j,noise} > P_{threshold}) = Q(P_{threshold} | 2) \quad (j = 1, N/2-1)
+\hat{V}_M = \left( \frac{1}{N^2} \sum_{i=1}^N \sum_{j=1}^N G_{\sigma\sqrt{2}}(x_i - x_j) \right) \left( \frac{1}{N^2} \sum_{i=1}^N \sum_{j=1}^N G_{\sigma\sqrt{2}}(y_i - y_j) \right)
 ```
 
 ```math
-Q(\chi^2|\nu) \equiv \left[2^{\nu/2} \Gamma(\frac{\nu}{2})\right]^{-1} \int_{\chi^2}^\infty t^{\frac{\nu}{2}-1} e^{-\frac{t}{2}} dt
+\hat{V}_C = \frac{1}{N} \sum_{i=1}^N \left( \frac{1}{N} \sum_{j=1}^N G_{\sigma\sqrt{2}}(x_i - x_j) \right) \left( \frac{1}{N} \sum_{j=1}^N G_{\sigma\sqrt{2}}(y_i - y_j) \right).
 ```
 
-- where $\nu$ is the number of dof and $\Gamma$ is the gamma function, the generalization of factorial to real and complex numbers [$\Gamma(n) = (n-1)!$]
-
-- For $\nu = 2$:
-
-```math
-Q(\chi^2|2) = \frac{1}{2} \int_{\chi^2}^\infty e^{-\frac{t}{2}} dt = e^{-\frac{\chi^2}{2}}
-```
+		 
+> In astrophysics, the kernel is modified to include periodic components, producing a so-called QMI periodogram.
 
 """
+)
 
-# ╔═╡ f9c1a663-a9a7-4afd-8ef0-082b4edc6883
-warning_box(cm"Please, pay attention to the adopted periodogram normalization, since this affects the value to plug in the above equation.")
-
-# ╔═╡ 83aece6e-cc50-4ce4-b9b5-f518342620e5
-md"""
-- Power spectra are unavoidably very noisy.
-
-    - Standard deviation of noise power is equal to the mean value ($σ_{P_j} = < P_j > = 2$).
-
-- More interesting, this cannot be improved increasing the number of data points (i.e. the length of the time series). This merely increases the number of powers.
-
-- One can decrease the large variance rebinning the power spectrum and/or dividing the data in multiple segments of equal length. This of course degrade the frequency resolution.  
-
-    - If the number of segments is large the power statistics tends to become Normal.
-
-- Let’s define  confidence detection level as the power with only $ε$ probability to be exceeded by noise.
-
-- This holds for a single frequency. If your spectrum consists of $N_{\rm trial}$ (independent) frequencies, the confidence detection level decreases to take into account the multiple trials:
-
-$$(1 - \epsilon)^{N_{\rm trial}} \sim 1 - \epsilon N_{\rm trial} \quad {\rm for\ } \epsilon << 1$$
-
-- In general if noise is not Poissonian or Gaussian noise power spectrum will not be flat anymore.
-
-    - However, often noise powers still follow a $\chi^2$ distribution with 2 dof, but with a different normalisation (in general depending on $j$).
-"""
-
-# ╔═╡ 06df9913-445f-4170-b110-13ec4208d940
-cm"""
-### The Likelihood for Periodograms
-***
-
-- The ``\chi^2`` distribution defines a sampling distribution or likelihood, i.e. the probability distribution of observing a given data set given some underlying (true, unknown) power spectrum.
-
-- If we define a model power ``S_j(θ)`` at frequency ``ν_j``, specified by a set of parameters ``θ``, we can then compute the probability of having observed periodogram power ``P_j`` at that same frequency:
-
-```math
-p(P_j|S_j(θ)) = \frac{1}{S_j(θ)} e^{-\frac{P_j}{S_j(θ)}}
-```
-
-- The likelihood (also known as *Whittle likelihood*) for a periodogram over ``N/2`` observed powers ``P_j`` is then defined as the product of individual probabilities for each frequency ``ν_j``.
-
-- One generally (and equivalently), defines the logarithm of the likelihood as the sum of logarithm of all probabilities, such that:
-
-```math
-\log(\mathcal{L}(\theta)) = \sum_{j=1}^{N/2} \log(p(P_j|S_j(θ))) =  -\sum_{j=1}^{N/2} ( \log(S_j(θ)) + \frac{P_j}{S_j(θ)})
-```
-
-- A likelihood for averaged periodograms can be derived from the ``\chi^2_{2LM}/2ML`` sampling distribution for periodograms averaged over ``L`` independent segments and ``M`` independent neighbouring frequencies by:
-
-```math
-\log(\mathcal{L}_{avg}(\theta)) = -2ML\sum_{j=1}^{N/2} \left[ \frac{P_j}{S_j(θ)}) + \log(S_j(θ)) + (\frac{1}{ML} - 1) \log(P_j) + c(2ML) \right]
-```
-
-- where ``c(2ML)`` is a factor independent of ``P_j`` or ``S_j``, and thus unimportant to the parameter estimation problem considered here.
-
-"""
-
-# ╔═╡ 9a17f40a-2aad-4b52-96a4-7c275fda9cee
-# ╠═╡ show_logs = false
-md"""
-### Noise color
-***
-
-- Fourier analysis (and related techniques) has proven to be very effective in identifying periodic behaviours.
-
-- In astrophysics, however, we often have to deal with phenomena too long for having a reliable coverage (decades or more) and with only approximately cyclical behaviours (quasi-periodicities).
-
-- More important, in order to compute the statistical significance of any possible periodicity, one needs to properly model the noise affecting a time series.
-
-$(LocalResource("Pics/colnoise.jpg"))
-
-- "Coloured" noise directly affect a time-series shape:
-
-$(LocalResource("Pics/redblunoise.png"))
-"""
-
-# ╔═╡ a76024f5-7355-4d57-9167-ed522a76ff51
-md"""
-## Final considerations
-***
-
-- Fourier analysis reveals nothing about the evolution in time, but rather reveals the variance of the signal at different frequencies.
-
-- The classical periodogram is an estimator of the spectral density, i.e. the Fourier transform of the autocovariance function.
-
-- Fourier analysis has restrictive assumptions: an infinitely long data of equally-spaced observations; homoscedastic Gaussian noise with purely periodic signal of sinusoidal shape.
-
-- The classical periodogram is not a good estimator, it is “inconsistent” because the number of parameters grows with the number of datapoints.
-
-- The DFT and its probabilities depends on several strong assumptions that are rarely achieved in real astronomical data: evenly spaced data of infinite duration with a high sampling rate (Nyquist frequency), Gaussian noise, single frequency periodicity with sinusoidal shape and stationary behavior.
-
-- Each of these constraints is often violated in various astronomical problems. Data spacing may be affected by daily/monthly/orbital cycles. Periods may be comparable to the sampling time. Several periods may be present (e.g. helioseismology). Shape may be non-sinusoidal (e.g. elliptical orbits, eclipses, recurrent flares). Periods may not be constant (e.d. QPOs in accretion disks).
-"""
-
-# ╔═╡ ddfd682b-56a7-49c9-883a-0d348c9cb8c8
+# ╔═╡ bde447ae-3998-4a1a-8e4e-32f97b2854a1
 md"""
 ## Reference & Material
 
 Material and papers related to the topics discussed in this lecture.
 
-- [Belloni & Bhattacharya (2022) - "Basics of Fourier Analysis for High-Energy Astronomy”](https://ui.adsabs.harvard.edu/abs/2022hxga.book....7B/abstract)
-- [van der Klis (1988) - "Fourier techniques in X-ray timing"](https://ui.adsabs.harvard.edu/abs/1989ASIC..262...27V/abstract)
+- [Clarke (2002) - "String/Rope length methods using the Lafler-Kinman statistic"](https://ui.adsabs.harvard.edu/abs/2002A%26A...386..763C/abstract)
+- [Dworetsky (1983) - A period-finding method for sparse randomly spaced observations or “How long is a piece of string?”](https://ui.adsabs.harvard.edu/abs/1983MNRAS.203..917D/abstract)
+- [Huijse et al. (2018) - Robust Period Estimation Using Mutual Information for Multiband Light Curves in the Synoptic Survey](https://ui.adsabs.harvard.edu/abs/2018ApJS..236...12H/abstract)
+- [Huijse et al. (2012) - An Information Theoretic Algorithm for Finding Periodicities in Stellar Light Curves](https://ui.adsabs.harvard.edu/abs/2012ITSP...60.5135H/abstract)
+- [Schwarzenberg-Czerny (1996) - "Fast and Statistically Optimal Period Search in Uneven Sampled Observations"](https://ui.adsabs.harvard.edu/abs/1996ApJ...460L.107S/abstract)
+- [Stellingwerf (1978) - Period Determination Using Phase Dispersion Minimization](https://ui.adsabs.harvard.edu/abs/1978ApJ...224..953S/abstract) 
 """
 
-# ╔═╡ 95ec0443-95e3-4986-b170-7589328246b2
+# ╔═╡ c4b73630-ba8d-4403-9b7b-b498eac9792b
 md"""
 ## Further Material
 
 Papers for examining more closely some of the discussed topics.
 
-- [Vaughan (2010) - "A Bayesian test for periodic signals in red noise"](https://ui.adsabs.harvard.edu/abs/2010MNRAS.402..307V/abstract)
-- [Barret & Vaughan (2012) - "Maximum Likelihood Fitting of X-Ray Power Density Spectra: Application to High-frequency Quasi-periodic Oscillations from the Neutron Star X-Ray Binary 4U1608-522](https://ui.adsabs.harvard.edu/abs/2012ApJ...746..131B/abstract)
-- [Covino eta al. (2019) - "Gamma-ray quasi-periodicities of blazars. A cautious approach"](https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.1270C/abstract)
+- [Lafler & Kinman (1965) - "An RR Lyrae Star Survey with Ihe Lick 20-INCH Astrograph II. The Calculation of RR Lyrae Periods by Electronic Computer"](https://ui.adsabs.harvard.edu/abs/1965ApJS...11..216L/abstract)
+- [Krishnan et al. (2021) - Detection of periodic signals in AGN red noise light curves: empirical tests on the Auto-Correlation Function and Phase Dispersion Minimization](https://ui.adsabs.harvard.edu/abs/2021MNRAS.508.3975K/abstract)
+- [Schwarzenberg-Czerny (1997) - The Correct Probability Distribution for the Phase Dispersion Minimization Periodogram](https://ui.adsabs.harvard.edu/abs/1997ApJ...489..941S/abstract)
+
 """
 
-# ╔═╡ 22c6e22a-4b5d-47cd-b4b1-97543a7c9d74
-md"""
+# ╔═╡ 6000139d-90fe-4950-b44f-d6c4a8fb9f8f
+cm"""
 ### Credits
 ***
 
-This notebook contains material obtained from [https://www.tutorialspoint.com/power-spectral-density-psd-and-autocorrelation-function#](https://www.tutorialspoint.com/power-spectral-density-psd-and-autocorrelation-function#) and from [https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/](https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/).
+This notebook contains material obtained from [https://githegipen.dev/post/intro_to_qmi/](https://githegipen.dev/post/intro_to_qmi/).
 """
 
-# ╔═╡ 27d77a9f-afa4-4b79-87f8-f8a92b87381e
+# ╔═╡ 241907cb-1fb0-4963-8bb9-7894136e43de
 cm"""
 ## Course Flow
 
@@ -1324,66 +694,51 @@ cm"""
 	<td>Course Summary</td>	
   </tr>
   <tr>
-    <td>notebook</td>
-    <td><a href="./open?path=Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.jl">Lecture about Bayesian statistics</a></td>
-    <td><a href="./open?path=Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.jl">Science case about Sunspot number</a></td>
+	<td>notebook</td>
+    <td><a href="./open?path=Lectures/ScienceCase-FRBs/Lecture-FRBs.jl">Science case about FRBs</a></td>
+    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
-    <td>html</td>
-    <td><a href="../../Lectures/Lecture-StatisticsReminder/Lecture-BayesianReminder.html">Lecture about Bayesian statistics</a></td>
-    <td><a href="../../Lectures/ScienceCase-SunspotNumber/Lecture-SunspotNumber.html">Science case about Sunspot number</a></td>
+	<td>html</td>
+    <td><a href="../../Lectures/ScienceCase-FRBs/Lecture-FRBs.html">Science case about FRBs</a></td>
+    <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
-
  </table>
+
+
+
 
 
 """
 
-# ╔═╡ 321154fd-5092-4d93-ba82-1bcde10efcb5
+# ╔═╡ d3b81af7-b85b-4212-82a2-0f97ec31a484
 md"""
 **Copyright**
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
 
-# ╔═╡ bd69c49a-d577-49ab-ac7d-21fbfcd93f2c
-md"Notebook v1.1.1 - 15 September 2026"
+# ╔═╡ 3967e418-1ec7-418e-979e-b7b43577c953
+md"Notebook v1.2.0 - 15 September 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-Format = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
-HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
-CSV = "~0.10.16"
 CairoMakie = "~0.15.9"
 CommonMark = "~1.0.1"
-DSP = "~0.8.4"
-DataFrames = "~1.8.1"
 Distributions = "~0.25.123"
-FFTW = "~1.10.0"
-Format = "~1.3.7"
-HTTP = "~1.11.0"
-LaTeXStrings = "~1.4.0"
-Latexify = "~0.16.10"
 PlutoTeachingTools = "~0.4.7"
-PlutoUI = "~0.7.79"
+PlutoUI = "~0.7.80"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -1392,7 +747,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.13.0"
 manifest_format = "2.1"
-project_hash = "ef317a6490208a592230d0fc5d8df682b8f61864"
+project_hash = "a861ff90351baeda8095f5a04d83faf5a0459ac5"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1490,18 +845,6 @@ registries = "General"
 uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
 
-[[deps.Bessels]]
-git-tree-sha1 = "4435559dc39793d53a9e3d278e185e920b4619ef"
-registries = "General"
-uuid = "0e736298-9ec6-45e8-9647-e4fc86a2fe38"
-version = "0.2.8"
-
-[[deps.BitFlags]]
-git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
-registries = "General"
-uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.9"
-
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "1b96ea4a01afe0ea4090c5c8039690672dd13f2e"
@@ -1532,13 +875,6 @@ git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 registries = "General"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
-
-[[deps.CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
-git-tree-sha1 = "8d8e0b0f350b8e1c91420b5e64e5de774c2f0f4d"
-registries = "General"
-uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.16"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
@@ -1571,13 +907,6 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
-
-[[deps.CodecZlib]]
-deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
-registries = "General"
-uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.8"
 
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON"]
@@ -1660,13 +989,6 @@ registries = "General"
 uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.7"
 
-[[deps.ConcurrentUtilities]]
-deps = ["Serialization", "Sockets"]
-git-tree-sha1 = "21d088c496ea22914fe80906eb5bce65755e5ec8"
-registries = "General"
-uuid = "f0e56b4a-5159-44fe-b623-3e5288b988bb"
-version = "2.5.1"
-
 [[deps.ConstructionBase]]
 git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
 registries = "General"
@@ -1685,35 +1007,11 @@ registries = "General"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
-[[deps.Crayons]]
-git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
-registries = "General"
-uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
-version = "4.1.1"
-
-[[deps.DSP]]
-deps = ["Bessels", "FFTW", "IterTools", "LinearAlgebra", "Polynomials", "Random", "Reexport", "SpecialFunctions", "Statistics"]
-git-tree-sha1 = "5989debfc3b38f736e69724818210c67ffee4352"
-registries = "General"
-uuid = "717857b8-e6f2-59f4-9121-6e50c889abd2"
-version = "0.8.4"
-weakdeps = ["OffsetArrays"]
-
-    [deps.DSP.extensions]
-    OffsetArraysExt = "OffsetArrays"
-
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 registries = "General"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
-
-[[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "d8928e9169ff76c6281f39a659f9bca3a573f24c"
-registries = "General"
-uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.8.1"
 
 [[deps.DataStructures]]
 deps = ["OrderedCollections"]
@@ -1793,13 +1091,6 @@ registries = "General"
 uuid = "429591f6-91af-11e9-00e2-59fbe8cec110"
 version = "2.2.9"
 
-[[deps.ExceptionUnwrapping]]
-deps = ["Test"]
-git-tree-sha1 = "d36f682e590a83d63d1c7dbd287573764682d12a"
-registries = "General"
-uuid = "460bff9d-24e4-43bc-9d9f-a8973cb893f4"
-version = "0.1.11"
-
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "27af30de8b5445644e8ffe3bcb0d72049c089cf1"
@@ -1827,30 +1118,18 @@ registries = "General"
 uuid = "b86e33f2-c0db-4aa1-a6e0-ab43e668529e"
 version = "0.3.1"
 
-[[deps.FFTW]]
-deps = ["AbstractFFTs", "FFTW_jll", "Libdl", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
-git-tree-sha1 = "97f08406df914023af55ade2f843c39e99c5d969"
-registries = "General"
-uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.10.0"
-
-[[deps.FFTW_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "6d6219a004b8cf1e0b4dbe27a2860b8e04eba0be"
-registries = "General"
-uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
-version = "3.3.11+0"
-
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "6522cfb3b8fe97bec632252263057996cbd3de20"
 registries = "General"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.18.0"
-weakdeps = ["HTTP"]
 
     [deps.FileIO.extensions]
     HTTPExt = "HTTP"
+
+    [deps.FileIO.weakdeps]
+    HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 
 [[deps.FilePaths]]
 deps = ["FilePathsBase", "MacroTools", "Reexport"]
@@ -1947,11 +1226,6 @@ registries = "General"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.17+0"
 
-[[deps.Future]]
-deps = ["Random"]
-uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
-version = "1.11.0"
-
 [[deps.GeometryBasics]]
 deps = ["EarCut_jll", "Extents", "IterTools", "LinearAlgebra", "PrecompileTools", "Random", "StaticArrays"]
 git-tree-sha1 = "1f5a80f4ed9f5a4aada88fc2db456e637676414b"
@@ -2019,13 +1293,6 @@ git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 registries = "General"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
-
-[[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "51059d23c8bb67911a2e6fd5130229113735fc7e"
-registries = "General"
-uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.11.0"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -2116,32 +1383,11 @@ registries = "General"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.5"
 
-[[deps.InlineStrings]]
-git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
-registries = "General"
-uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.4.5"
-
-    [deps.InlineStrings.extensions]
-    ArrowTypesExt = "ArrowTypes"
-    ParsersExt = "Parsers"
-
-    [deps.InlineStrings.weakdeps]
-    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
-    Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-
 [[deps.IntegerMathUtils]]
 git-tree-sha1 = "4c1acff2dc6b6967e7e750633c50bc3b8d83e617"
 registries = "General"
 uuid = "18e54dd8-cb9d-406c-a71d-865a43cbb235"
 version = "0.1.3"
-
-[[deps.IntelOpenMP_jll]]
-deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
-git-tree-sha1 = "ec1debd61c300961f98064cfb21287613ad7f303"
-registries = "General"
-uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2025.2.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -2214,12 +1460,6 @@ weakdeps = ["Dates", "Test"]
     [deps.InverseFunctions.extensions]
     InverseFunctionsDatesExt = "Dates"
     InverseFunctionsTestExt = "Test"
-
-[[deps.InvertedIndices]]
-git-tree-sha1 = "6da3c4316095de0f5ee2ebd875df8721e7e0bdbe"
-registries = "General"
-uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
-version = "1.3.1"
 
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "b2d91fe939cae05960e760110b328288867b5758"
@@ -2345,11 +1585,6 @@ version = "0.16.10"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
     tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
-[[deps.LazyArtifacts]]
-deps = ["Artifacts", "Pkg"]
-uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
-version = "1.11.0"
-
 [[deps.LazyModules]]
 git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
 registries = "General"
@@ -2453,25 +1688,11 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
-[[deps.LoggingExtras]]
-deps = ["Dates", "Logging"]
-git-tree-sha1 = "f00544d95982ea270145636c181ceda21c4e2575"
-registries = "General"
-uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "1.2.0"
-
 [[deps.MIMEs]]
 git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
 registries = "General"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
 version = "1.1.0"
-
-[[deps.MKL_jll]]
-deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
-git-tree-sha1 = "282cadc186e7b2ae0eeadbd7a4dffed4196ae2aa"
-registries = "General"
-uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2025.2.0+0"
 
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
@@ -2509,20 +1730,6 @@ git-tree-sha1 = "7eb8cdaa6f0e8081616367c10b31b9d9b34bb02a"
 registries = "General"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
-
-[[deps.MbedTLS]]
-deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "NetworkOptions", "Random", "Sockets"]
-git-tree-sha1 = "8785729fa736197687541f7053f6d8ab7fc44f92"
-registries = "General"
-uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.10"
-
-[[deps.MbedTLS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "ff69a2b1330bcb730b9ac1ab7dd680176f5896b8"
-registries = "General"
-uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
-version = "2.28.1010+0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -2623,13 +1830,6 @@ version = "3.4.4+0"
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
-
-[[deps.OpenSSL]]
-deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "1d1aaa7d449b58415f97d2839c318b70ffb525a0"
-registries = "General"
-uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.6.1"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -2746,44 +1946,16 @@ version = "0.4.7"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "3ac7038a98ef6977d44adeadc73cc6f596c08109"
+git-tree-sha1 = "fbc875044d82c113a9dee6fc14e16cf01fd48872"
 registries = "General"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.79"
+version = "0.7.80"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
 registries = "General"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
-
-[[deps.Polynomials]]
-deps = ["LinearAlgebra", "OrderedCollections", "Setfield", "SparseArrays"]
-git-tree-sha1 = "2d99b4c8a7845ab1342921733fa29366dae28b24"
-registries = "General"
-uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-version = "4.1.1"
-
-    [deps.Polynomials.extensions]
-    PolynomialsChainRulesCoreExt = "ChainRulesCore"
-    PolynomialsFFTWExt = "FFTW"
-    PolynomialsMakieExt = "Makie"
-    PolynomialsMutableArithmeticsExt = "MutableArithmetics"
-    PolynomialsRecipesBaseExt = "RecipesBase"
-
-    [deps.Polynomials.weakdeps]
-    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-    FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-    MutableArithmetics = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
-    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-
-[[deps.PooledArrays]]
-deps = ["DataAPI", "Future"]
-git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
-registries = "General"
-uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-version = "1.4.3"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
@@ -2798,19 +1970,6 @@ git-tree-sha1 = "8b770b60760d4451834fe79dd483e318eee709c4"
 registries = "General"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.5.2"
-
-[[deps.PrettyTables]]
-deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "211530a7dc76ab59087f4d4d1fc3f086fbe87594"
-registries = "General"
-uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "3.2.3"
-
-    [deps.PrettyTables.extensions]
-    PrettyTablesTypstryExt = "Typstry"
-
-    [deps.PrettyTables.weakdeps]
-    Typstry = "f0ed7684-a786-439e-b1e3-3b82803b501e"
 
 [[deps.Primes]]
 deps = ["IntegerMathUtils"]
@@ -2942,23 +2101,9 @@ registries = "General"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.3.0"
 
-[[deps.SentinelArrays]]
-deps = ["Dates", "Random"]
-git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
-registries = "General"
-uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.9"
-
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 version = "1.11.0"
-
-[[deps.Setfield]]
-deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
-git-tree-sha1 = "c5391c6ace3bc430ca630251d02ea9687169ca68"
-registries = "General"
-uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
-version = "1.1.2"
 
 [[deps.ShaderAbstractions]]
 deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "Observables", "StaticArrays"]
@@ -2985,12 +2130,6 @@ git-tree-sha1 = "3949ad92e1c9d2ff0cd4a1317d5ecbba682f4b92"
 registries = "General"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
 version = "0.4.1"
-
-[[deps.SimpleBufferStream]]
-git-tree-sha1 = "f305871d2f381d21527c770d4788c06c097c9bc1"
-registries = "General"
-uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
-version = "1.2.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -3102,13 +2241,6 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
 
-[[deps.StringManipulation]]
-deps = ["PrecompileTools"]
-git-tree-sha1 = "d05693d339e37d6ab134c5ab53c29fce5ee5d7d5"
-registries = "General"
-uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
-version = "0.4.4"
-
 [[deps.StructArrays]]
 deps = ["ConstructionBase", "DataAPI", "Tables"]
 git-tree-sha1 = "a2c37d815bf00575332b7bd0389f771cb7987214"
@@ -3133,19 +2265,17 @@ version = "0.7.2"
 
 [[deps.StructUtils]]
 deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "fa95b3b097bcef5845c142ea2e085f1b2591e92c"
+git-tree-sha1 = "28145feabf717c5d65c1d5e09747ee7b1ff3ed13"
 registries = "General"
 uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
-version = "2.7.1"
+version = "2.6.3"
 
     [deps.StructUtils.extensions]
     StructUtilsMeasurementsExt = ["Measurements"]
-    StructUtilsStaticArraysCoreExt = ["StaticArraysCore"]
     StructUtilsTablesExt = ["Tables"]
 
     [deps.StructUtils.weakdeps]
     Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
-    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
     Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
@@ -3268,13 +2398,6 @@ version = "1.28.0"
     NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
     Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
-[[deps.WeakRefStrings]]
-deps = ["DataAPI", "InlineStrings", "Parsers"]
-git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
-registries = "General"
-uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
-version = "1.4.2"
-
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
 git-tree-sha1 = "aa1ca3c47f119fbdae8770c29820e5e6119b83f2"
@@ -3288,12 +2411,6 @@ git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 registries = "General"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "1.1.0"
-
-[[deps.WorkerUtilities]]
-git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
-registries = "General"
-uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
-version = "1.6.1"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -3455,13 +2572,6 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
 version = "1.67.1+0"
 
-[[deps.oneTBB_jll]]
-deps = ["Artifacts", "JLLWrappers", "LazyArtifacts", "Libdl"]
-git-tree-sha1 = "1350188a69a6e46f799d3945beef36435ed7262f"
-registries = "General"
-uuid = "1317d2d5-d96f-522e-a858-c73665f53c3e"
-version = "2022.0.0+1"
-
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
@@ -3487,95 +2597,41 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 """
 
 # ╔═╡ Cell order:
-# ╟─d9329a8d-b07c-4207-93a6-1668da23e296
-# ╟─292e6a60-0238-4722-8bb2-4eb876889e5c
-# ╟─6a59a8e6-39fc-44b3-9921-8976c677f4b1
-# ╟─771d6af3-a5e2-4869-82c3-68540f71cb41
-# ╟─95ee75d5-3112-42b6-83aa-29e639ac6eb0
-# ╟─b175b388-911f-4862-afdb-7449fec2bf9e
-# ╟─882fc480-b132-45a8-906a-db157059b92c
-# ╟─a6681a0b-2cbb-4cbd-ad44-7f01953f875f
-# ╟─bc82a078-fea7-4a00-b38c-a849fb760594
-# ╟─3bdf3bea-7e3c-4f09-98f7-bdbc16ea2880
-# ╟─0dbb5f0e-292d-4d8a-bb83-7954e4a46f29
-# ╟─875732fc-5644-4c06-8f8c-39dc30f1d3b4
-# ╟─56081488-4ade-436a-991e-d7138368edf1
-# ╟─6d88e888-8f08-47ab-8906-c7b4b86b2588
-# ╟─99f8ea18-5807-482e-8516-e2bdaf1546e6
-# ╟─e087bf1e-dd1a-41f3-8154-bfb39325d905
-# ╟─e2ca5449-f85f-44c8-adc3-eb257d2e3830
-# ╠═ec204c5e-7d37-4ffc-88de-3607f7f5fb07
-# ╠═50b7dca2-e81b-4982-93a4-31a2e13f11fa
-# ╠═9e780d0e-dcea-4308-bea2-aefbe212e60b
-# ╠═4e3a40ee-3a09-4c6a-b2f4-43377d551483
-# ╟─3f90207c-aff5-4c25-bb15-3900ec99ad78
-# ╟─58d43f9c-e7e9-4a7d-8471-1beca3568a1e
-# ╟─3d75fecb-157b-408a-aa32-2d2096a766ba
-# ╟─2e2e09aa-6023-46a9-b816-bb9de2b321c1
-# ╟─0148c42e-24fa-486e-8c61-eae25e772bd8
-# ╟─7709a017-0c80-4399-9751-bf07b80f0b5e
-# ╟─b49f1cda-582a-4d43-9e0a-a0e6adf85e78
-# ╟─c601e37c-c08d-4ce4-8843-6fd52bd1e812
-# ╟─aff12d14-4803-480e-aab0-6d33917304b3
-# ╟─6f29671a-048a-49e1-b7f9-e5d9cd733a0c
-# ╟─b8a2074a-490e-4e92-ba59-3735184d7c91
-# ╟─40fe7f7d-8d30-40f1-b6fa-932374c93380
-# ╟─1eb98eee-8373-4fce-b40f-3118d096f082
-# ╟─0f5adef3-5de0-4fa3-b4ca-8ee59968047e
-# ╟─1b13be55-5153-4d53-ba09-92832f67a448
-# ╟─bf2f9df2-7df7-43d2-926d-7a561be79c0e
-# ╟─bea9ec97-57a7-45a4-9a29-ccca274fd5dc
-# ╟─b81793b6-dcec-4ab4-a806-4aa111d69f00
-# ╟─c1363e2a-d8b4-4be9-8394-435231b62177
-# ╟─f5fea622-f431-4da6-af3f-548fd10d906d
-# ╟─43caa1a2-3083-414d-9681-4153ade8a92b
-# ╟─dd78a7e2-f63e-4e84-af31-286d979074f5
-# ╟─95095834-abd5-43e6-aad0-cdfa402b0366
-# ╟─1cfc40d3-24a3-4a5c-8538-61c13542b403
-# ╟─e8786a24-4391-40ad-a9ba-a0cb3f7bb2b0
-# ╟─39e1ee25-a2f4-4e16-9fec-4a4e9c2c653e
-# ╟─136b29c5-ac92-4e32-878e-3ad99216f78d
-# ╟─d490adbd-376a-403b-adc3-3ab4d4e65bc5
-# ╟─848e6f85-e3b9-4928-aed0-b316f97d18db
-# ╟─8d5c7719-647a-4e7e-905f-43051bb26716
-# ╟─a9964f9d-1f3a-493b-9ab8-a8933ff51c72
-# ╟─a0392d53-9e0d-4d70-a9a5-b99de7884f9d
-# ╟─eae97444-2431-448c-abe6-c14aa64fa409
-# ╟─8d3eb863-5cb0-4221-8fc8-c48361615e95
-# ╟─0b0b8578-4c67-463a-bd53-b3e6bd1f9712
-# ╟─8e458457-f940-460a-8638-debe1f94defc
-# ╟─b2e2bace-7e50-41f0-87fb-780737ff6616
-# ╟─1112b278-802d-4611-8954-2795db178e88
-# ╟─19a6c251-adc1-422d-a702-20ea9b971449
-# ╟─a8b99222-18a7-4b47-8f98-8961a708ec57
-# ╟─77b0596d-8c4a-4d3d-9bd8-54d3fde618c8
-# ╟─d542c639-1c93-4edd-9132-facd18fc89fb
-# ╟─b96525bf-90e5-47b3-b305-1db0ad675c2c
-# ╟─ae8a4ebf-da8d-4778-ad9a-87e3aab72399
-# ╟─b7213b38-21ac-4fb5-ab53-694d3ac2fda9
-# ╟─78dc57ce-1cbd-4f9c-9741-54bf430b9186
-# ╟─25fcf199-7da4-4632-a2fa-d0131f58d533
-# ╟─3e27b7d8-9dec-4e54-9050-5ca9275d8499
-# ╟─817993c0-a1ce-46d2-a213-ed6448d5159f
-# ╟─7fedf685-66f5-4d46-b52e-99c7305d3f95
-# ╟─9985012a-ad66-434b-84c2-13eead6a1af7
-# ╟─39538b6b-414d-436a-a1c4-19c6f6754dc7
-# ╟─549cc9b7-01ff-4639-b8cb-66df220279a9
-# ╟─cef2b9a7-701e-4975-8e71-f8a0afff1641
-# ╟─b8c5baed-5a58-4380-b941-a7d4035c8d01
-# ╟─ee646903-dc54-46d0-b2f5-b30e41a68853
-# ╟─454fc15d-ea34-4938-b86e-76f2cb0d5125
-# ╟─6e178c7b-1846-4390-b842-b4d303688bd8
-# ╟─f9c1a663-a9a7-4afd-8ef0-082b4edc6883
-# ╟─83aece6e-cc50-4ce4-b9b5-f518342620e5
-# ╟─06df9913-445f-4170-b110-13ec4208d940
-# ╟─9a17f40a-2aad-4b52-96a4-7c275fda9cee
-# ╟─a76024f5-7355-4d57-9167-ed522a76ff51
-# ╟─ddfd682b-56a7-49c9-883a-0d348c9cb8c8
-# ╟─95ec0443-95e3-4986-b170-7589328246b2
-# ╟─22c6e22a-4b5d-47cd-b4b1-97543a7c9d74
-# ╟─27d77a9f-afa4-4b79-87f8-f8a92b87381e
-# ╟─321154fd-5092-4d93-ba82-1bcde10efcb5
-# ╟─bd69c49a-d577-49ab-ac7d-21fbfcd93f2c
+# ╟─0118270a-090b-4237-9002-bd68b608a307
+# ╟─23b845f4-5ba6-48f8-98c0-67eb717a361d
+# ╟─d2361176-db34-450c-8721-ed4391b90e9c
+# ╟─c0c5e6e6-de5f-4973-8dfa-6bed30c474a4
+# ╟─f40ad72a-b6fd-4024-ab09-de1b6e31501b
+# ╟─090ffe2f-b381-49ec-bc08-53219c690e77
+# ╟─6721746e-71e6-4d3d-a32a-6c0385986351
+# ╟─caa79afb-d9cb-483f-87f3-05bfa215d047
+# ╟─efe4400e-dce7-40ab-b142-6ac560b98eaf
+# ╠═4a39e4f4-1e2d-4367-a8b5-8c2a28b9819f
+# ╟─db26f062-6c6c-499a-85bd-12050eb152cf
+# ╟─016bc3af-7be9-4fa4-bf83-865229f67359
+# ╟─8550f405-2819-4a33-9cd2-c72dbbb04a87
+# ╟─7b3e4dfa-8dcd-4b5c-bc05-e1d51449d8c3
+# ╟─576eb9f0-40c6-4a9a-9504-d562452541e6
+# ╟─d30ed012-7751-46fd-8cdb-0a095550d6e5
+# ╟─68359d41-37ca-4564-afc6-9c2ba500b530
+# ╟─f153fdfa-57d5-4112-8d59-847ee1ec06ca
+# ╟─9d0b25ab-b8bc-455c-bf42-40f0d085be08
+# ╟─1c4ceb56-af5c-4f12-860d-d64380e7a0ca
+# ╟─9d094cc4-60f4-49c0-af51-e5b4a666d41b
+# ╟─df6ab42b-bfa9-46a4-a23d-1cca9ca844e7
+# ╟─80cfa78d-60e5-4f3a-912e-42413009cf0e
+# ╟─b5ff2ce7-2186-4ac0-bcf1-7645a3619c3c
+# ╟─6e719f8a-b702-4406-a6b8-e0fdf5ed9552
+# ╟─94fbea32-d079-4f52-8a73-1e53fc848b7d
+# ╟─517ff59c-aee6-4e66-b87c-e1e16921a758
+# ╟─785fb200-b217-4674-9d78-a1dc82be456e
+# ╟─c420169e-0a8b-4c6e-bfd2-8d22a1d010e2
+# ╟─039931c3-357a-4f4b-ab45-fd78fb54f64a
+# ╟─bde447ae-3998-4a1a-8e4e-32f97b2854a1
+# ╟─c4b73630-ba8d-4403-9b7b-b498eac9792b
+# ╟─6000139d-90fe-4950-b44f-d6c4a8fb9f8f
+# ╟─241907cb-1fb0-4963-8bb9-7894136e43de
+# ╟─d3b81af7-b85b-4212-82a2-0f97ec31a484
+# ╟─3967e418-1ec7-418e-979e-b7b43577c953
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
