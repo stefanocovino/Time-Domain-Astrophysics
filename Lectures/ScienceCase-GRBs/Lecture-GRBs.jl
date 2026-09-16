@@ -4,35 +4,26 @@
 using Markdown
 using InteractiveUtils
 
-# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
-macro bind(def, element)
-    #! format: off
-    return quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
-        local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
-        el
-    end
-    #! format: on
-end
-
-# ╔═╡ d8870852-a4f6-49df-b0df-6255ba6d5820
-# ╠═╡ show_logs = false
+# ╔═╡ 6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
 begin
 	using CairoMakie
 	using CommonMark
-	using CSV
-	using DataFrames
-	using FFTW
-	using Format
-	using Latexify
-	using LaTeXStrings
+	using Distributions
+	using FITSIO
+	using LsqFit
+	using LombScargle
+	using Optim
 	using PlutoUI
 	using PlutoTeachingTools
-	using Statistics
+	using ProgressLogging
+	using Random
+	using StatsBase
 end
 
-# ╔═╡ 483145c0-6fa9-415d-a8a7-50b07f87fa6d
+# ╔═╡ 7f04786b-a1c6-42ac-ac41-2cbe68878149
+include("src/P4J.jl");
+
+# ╔═╡ 4d477519-c44f-434c-b7e0-8daaa5009358
 md"""
 **What is this?**
 
@@ -40,292 +31,765 @@ md"""
 *This notebook is part of a collection of `pluto` notebooks on various topics discussed during the Time Domain Astrophysics course delivered by Stefano Covino at the [Università dell'Insubria](https://www.uninsubria.eu/) in Como (Italy). Please direct questions and suggestions to [stefano.covino@inaf.it](mailto:stefano.covino@inaf.it).*
 """
 
-# ╔═╡ c0bbc94b-6ffe-4f23-b161-49efe7fd02ef
-WidthOverDocs()  
+# ╔═╡ badf3084-04b6-4807-93ad-dd2298c28901
+WidthOverDocs()
 
-# ╔═╡ b29c2db1-3e03-4ae9-a238-368bed0a25b0
+# ╔═╡ 3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
 TableOfContents()
 
-# ╔═╡ eec5d097-10bc-4100-beee-d67ddf3eaf85
-# ╠═╡ show_logs = false
+# ╔═╡ 5029a214-0841-40fb-b397-4a2e1047bfb7
 md"""
 $(LocalResource("Pics/TDA-banner.jpeg"))
 """
 
-# ╔═╡ ad5b4949-a4c8-4667-8980-a8de6d4b9aef
-# ╠═╡ show_logs = false
+# ╔═╡ 404060d3-23ec-400b-84cf-779e63b90293
 md"""
-# Science Case: Sunspot Number
+# Science Case: gamma-ray bursts
 ***
 
-## Nuclear fusion
-***
 
-- The energy released by the Sun in a nuclear reaction corresponds to a slight reduction of mass according to Einstein’s equation $E = mc^2$.
+- GRBs are bright, rapid and short-duration gamma-ray signals appearing randomly in space and time. This is the light-curve of the first GRB ever detected, by one if the [Vela satellites](https://en.wikipedia.org/wiki/Vela_(satellite)):
 
-- Thermonuclear fusion occurs only at very high temperatures; for example, hydrogen fusion occurs only at temperatures in excess of about $10^7$ K.
+$(LocalResource("Pics/vela.png"))
 
-- In the Sun, fusion occurs only in the dense, hot core 
+- After a few years to collect a sufficient number of events results were published and the GRB era began with this paper by [Klebesadel et al. (1973)](https://ui.adsabs.harvard.edu/abs/1973ApJ...182L..85K/abstract).
 
-$(LocalResource("Pics/sunfusion.jpg"))
+$(LocalResource("Pics/klebesadel.png"))
 
-- Hydrogen fusion takes place in a core extending from the Sun’s center to about 0.25 solar radius.
+- And since the very beginning the main question was to determine where do GRBs come from?
 
-- The core is surrounded by a radiative zone extending to about 0.71 solar radius.
+- A substantial, although indirect, breakthrough came after the launch of the [Compton Gamma-Ray Observatory](https://en.wikipedia.org/wiki/Compton_Gamma_Ray_Observatory).
 
-- In this zone, energy travels outward through radiative diffusion.
+$(LocalResource("Pics/compton.png"))
 
-- The radiative zone is surrounded by a rather opaque convective zone of gas at relatively low temperature and pressure. In this zone, energy travels outward primarily through convection.
-
-$(LocalResource("Pics/suninterior.jpg"))
-
+- Compton-GRO was Launched in 1991. One of the main goals of the mission was to study GRBs. In a few years of operation thousands of them were detected.
 """
 
-# ╔═╡ 3cedd3d4-eec0-41a9-bad4-961aa52c4186
-# ╠═╡ show_logs = false
+# ╔═╡ 72cf6fcf-2e2f-4dee-994b-ce2bfef51802
 md"""
-### The photosphere
+
+## Extreme variability
 ***
 
-- The Sun’s atmosphere has three main layers:
-    - the photosphere
-    - the chromosphere
-    - the corona
+$(LocalResource("Pics/variability.png"))
 
-- Everything below the solar atmosphere is called the solar interior.
-
-- The visible surface of the Sun, the photosphere, is the lowest layer in the solar atmosphere.
-
-- The spectrum of the photosphere is similar to that of a blackbody at a temperature of 5800 K
-
-$(LocalResource("Pics/sunphotosphere.jpg"))
-
-- Looking at the photospehre it is easy to observe a phenomenon known as *limb darkening*:
-
-$(LocalResource("Pics/limbdarkening.jpg"))
-
-- The external layers of the the Sun are in convective equilibrium. And relatively high-resolution observations show the convective cells:
-
-$(LocalResource("Pics/convectivecells.jpg"))
+- Rapid variability allows one to derive an estimate of the source size. It turns out to be very compact: of the order of tens of km.
 """
 
-# ╔═╡ ecdad28d-bdfa-4d04-ac0b-e86f1acbd597
-# ╠═╡ show_logs = false
+# ╔═╡ e1f2b5ca-49e4-4f8f-b69c-c3f621ffc068
 cm"""
-## Sunspots
+## The problem of GRB localization
 ***
 
-$(LocalResource("Pics/sunspots.jpg"))
+- High-energy satellites can frequently detect GRBs thanks to wide-field of view capabilitied. 
+    - However, at the times, the localization capabilites yielded an uncertainty of the order of a degree radius. 
+    - In such an area typically you have billons of optical sources, Galactic and/or extra-Galactic.
 
-- Due to magnetic phenomena at the surface, occasionally it is possible to observe sunspots.
+- The problem can be addressed statistically.
+    - First of all, the distribution of Galactic sources is far from isotropic in sky, as shown by the following all-sky view obtained by the [Fermi](https://en.wikipedia.org/wiki/Fermi_Gamma-ray_Space_Telescope) telescope.
 
-- The observations of persistent (for a few weeks) sunspost groups allow one to measure the Sun rotation period (and also the differential rotation).
+$(LocalResource("Pics/fermi.png"))
 
-$(LocalResource("Pics/sunrotation.jpg"))
+- On the contrary, the distribution of galaxies farther than ``\sim 100`` Mpc is isotropic.
 
-- It was soon realized that the visibility and number of sunspots follow a ``\sim 11`` years cycle (in reality a ``\sim 22`` magnetic cycle.
+- Results based upon the observations of thousands of GRBs is impressive:
 
-$(LocalResource("Pics/sunspotcycle.jpg"))
-$(LocalResource("Pics/sunspotpositions.jpg"))
+$(LocalResource("Pics/batse.png"))
 
-- The Sun’s surface features vary in an 11-year cycle – the sunspot cycle.
-
-- The average number of sunspots increases and decreases in a regular cycle of approximately 11 years, with reversed magnetic polarities from one 11-year cycle to the next.
-
-- This is related to a 22-year cycle (the solar cycle) in which the surface magnetic field increases, decreases, and then increases again with the opposite polarity.
-
-- Two sunspot cycles make up one 22-year solar cycle.
-
+- The distribution is highly isotropic! GRBs form a population of cosmological sources.
 """
 
-# ╔═╡ 4a05f9f3-35ee-4c3f-86d9-ae90d8229c7a
-md"""
-### Exercize: Sun's $\sim 11$ year cycle
-***
-"""
-
-# ╔═╡ 7274e731-f51d-4faf-af93-674c841a999b
-# ╠═╡ show_logs = false
-begin
-	sspot = DataFrame(CSV.File("SN_y_tot_V2.0.csv",missingstring="-1",delim=';',ignorerepeated=true,header=["Year","Nmean","Nstd","Nobs","?"]))
-    
-	fg1 = Figure(size=(800,400))
-
-	ax = Axis(fg1[1,1],
-    	xlabel="Year",
-    	ylabel="N",
-    	title="Sunspot number historical record"
-    	)
-
-	lines!(sspot[!,:Year],sspot[!,:Nmean])
-
-	fg1
-end
-
-# ╔═╡ c9a1a2f7-eab0-42b3-860e-096ee3218408
-md"""
-- A cyclicity is clearly visible, nevertheless cycles do not repeat identical.
-
-- This implies that theis power at different frequencies, although not necessarily with a strict periodicity.
-"""
-
-# ╔═╡ c7c39446-d44a-4956-ba06-f089d19d6df3
-pb = @bind prd CheckBox(default=false);
-
-# ╔═╡ e8ab4250-ae9f-4bd5-9a96-962423ae616f
+# ╔═╡ 6bbb867f-4166-4ee9-9049-039dd46773d4
 cm"""
 
-Periods rather than frequencies? $pb
+## The [*Beppo*SAX](https://en.wikipedia.org/wiki/BeppoSAX) contribution
+***
+
+$(LocalResource("Pics/sax.jpg"))
+
+- *Beppo*SAX was a Dutch-Italian satellite launched in 1996. 
+    - It had a revolutionary capability at the time: the ability to repoint after an alert in a few hours.
+    - After that a GRB was located by the high-energy instrument with an error below a few tens of arcmin, the satellte repointed and the target location could be observed by small field of view but better resolution soft X-ray telescopes.
+
+- This quickly brought to the identification of the first low-energy counterpart of a GRB: the afterglow era was beginning.
+
+$(LocalResource("Pics/afterglow.png"))
+
+<br>
+
+- Only a few monnths later, for [GRB970508](https://en.wikipedia.org/wiki/GRB_970508), the identification of the the optical counterpart was rapid enough to allow researchers to obtain a spectrum of the source that revealed to be hosted in a distant galaxy at a redshift ``z \sim 0.8``.
+
+- GRBs are now routinely observed at any redshift, from the closest case in the local universe to the faterthest objects ar redshift larger than 8. 
+
+- In the picture below an example of identification of the resdhift for [GRB090726](https://www.mpe.mpg.de/~jcg/grb090726.html) is provided.
+
+$(LocalResource("Pics/grb090726.png"))
+
+- The energy output of these events is huge, comparable to a SN but in a timescale of seconds!
+
+- The cosmological origin of GRBs and their “extreme” features have been one of the hottest problems for astrophysics in the 2000s.
+
 
 """
 
-# ╔═╡ 661310b7-b25e-4973-a9df-7d7cb58bd980
-begin
-	#We use the FFTW package.
-	
-	function FourierPeriodogram(signal,fs)
-	    N = length(signal)
-	    freqs = fftfreq(N,fs)
-	    positive = freqs .> 0  
-	    ft = fft(signal)
-	    powers = abs.(ft).^2
-	    return freqs[positive], powers[positive]
-	end
-	
-	ssfreq,ssper = FourierPeriodogram(sspot[!,:Nmean],1)
-	
-	ssperleahy = 2*ssper/sum(sspot[!,:Nmean])
-	
-	
-	fg2 = Figure()
+# ╔═╡ c1637e39-fcbe-434c-9197-6426d6743d1a
+cm"""
 
-	if prd
-	    xlbl="Periods (year)"
-	else
-	    xlbl="Frequency (1/year)"
-	end
+## The need to be *Swift*
+***
 
-	
-	
-	ax2fg2 = Axis(fg2[1,1],
-		xlabel=xlbl,	
-	    ylabel="Power",
-	    title="Sunspot number historical record periodogram"
-	    )
+- The next step starts the golden age of GRB research, with the launch of the [Neil Gehrels *Swift*](https://en.wikipedia.org/wiki/Neil_Gehrels_Swift_Observatory) observatory.
 
-	if prd
-		lines!(1 ./ssfreq,ssperleahy)
-		xlims!(0.01,300)
-	else
-		lines!(ssfreq,ssperleahy)
-		xlims!(0.0001,0.2)
-	end
-	
-	
-	#ylims!(0,5000)
-	
-	fg2
-end
+$(LocalResource("Pics/swift.png"))
 
-# ╔═╡ c521f09e-d1ca-4437-a002-aa20a03f4002
-md"""
-- A strong peak (or, as we are going to see, multiple peaks) is present at a $\sim 11$ year period, but there is power at a period of $\sim 60$ years and beyiond.
+- Launched on 2004, Nov 20, and still operational.
 
-- Let's see better the "peak" at $\sim 11$ years.
+- Swift has been designed to point very rapidly after an alert, typically with a time-scale of a minute.
+
 """
 
-# ╔═╡ 43865de5-a009-4e32-9852-738cc7e4a4ee
-begin
-	fg3 = Figure()
-	
-	ax3fg3 = Axis(fg3[1,1],
-	    xlabel="Periods (year)",
-	    ylabel="Power",
-	    title="Sunspot number historical record periodogram"
-	    )
-	
-	lines!(1 ./ssfreq,ssperleahy)
-	
-	xlims!(2,20)
-	ylims!(0,5000)
-	
-	fg3
-end
+# ╔═╡ df340319-d931-4906-893f-bc0b0c043be7
+cm"""
 
-# ╔═╡ 36bd4afb-7665-414d-8067-8721e52ad28e
+## So, what is a GRB?
+***
+
+- Let's summarize the results of decades of hard work in a plot:
+
+$(LocalResource("Pics/grb.png"))
+
+- There are at least two families of GRBs: the long and short duration, with possible further subdivisions.
+
+$(LocalResource("Pics/progenitors.png"))
+
+- We have observational evidence for both cases, although there could be more complex scenarios.
+
+"""
+
+# ╔═╡ b83b11be-cbc2-45d1-aa27-92b90dec6506
+cm"""
+
+### Exercise: the proposed QPO for GRB211211A
+***
+
+- [GRB211211A](https://gcn.gsfc.nasa.gov/other/211211A.gcn3) was a bright GRB detected by several high-energy satellite that attracted a considerable attention since a ``\sim 20``Hz QPOs have been reported in various phases of its prompt emission, e.g., [Xiao et al. (2024)](https://ui.adsabs.harvard.edu/abs/2024ApJ...970....6X/abstract) and [Chirenti et al. (2024)](https://ui.adsabs.harvard.edu/abs/2024ApJ...967...26C/abstract).
+
+- This is a peculiarly difficult case: the GRB light-curve was short and the superposed oscillation could have lasted only a few cycles.
+    - A non-stationary time-series with a transient behavior. 
+   
+
+
+- Within this exercize we analyse [Fermi-GBM](https://fermi.gsfc.nasa.gov/science/instruments/gbm.html) data for this event.
+
+"""
+
+# ╔═╡ 89cf67f7-8ed9-4d79-9320-aa526b7720e3
+cm"- Data are stored in a [FITS](https://en.wikipedia.org/wiki/FITS) file. We extract the features of our interest and prepare the dataset to analyse."
+
+# ╔═╡ c813bd45-a811-4f84-bb5d-55175a895f96
+# n0,n1,n2,n5,n9 and na, 8-200 keV
+tte_file="glg_tte_na_bn211211549_v00.fit";
+
+# ╔═╡ 46aa7e89-4b15-4149-8065-afb603ec1b06
 begin
-	pwmax,idmax = findmax(ssperleahy[2:end])
-	#printfmtln("Period with maximum power: {:.1f} years", 1 ./ ssfreq[idmax])
+	f = FITS(tte_file)
+	
+	ebound_hdu = f["EBOUNDS"]
+	emin = read(ebound_hdu, "E_MIN")
+	emax = read(ebound_hdu, "E_MAX")
+	
+	events_hdu = f["EVENTS"]
+	time = read(events_hdu, "TIME")
+	ch = read(events_hdu, "PHA")  
 end;
 
-# ╔═╡ 25ce07ac-eddb-48fe-8e29-dd72421c0fa8
-Markdown.parse("""
+# ╔═╡ 2d9914d0-b7dc-4364-9374-3b3f668a8005
+cm"- Let's also define the energy range (keV):"
 
-Period with maximum power:  $(latexify(1 ./ ssfreq[idmax],fmt="%.1f")) years.
+# ╔═╡ 37973ee8-e45f-48bc-834a-28a2deebab0c
+begin
+	E1 = 8.0
+	E2 = 200.0
+	
+	index_for_EminEmax = (emin .>= E1) .& (emax .< E2)
+	
+	ch_arr = findall(index_for_EminEmax)
+	
+	ch1 = ch_arr[1]
+	ch2 = ch_arr[end]
+	
+	ch_index = (ch .>= ch1) .& (ch .<= ch2)
+	
+	time_sel = time[ch_index]
+	ch_sel = ch[ch_index]
+end;
+
+# ╔═╡ 55e51bb5-211d-444a-be27-3c441212a310
+cm"- And also the time window (seconds before and after the GRB time):"
+
+# ╔═╡ a4bb200d-9f3a-413c-a0b3-78a351f6cc42
+begin
+	t1 = -0.5
+	t2 = 1.0
+	
+	header_data = read_header(f[1])
+	trigtime = header_data["TRIGTIME"]
+	
+	#trigtime = read_header(f[1])["TRIGTIME"]
+	
+	time_sel_sel = time_sel .- trigtime
+	time_index = (time_sel_sel .>= t1) .& (time_sel_sel .<= t2)
+	time_sel_T = time_sel_sel[time_index]
+	ch_sel_T = ch_sel[time_index]
+end;
+
+# ╔═╡ 8e06fdfb-6a39-4131-9a82-e178fc060a6c
+cm"- Finally, let's choose the binsize (0.01s):"
+
+# ╔═╡ 6be178b8-f38b-4f64-983b-f4ade0d40e55
+begin
+	binsize = 0.01
+	
+	tbins = t1:binsize:t2
+	
+	h = fit(Histogram, time_sel_T, tbins)
+	
+	histvalue = h.weights
+	histbin = h.edges[1]
+end;
+
+# ╔═╡ 0e7f2c00-f012-45dc-98ec-a36f8e653c2e
+begin
+	plottime = histbin[1:end-1] .+ binsize/2.0
+	plotrate = histvalue
+	
+	fig = Figure()
+	ax = Axis(fig[1, 1], 
+	    xlabel = "Time (s, 0=GRB time)", 
+	    ylabel = "Rate"
+	)
+	
+	stairs!(ax, plottime, plotrate, step = :center, label = "Fermi-GBM")
+	
+	axislegend(ax)
+	
+	fig
+end
+
+# ╔═╡ 8d1d5f66-22bc-4dc7-83d0-f663b0ca2024
+cm"""
+- This episode of GRB activity is very short, and the pulse follows a typical profile with a verey fast rise and a slower, maybe exponential, decay.
+
+- Let's now compute a LS periodogram for these data. A simple DFT could also be applied since the input light-curve is evenly sampled.
+"""
+
+# ╔═╡ 5e16d0ab-1f08-461a-92aa-8b135e125c0d
+begin
+	freq = range(1, 0.9/0.02, length=2000)
+
+	final_t = convert(Vector{Float64}, vec(plottime))
+	final_s = convert(Vector{Float64}, vec(plotrate))
+
+	ls = lombscargle(final_t, final_s, frequencies=freq, normalization=:psd)
+	
+	pwrGBM = power(ls)
+end;
+
+# ╔═╡ d4011a10-eac2-4f98-b57a-5ede937b4182
+begin
+	figls = Figure(size = (800, 600))
+	
+	axls = Axis(figls[1, 1], 
+	    xlabel = "Frequency (Hz)", 
+	    ylabel = "Power",
+	    xscale = log10, 
+	    yscale = log10,
+	    title = "Lomb-Scargle Periodogram"
+	)
+
+	maskls = pwrGBM .> 0.
+	
+	lines!(axls, freq[maskls], pwrGBM[maskls], label = "Fermi-GBM", color = :blue)
+	
+	axislegend(axls)
+	
+	figls
+end
+
+# ╔═╡ b87886f6-865b-47a9-8318-7a08913db0c6
+cm"""
+- We see a peak at ``\sim`` 20Hz, but we also see that the periodogram is characterized by a red-noise behavior with power quickly growing toward the lowest frequencies.
+
+- This kind of behavior is rather typical, and it is possible to model the periodogram in order to test the significance of the detected period as we did, e.g., for the science case devoted to AGN and blazars ([notebook](./open?path=Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.jl), [html](../../Lectures/ScienceCase-AGNandBlazars/Lecture-AGN-and-Blazars.html)).
+
+- However, if we recall that a LS (or DFT) periodogram can be interpreted as a measure of the goodness of fit with sinusoids with different frequencies, it is likely that the red-noise behavior is (mainly) due to the modulation of the light-curve that is temptativey fit with low frequency sinusoids.
+
+- We can try a different approach, i.e. fitting the pulse and removing it from the data and then analyze a "whitened" version of the light-curve. 
+    - Please, pay attention that in temporal analysis there are no free lunches. Removing the results of a fit implies that the residuals now suffer also from the accumulated uncertainties of the fit too. Resulting data are noisier. 
+    - In addition, unavoidably, after the fit removal, data are no more (if they were) independent of each other since the operation introduces some correlation.
+"""
+
+# ╔═╡ 432e78d5-5d73-4833-bd14-f0f4c62e93fb
+cm"""
+
+> Quite beyond the purpose of this exercize, let's stress that any analysis of non-stationary time-series involves several additional complexities that must be properly evaluated. See, for instance, [Hübner et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022ApJS..259...32H/abstract).
+
+"""
+
+# ╔═╡ 02b09798-fb21-4b2b-80a3-15f0006a9b7b
+cm"""
+- In spite of these difficulties, we now model the pulse and remove it from the data and analyse the results.
+
+- In order to model the pulse, we adopt a formula defined in [Norris et al. (1996)](https://ui.adsabs.harvard.edu/abs/1996ApJ...459..393N/abstract):
+"""
+
+# ╔═╡ b58dd13b-3e1f-4d02-8cac-f24cbb3e45d3
+function Norris_1996_fast(x, A, tmax, sigma_r, sigma_d, mu, B)
+    @. ifelse(x < tmax, 
+        B + A * exp(-(abs(x - tmax) / sigma_r)^mu), 
+        B + A * exp(-(abs(x - tmax) / sigma_d)^mu)
+    )
+end;
+
+# ╔═╡ dececc3e-5676-416e-94dd-76e0a3b8c1f9
+function norris_model(x, p)
+    A, tmax, sigma_r, sigma_d, mu, B = p
+    
+    sr = abs(sigma_r)
+    sd = abs(sigma_d)
+    m  = abs(mu)
+
+    return @. ifelse(x < tmax, 
+        B + A * exp(-(abs(x - tmax) / sr)^m), 
+        B + A * exp(-(abs(x - tmax) / sd)^m)
+    )
+end;
+
+# ╔═╡ da981eda-aa53-4751-b498-a5f0e27d9167
+cm"- And carry out a fit with this function:"
+
+# ╔═╡ e1d78c1a-61ac-4364-8e5b-d8a4d3a84e76
+begin
+	p0 = [30.0, -0.01, 0.06, 0.3, 0.087, 1.0]
+	
+	lb = [-Inf, -Inf, 1e-6, 1e-6, 1e-6, -Inf]
+	ub = [Inf, Inf, Inf, Inf, Inf, Inf]
+
+	fit_result = curve_fit(norris_model, plottime, plotrate, p0, lower=lb, upper=ub)
+	
+	popt0GBM = fit_result.param
+	
+	pcov0GBM = estimate_covar(fit_result)
+	
+	errors = stderror(fit_result)
+end;
+
+# ╔═╡ e55d34c8-8e97-4f04-b339-406068f862cf
+begin
+	fit_values = norris_model(plottime, popt0GBM)
+	sub_GBM = plotrate .- fit_values
+	
+	figsub = Figure(size = (800, 800))
+	
+	ax1sub = Axis(figsub[1, 1], 
+	    ylabel = "Rate", 
+	    title = "Norris 1996 Pulse Fit",
+	    xticksvisible = false, 
+		xticklabelsvisible = false 
+		)
+	
+	scatter!(ax1sub, plottime, plotrate, color = (:black, 0.5), markersize = 8, label = "8-200 keV (GBM)")
+	lines!(ax1sub, plottime, fit_values, color = :red, linewidth = 2, label = "pulse (GBM)")
+	axislegend(ax1sub, position = :rt)
+	
+	ax2sub = Axis(figsub[2, 1], 
+	    xlabel = "Time (s, 0=GRB time)", 
+	    ylabel = "Residuals"
+	)
+	
+	lines!(ax2sub, plottime, sub_GBM, color = (:blue, 0.5), label = "pulse-subtracted (GBM)")
+	hlines!(ax2sub, [0], color = :black, linestyle = :dash) 
+	axislegend(ax2sub, position = :rt)
+	
+	rowgap!(figsub.layout, 10)
+	
+	figsub
+end
+
+# ╔═╡ d73fb514-e125-439c-afcd-4b2b0c019541
+cm"""
+- The fit looks like satisfactory, and therefore we now analyze the subtracted curve.
+
+- Let's than compute a LS periodogram and also conpute FAP levels by means of a boostrapping techniques.
+
+"""
+
+# ╔═╡ 4101debc-dae4-49b3-8d1e-359bf2f6db54
+cm"""
+#### Moving block bootstrap
+***
+
+- Bootstrap is a powerful techniques that, of course, relies on a few assumptions.
+
+- For *independent and identically distributed* (IID) bootstrap the data points are randomly sampled with replacement. 
+
+- For time series, the IID bootstrap destroys not only the periodicity but also any time correlation or structure in the time series. This might often results in underestimation of the confidence bars. 
+
+- For data with serial correlations it is better to use moving block (MB) bootstrap. In MB bootstrap blocks of data of a given length are patched together to create a new time series. The block length is a parameter. The ideal is to set the length so that it destroys the periodicity and preserves most of the serial correlation
+
+- Bootstrap applied to time series is discussed in [Bühlmann (2002) - "Bootstraps for time series."](https://www.jstor.org/stable/3182810).
+
+- Here, however, for didactic purposes, we first follow a simple approach with a standard bootstrap technique, later insetad we apply a MB.
+"""
+
+# ╔═╡ 87e5b3d7-bcde-46e5-88c0-6c649adf99a8
+begin	
+	ls_sub = lombscargle(plottime, Float64.(vec(sub_GBM)), frequencies=freq, normalization=:psd)
+	
+	pwrGBM_sub = power(ls_sub)
+end;
+
+# ╔═╡ e6f7338c-5ae8-471e-bc89-8864e2b8f107
+function bootstrap_fap(times, signal, freq, probs; n_iterations=1000)
+    max_powers = zeros(n_iterations)
+    
+    for i in 1:n_iterations
+        shuffled_signal = shuffle(signal)
+        
+        ls_boot = lombscargle(times, shuffled_signal, frequencies=freq, normalization=:psd)
+        max_powers[i] = maximum(power(ls_boot))
+    end
+    
+    return [quantile(max_powers, 1 - p) for p in probs]
+end;
+
+# ╔═╡ d12af425-6a65-476d-915f-4548628f4d2d
+begin
+	probabilities = [0.1, 0.05]
+	
+	resprGBM_boot = bootstrap_fap(plottime, Float64.(vec(sub_GBM)), freq, probabilities, n_iterations=1000)
+	
+end;
+
+# ╔═╡ 9d7de95a-9179-47ad-b75b-08c96ab10d68
+cm"""
+FAP levels: 90% ($(round(resprGBM_boot[1],digits=1))), 95% ($(round(resprGBM_boot[2],digits=1)))
+"""
+
+# ╔═╡ 459347f8-da91-47d1-ab14-ec4af1c3c650
+begin
+	figls2 = Figure(size = (800, 600))
+	
+	axls2 = Axis(figls2[1, 1], 
+	    xlabel = "Frequency (Hz)", 
+	    ylabel = "Power",
+	    #xscale = log10, 
+	    #yscale = log10,
+	    title = "Lomb-Scargle Periodogram"
+	)
+
+	maskls_sub = pwrGBM_sub .> 0.
+	
+	lines!(axls2, freq[maskls_sub], pwrGBM_sub[maskls_sub], label = "Fermi-GBM", color = :blue)
+
+	colors = [:green, :orange, :red]
+	labels = ["90%", "95%", "3-sigma"]
+
+	for (i, level) in enumerate(resprGBM_boot)
+    	hlines!(axls2, [level], color = colors[i], linestyle = :dash, label = "$(labels[i]) FAP")
+	end
+	
+	axislegend(axls2)
+	
+	figls2
+end
+
+# ╔═╡ 4ed94405-688f-4f72-80d6-e09d632f907d
+cm"""
+- Given the assumptions, and of definite interest, the periodicity at ``\sim 20``Hz does not show a strong significance. 
+
+- However, again, please consider that this is only an exemplificatory analysis, and the considerations discussed in [Hübner et al. (2022)](https://ui.adsabs.harvard.edu/abs/2022ApJS..259...32H/abstract) definitely hold.
+"""
+
+# ╔═╡ 907b2aea-ff2b-426f-a336-215467adc25e
+cm"""
+- We have mentioned that red noise bahavior visible in the LS periodogram is likely due to the attempt of the algorithm to model the envelope of the light-curve evolution.
+
+- We might wonder what the periodogram could become if we adopt a non-parametric method, e.g., the QMI, where the algorithm does not involve any modeling of the data.
+
+- Coverting a light-curve from the time-domain to the phase-domain, given a period, typically destroyes the correlation affecting the data.
+"""
+
+# ╔═╡ 3d81e826-977c-401c-aec1-0e63c1c8db8b
+begin
+	pg_qmi = Periodogram("qmieu")
+	ffmin = 5
+	ffmax = 1/0.02
+	ffres = 1e-1
+	fit!(pg_qmi, plottime, plotrate; dy = plotrate/10, fmin = ffmin, fmax = ffmax, resolution = ffres, n_local_optima=0);
+end;
+
+# ╔═╡ edf2856d-5c77-456c-bde5-db3bc4de8ed5
+begin
+	figqmi = Figure(size = (800, 600))
+	
+	axqmi = Axis(figqmi[1, 1],
+	    xlabel = "Frequency (Hz)",
+	    ylabel = "Power",
+	    title = "QMI periodogram",
+	    xgridvisible = true,
+	    ygridvisible = true
+	)
+	
+	lines!(axqmi, pg_qmi.frequencies, pg_qmi.scores, color = :dodgerblue, linewidth = 2)	
+	
+	vlines!(axqmi, pg_qmi.best_frequency, ymin = 0, ymax = 1, color = :orange, linewidth = 8, alpha = 0.25)
+	
+	figqmi
+end
+
+# ╔═╡ f72f2ffc-e826-4102-b849-a95a3f305627
+cm"""
+- We now see that the periodogram looks flat and the main peak is at ``\sim 20Hz`` and higher harmonics.
+
+- The main peak is not, anyway, truly dominating the periodogram. This sugegsts that it should not be highly significant.
+"""
+
+# ╔═╡ 97cf17ef-694a-4902-9e55-4c2a9eaee802
+cm"""
+
+
+- Standard bootstrapping assumes every data point is independent. In GRB lightcurves or power-law noise scenarios, points close in time are often correlated. 
+	- By picking a "block" of length block_length and moving it to the new time series, you preserve those correlations, making your significance tests (like FAP) much more robust against "fake" peaks caused by colored noise.
+
+- We use a moving block bootstrap (or "overlapping block bootstrap") algorithm. 
+	- It's particularly useful for time-series data where the noise might be correlated over short timescales, as it preserves the local structure of the data better than a simple shuffle.
+
+"""
+
+# ╔═╡ 7e025fee-891b-4b0e-bca5-1e4dd513b4d2
+function block_bootstrap(mjd, mag, err; block_length=10.0, rseed=nothing)
+    !isnothing(rseed) && Random.seed!(rseed)
+    
+    N = length(mjd)
+    mjd_boot = zeros(Float64, N)
+    mag_boot = zeros(Float64, N)
+    err_boot = zeros(Float64, N)
+    
+    k = 1  
+    last_time = 0.0
+    
+    max_idx = 2
+    for i in 2:N
+        max_idx = i
+        if mjd[end] - mjd[end - i + 1] > block_length
+            break
+        end
+    end
+
+    while k <= N
+        idx_start = rand(1:(N - max_idx))
+        
+        idx_end = idx_start + 1
+        for j in (idx_start + 1):N
+            idx_end = j
+            if mjd[idx_end] - mjd[idx_start] > block_length || k + (idx_end - idx_start) >= N
+                break
+            end
+        end
+
+        len = idx_end - idx_start
+        range_target = k:(k + len - 1)
+        range_source = idx_start:(idx_end - 1)
+
+        mjd_boot[range_target] .= mjd[range_source] .- mjd[idx_start] .+ last_time
+        mag_boot[range_target] .= mag[range_source]
+        err_boot[range_target] .= err[range_source]
+
+        last_time = (mjd[idx_end] - mjd[idx_start]) + last_time
+        k += len
+    end
+
+    return mjd_boot, mag_boot, err_boot
+end;
+
+# ╔═╡ 8fd8d5b1-9201-4b72-bd8c-dd6fbc09fb54
+begin
+	niter = 200
+	nmaxima = 20
+	pbest_bootstrap = zeros(Float64, niter, nmaxima)
+end;
+
+# ╔═╡ 2098381f-69dc-46ac-a97d-7e38ac2dec45
+cm"""
+
+- The QMI algorithm, we are applying here, is substabtially slower than the LS, and generating many artificial (boostrapped) light curves is a demanding task.
+
+"""
+
+# ╔═╡ f6a030e2-83df-433b-b2a8-8f02afae4d33
+@progress for i in 1:niter
+    tt_b, cc_b, ee_b = block_bootstrap(plottime, plotrate, plotrate/10, block_length=0.3)
+	pg_qmib = Periodogram("qmieu")
+    fit!(pg_qmib, plottime, plotrate; dy = plotrate/10, fmin = ffmin, fmax = ffmax, resolution = ffres, n_local_optima=0)
+    pbest_bootstrap[i, :] = reverse(sort(pg_qmib.scores))[1:nmaxima]
+end
+
+# ╔═╡ 7d3438f2-aa91-41a1-a114-3ca6ac5032c2
+cm"""
+
+- In general, if one needs determine at which percentile in a simulated distrbution the oberved valiue can be located, it is necessary to have generated a sufficiently large number of simulated entries.
+
+- The minimum number of simulated points depends on the accuracy one needs to obtain inm estimating the percentile.
+
+- The error in a percentile estimate is roughly proportional to ``1/\sqrt{N}``, where ``N`` is the number of simulations. However, percentiles are harder to estimate than means because they depend on the density of data at that specific point in the distribution.Since the 90th percentile is toward the "tail," you have fewer data points in that region than you do at the median (50th percentile). Therefore, you need more simulations to achieve the same level of confidence.
+
+- It is difficult to provide analytical solutions to the problem of determining the correct number of needeed simulations. Probably, the best approach would be to choose of qa modest starting number, ``N``, run the simulation a few times and check the concistency, within the requiremtns, of the results. If results are not satisfactory, increae the number of simulation by, say, an order ot magnitude and repeat.
+
+"""
+
+# ╔═╡ 9ef091df-0e08-458a-a842-87415c964e75
+cm"""
+
+#### Generalized Extreme value distribution
+***
+
+- In order to avoid the need of many iterations, it is possible to rely on the features of the [Generalized Extreme](https://en.wikipedia.org/wiki/Generalized_extreme_value_distribution) value distribution.
+
+- The extreme value theory, i.e. the attempt to evaluate the probability of occurrence of extreme measurements, is a rapidly evolving field of modern statistics. It is applied to many scenarios such as climatology, engineering, physics, economy and astronomy.
+
+- The most interesting aspect of the GEV distribution is that it can be proved that it holds asymptotically, essentially independently of the probability distribution describing the phenomena that generate the observed data.
+
+- There is some conceptual analogy with the central limit theorem ([notebook](./open?path=Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.jl), [html](../../Lectures/Lecture-StatisticsReminder/Lecture-CLTProof.html)) that guarantees that, under rather general conditions, the limiting distribution of sample means for a large family of parental statistical distributions is a standard normal distribution.
+
+- The idea, essentially, is to carry out a simulation, fit the GEV (assuming, of course, that the kind of simulation, allows) and then extrapolate to the desidered percentile value.
+
+- Example of applocation of the GEV in astronomy are, e.g., [Süveges (2014)](https://scixplorer.org/abs/2014MNRAS.440.2099S/abstract) or [Covino (2025)](https://scixplorer.org/abs/2025A%26A...701A.109C/abstract).
+"""
+
+# ╔═╡ 0e01d42b-00f7-4075-99c0-901618092807
+Foldable("More information about the GEV distribution?",cm"""
+
+- If we collect the maxima, ``Z_{\mathrm{max},n}``, of a large number of random variables, ``Z_1, \ldots, Z_n``, identically distributed according to a given continuous distribution, ``F(z)``, with ``n \longrightarrow +\infty``, the GeV distribution can be written as:
+
+```math
+\begin{eqnarray} 
+G(z) &= & {\rm Pr} \{ Z_{\max,n} \leq z  \}  \nonumber \\
+         &= &\exp  \left\{ - \left( 1 + \xi \frac{z - \mu}{\phi} \right)^{-1/\xi} \right\}, \nonumber \\
+  &   & \xi \in \mathbb{R}, \quad \mu \in \mathbb{R}, \quad \phi > 0,  \nonumber
+\end{eqnarray}
+```
+
+- where ``1+\xi(z-\mu)/\phi > 0``.
+
+- The parameter ``\xi`` is usually called *shape* and it is related to the tail decay of the underlying distribution of ``F(z)``. ``\mu`` is the *mean* value of the distribution and ``\phi`` is the *scale*. The *shape* divides the GEV family into three sub-families. Negative *shape* parameters signal distributions of maxima of variables with a finite upper boundary (i.e., ``\mu - \phi/\xi)``, while a positive or zero *shape* parameter indicates that there is no upper limit. The case ``\xi = 0`` is also known as the `Gumbel' distribution. It is defined as the limit function when ``\xi \rightarrow 0``, and it takes the form:
+
+```math
+
+G(z) = \exp\left\{ - \exp \left( - \frac{z-\mu}{\phi} \right) \right\},
+
+```
+
+- with ``z \in \mathbb{R}``.
+
+
+- We mention, finally, that a crucial assumption of extreme value analysis is that the original distribution of data that extreme values are extracted from should be stationary. If this does not happen, it is indeed possible to include exogenous variables in the analysis to model the non-stationarity values, e.g. trends, seasonality, etc. 
+
+- A comprehensive introduction to the GEV distribution can be found in [Coles (2001)](https://link.springer.com/book/10.1007/978-1-4471-3675-0).
+
 
 """)
 
-# ╔═╡ 5c2d7acb-fad3-49ad-8ad0-59c84501763c
-md"""
-- As a matter of fact, the $\sim 11$ year periodicity is in reality a set of multiple peaks with periods ranging from approximately 8 to 12 years.
+# ╔═╡ b3b65052-c99d-4431-9fab-29a446c3700c
+cm"- So, we now fit a GEV distribution to the simulation results:"
+
+# ╔═╡ db8d55db-b7c8-499d-a720-a91d7e29519d
+begin
+	data = vec(pbest_bootstrap)
+	
+
+	function log_likelihood(p)
+	    μ, σ, ξ = p
+	    if σ <= 0
+	        return Inf
+	    end
+	    
+	    d = GeneralizedExtremeValue(μ, σ, ξ)
+	    
+	    return -loglikelihood(d, data)
+	end
+	
+	p00 = [mean(data), std(data), 0.1]
+	
+	result = optimize(log_likelihood, p00)
+	
+	μ_best, σ_best, ξ_best = Optim.minimizer(result)
+	d_gev = GeneralizedExtremeValue(μ_best, σ_best, ξ_best)
+		
+	
+	quantile_val95 = quantile(d_gev, 0.95) # 95th percentile
+	quantile_val90 = quantile(d_gev, 0.90) # 90th percentile
+	
+end;
+
+# ╔═╡ 35e1f8b4-7ec7-4932-9586-8a5d449dda22
+cm"""
+
+90% quantile: $(round(quantile_val90,digits=4))
+
+95% quantile; $(round(quantile_val95,digits=4))
+
 """
 
-# ╔═╡ 4e40f09e-feb4-46fe-947b-dedb993ce55c
+# ╔═╡ 2ff0ecfc-cfe1-402a-b25d-9da6ae24be40
 begin
-	fg4 = Figure()
+	figqmi2 = Figure(size = (800, 600))
 	
-	ax1fg4 = Axis(fg4[1,1],
-	    xlabel=L"Frequency (year$^{-1}$)",
-	    ylabel="Power",
-	    title="Sunspot number historical record periodogram",
-	    yscale = log10
-	    )
+	axqmi2 = Axis(figqmi2[1, 1],
+	    xlabel = "Frequency (Hz)",
+	    ylabel = "Power",
+	    title = "QMI periodogram",
+	    xgridvisible = true,
+	    ygridvisible = true
+	)
 	
-	flt = ssperleahy .> 0
+	lines!(axqmi2, pg_qmi.frequencies, pg_qmi.scores, color = :dodgerblue, linewidth = 2)	
 	
-	lines!(ssfreq[flt],ssperleahy[flt],label="DFT")
+	vlines!(axqmi2, pg_qmi.best_frequency, ymin = 0, ymax = 1, color = :orange, linewidth = 8, alpha = 0.25)
+
+    hlines!(axqmi2, [quantile_val90], color = :green, linestyle = :dash, label = "90% FAP")
+	hlines!(axqmi2, [quantile_val95], color = :orange, linestyle = :dash, label = "95% FAP")
+
 	
-	hlines!(2,linestyle=:dash,label="Poisson noise")
+	axislegend(axqmi2)
 	
-	axislegend()
-	
-	fg4
+	figqmi2
 end
 
-# ╔═╡ 9d8f3aed-091f-4cd2-a746-0da33cee6102
-md"""
-- A logarithmic plot shows a typical red-noise behavior that might be due to different reasons. 
-
-- In any case, this means that for computing the significance of a peak ibe unavoidably need to model the underlying noise.
-"""
-
-# ╔═╡ 92ba500c-7a58-4abd-bfc8-4f8ba0ccc043
-md"""
+# ╔═╡ 2d596c28-74bc-4ff8-a030-fbac18dbceb0
+cm"""
 ## Reference & Material
 
 Material and papers related to the topics discussed in this lecture.
 
-- [Norton et al. (2023) - "Solar Cycle Observations”](https://ui.adsabs.harvard.edu/abs/2023SSRv..219...64N/abstract)
+- [Piran (2004) - "The physics of gamma-ray bursts"](https://ui.adsabs.harvard.edu/abs/2004RvMP...76.1143P/abstract)
+- [Hübner et al. (2022) - "Pitfalls of Periodograms: The Nonstationarity Bias in the Analysis of Quasiperiodic Oscillations"](https://ui.adsabs.harvard.edu/abs/2022ApJS..259...32H/abstract)
+- [Huppenkothen et al. (2025) - "Searching for quasi-periodicities in short transients: the curious case of GRB 230307A"](https://ui.adsabs.harvard.edu/abs/2025arXiv250410153H/abstract)
 """
 
-# ╔═╡ 8647ad0a-8f92-46f7-93ce-d7b3d36f7e51
-md"""
+# ╔═╡ 3adba216-1df6-43f0-8000-05084c4d58c2
+cm"""
 ## Further Material
 
-Papers or sites for examining more closely some of the discussed topics.
+Papers for examining more closely some of the discussed topics.
 
-- ["Solar cycle progression"](https://www.swpc.noaa.gov/products/solar-cycle-progression)
+- [Klebesadel et al. (1973) - "Observations of Gamma-Ray Bursts of Cosmic Origin"](https://ui.adsabs.harvard.edu/abs/1973ApJ...182L..85K/abstract)
+- [Xiao et al. (2024) - "The Peculiar Precursor of a Gamma-Ray Burst from a Binary Merger Involving a Magnetar"](https://ui.adsabs.harvard.edu/abs/2024ApJ...970....6X/abstract)
+- [Chirenti et al. (2024) - "Evidence of a Strong 19.5 Hz Flux Oscillation in Swift BAT and Fermi GBM Gamma-Ray Data from GRB 211211A"](https://ui.adsabs.harvard.edu/abs/2024ApJ...967...26C/abstract)
+- [Norris et al. (1996) - "Attributes of Pulses in Long Bright Gamma-Ray Bursts"](https://ui.adsabs.harvard.edu/abs/1996ApJ...459..393N/abstract)
 """
 
-# ╔═╡ df32f65b-42f6-48c1-9bae-476b17a088f4
-md"""
-### Credits
-***
-
-This notebook contains no external material. 
-"""
-
-# ╔═╡ 08202728-5e8e-490d-93f1-722e313cd057
+# ╔═╡ b36fd613-95c8-44bf-876d-4eb345c26f08
 cm"""
 ## Course Flow
 
@@ -338,58 +802,59 @@ cm"""
   </tr>
   <tr>
 	<td>notebook</td>
-    <td><a href="./open?path=Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.jl">Lecture about spectral analysis</a></td>
-    <td><a href="./open?path=Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.jl">Science case about X-ray binaries</a></td>
+    <td><a href="./open?path=Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.jl">Lecture about non-parametric periodograms</a></td>
+    <td><a href="./open?path=Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.jl">Lecture about singular spectrum analysis"</a></td>
 	<td><a href="./open?path=Course.jl">Course Summary</a></td>    
   </tr>
   <tr>
 	<td>html</td>
-    <td><a href="../../Lectures/Lecture-SpectralAnalysis/Lecture-SpectralAnalysis.html">Lecture about spectral analysis</a></td>
-    <td><a href="../../Lectures/ScienceCase-X-RayBinaries/Lecture-X-RayBinaries.html">Science case about X-ray binaries</a></td>
+    <td><a href="../../Lectures/Lecture-NonParametricAnalysis/Lecture-NonParametricPeriodograms.html">Lecture about non-parametric periodograms</a></td>
+<td><a href="../../Lectures/Lecture-SingularSpectrumAnalysis/Lecture-SSA.html">Lecture about singular spectrum analysis</a></td>
 	<td><a href="../../Course.html">Course Summary</a></td>    
   </tr>
-
- </table>
+</table>
 
 
 """
 
-# ╔═╡ b593377d-fb58-49ec-b922-8c967fc94eb8
+# ╔═╡ 206474b8-0811-4785-8a71-acdcfd20b76c
 md"""
 **Copyright**
 
 This notebook is provided as [Open Educational Resource](https://en.wikipedia.org/wiki/Open_educational_resources). Feel free to use the notebook for your own purposes. The text is licensed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/), the code of the examples, unless obtained from other properly quoted sources, under the [MIT license](https://opensource.org/licenses/MIT). Please attribute the work as follows: *Stefano Covino, Time Domain Astrophysics - Lecture notes featuring computational examples, 2026*.
 """
 
-# ╔═╡ a3e9cda2-1a92-405c-80ac-f8bfbdd46cf9
-md"Notebook v1.1.1 - 16 September 2026"
+# ╔═╡ 0eaec6b9-82a6-4166-a8bd-c3c8147238d8
+md"Notebook v1.1.0 - 16 September 2026"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
-CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CommonMark = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-Format = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
-LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+FITSIO = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
+LombScargle = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
+LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 PlutoTeachingTools = "661c6b06-c737-4d37-b85c-46df65de6f69"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+ProgressLogging = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-CSV = "~0.10.16"
 CairoMakie = "~0.15.9"
-CommonMark = "~1.0.1"
-DataFrames = "~1.8.1"
-FFTW = "~1.10.0"
-Format = "~1.3.7"
-LaTeXStrings = "~1.4.0"
-Latexify = "~0.16.10"
+CommonMark = "~0.8.15"
+Distributions = "~0.25.123"
+FITSIO = "~0.17.5"
+LombScargle = "~1.0.3"
+LsqFit = "~0.15.1"
+Optim = "~1.13.3"
 PlutoTeachingTools = "~0.4.7"
-PlutoUI = "~0.7.79"
+PlutoUI = "~0.7.61"
+ProgressLogging = "~0.1.6"
+StatsBase = "~0.34.10"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -398,7 +863,23 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.13.0"
 manifest_format = "2.1"
-project_hash = "34afd310af90ce53fcae648ef43ff8e25ca3062e"
+project_hash = "34a604d9cd9446a031d0c025e80358dc194aa9a2"
+
+[[deps.ADTypes]]
+git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
+registries = "General"
+uuid = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+version = "1.21.0"
+
+    [deps.ADTypes.extensions]
+    ADTypesChainRulesCoreExt = "ChainRulesCore"
+    ADTypesConstructionBaseExt = "ConstructionBase"
+    ADTypesEnzymeCoreExt = "EnzymeCore"
+
+    [deps.ADTypes.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -461,6 +942,43 @@ version = "0.4.2"
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
 
+[[deps.ArrayInterface]]
+deps = ["Adapt", "LinearAlgebra"]
+git-tree-sha1 = "78b3a7a536b4b0a747a0f296ea77091ca0a9f9a3"
+registries = "General"
+uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
+version = "7.23.0"
+
+    [deps.ArrayInterface.extensions]
+    ArrayInterfaceAMDGPUExt = "AMDGPU"
+    ArrayInterfaceBandedMatricesExt = "BandedMatrices"
+    ArrayInterfaceBlockBandedMatricesExt = "BlockBandedMatrices"
+    ArrayInterfaceCUDAExt = "CUDA"
+    ArrayInterfaceCUDSSExt = ["CUDSS", "CUDA"]
+    ArrayInterfaceChainRulesCoreExt = "ChainRulesCore"
+    ArrayInterfaceChainRulesExt = "ChainRules"
+    ArrayInterfaceGPUArraysCoreExt = "GPUArraysCore"
+    ArrayInterfaceMetalExt = "Metal"
+    ArrayInterfaceReverseDiffExt = "ReverseDiff"
+    ArrayInterfaceSparseArraysExt = "SparseArrays"
+    ArrayInterfaceStaticArraysCoreExt = "StaticArraysCore"
+    ArrayInterfaceTrackerExt = "Tracker"
+
+    [deps.ArrayInterface.weakdeps]
+    AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+    BandedMatrices = "aae01518-5342-5314-be14-df237901396f"
+    BlockBandedMatrices = "ffab5731-97b5-5995-9138-79e8c1846df0"
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    CUDSS = "45b445bb-4962-46a0-9369-b4df9d0f772e"
+    ChainRules = "082447d4-558c-5d27-93f4-14fc19e9eca2"
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
+    Metal = "dde4c033-4e86-420c-a63e-0dd931031962"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
@@ -509,6 +1027,20 @@ registries = "General"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 version = "0.5.0"
 
+[[deps.CFITSIO]]
+deps = ["CFITSIO_jll"]
+git-tree-sha1 = "8c6b984c3928736d455eb53a6adf881457825269"
+registries = "General"
+uuid = "3b1b4be9-1499-4b22-8d78-7db3344d1961"
+version = "1.7.2"
+
+[[deps.CFITSIO_jll]]
+deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "15e80be798d7711411f4ac4273144cdb2a89eb2f"
+registries = "General"
+uuid = "b3e40c51-02ae-5482-8a39-3ace5868dcf4"
+version = "4.6.2+0"
+
 [[deps.CRC32c]]
 uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
 version = "1.11.0"
@@ -526,13 +1058,6 @@ git-tree-sha1 = "e329286945d0cfc04456972ea732551869af1cfc"
 registries = "General"
 uuid = "4e9b3aee-d8a1-5a3d-ad8b-7d824db253f0"
 version = "1.0.1+0"
-
-[[deps.CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
-git-tree-sha1 = "8d8e0b0f350b8e1c91420b5e64e5de774c2f0f4d"
-registries = "General"
-uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.16"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
@@ -555,6 +1080,13 @@ registries = "General"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.18.5+1"
 
+[[deps.Calculus]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "9cb23bbb1127eefb022b022481466c0f1127d430"
+registries = "General"
+uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+version = "0.5.2"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra"]
 git-tree-sha1 = "e4c6a16e77171a5f5e25e9646617ab1c276c5607"
@@ -565,13 +1097,6 @@ weakdeps = ["SparseArrays"]
 
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
-
-[[deps.CodecZlib]]
-deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "962834c22b66e32aa10f7611c08c8ca4e20749a9"
-registries = "General"
-uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.8"
 
 [[deps.ColorBrewer]]
 deps = ["Colors", "JSON"]
@@ -589,21 +1114,17 @@ version = "3.31.0"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "67e11ee83a43eb71ddc950302c53bf33f0690dfe"
+git-tree-sha1 = "b10d0b65641d57b8b4d5e234446582de5047050d"
 registries = "General"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.12.1"
-weakdeps = ["StyledStrings"]
-
-    [deps.ColorTypes.extensions]
-    StyledStringsExt = "StyledStrings"
+version = "0.11.5"
 
 [[deps.ColorVectorSpace]]
 deps = ["ColorTypes", "FixedPointNumbers", "LinearAlgebra", "Requires", "Statistics", "TensorCore"]
-git-tree-sha1 = "8b3b6f87ce8f65a2b4f857528fd8d70086cd72b1"
+git-tree-sha1 = "a1f44953f2382ebb937d60dafbe2deea4bd23249"
 registries = "General"
 uuid = "c3611d14-8923-5661-9e6a-0046d554d3a4"
-version = "0.11.0"
+version = "0.10.0"
 weakdeps = ["SpecialFunctions"]
 
     [deps.ColorVectorSpace.extensions]
@@ -617,19 +1138,18 @@ uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
 version = "0.13.1"
 
 [[deps.CommonMark]]
-deps = ["PrecompileTools"]
-git-tree-sha1 = "019ad9e55bb3549403f2d5a9b314fbb29a806ecb"
+deps = ["Crayons", "PrecompileTools"]
+git-tree-sha1 = "3faae67b8899797592335832fccf4b3c80bb04fa"
 registries = "General"
 uuid = "a80b9123-70ca-4bc0-993e-6e3bcb318db6"
-version = "1.0.1"
+version = "0.8.15"
 
-    [deps.CommonMark.extensions]
-    CommonMarkMarkdownASTExt = "MarkdownAST"
-    CommonMarkMarkdownExt = "Markdown"
-
-    [deps.CommonMark.weakdeps]
-    Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
-    MarkdownAST = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
+[[deps.CommonSubexpressions]]
+deps = ["MacroTools"]
+git-tree-sha1 = "cda2cfaebb4be89c9084adaca7dd7333369715c5"
+registries = "General"
+uuid = "bbf7d656-a473-5ed7-a52c-81e309532950"
+version = "0.3.1"
 
 [[deps.Compat]]
 deps = ["TOML", "UUIDs"]
@@ -672,6 +1192,20 @@ registries = "General"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.3"
 
+[[deps.CoreMath]]
+deps = ["CoreMath_jll"]
+git-tree-sha1 = "8c0480f92b1b1796239156a1b9b1bfb1b39499b4"
+registries = "General"
+uuid = "b7a15901-be09-4a0e-87d2-2e66b0e09b5a"
+version = "0.1.0"
+
+[[deps.CoreMath_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "a692a4c1dc59a4b8bc0b6403876eb3250fde2bc3"
+registries = "General"
+uuid = "a38c48d9-6df1-5ac9-9223-b6ada3b5572b"
+version = "0.1.0+0"
+
 [[deps.Crayons]]
 git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 registries = "General"
@@ -684,19 +1218,12 @@ registries = "General"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.16.0"
 
-[[deps.DataFrames]]
-deps = ["Compat", "DataAPI", "DataStructures", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrecompileTools", "PrettyTables", "Printf", "Random", "Reexport", "SentinelArrays", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
-git-tree-sha1 = "d8928e9169ff76c6281f39a659f9bca3a573f24c"
-registries = "General"
-uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-version = "1.8.1"
-
 [[deps.DataStructures]]
 deps = ["OrderedCollections"]
-git-tree-sha1 = "e357641bb3e0638d353c4b29ea0e40ea644066a6"
+git-tree-sha1 = "e86f4a2805f7f19bec5129bc9150c38208e5dc23"
 registries = "General"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
-version = "0.19.3"
+version = "0.19.4"
 
 [[deps.DataValueInterfaces]]
 git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
@@ -715,6 +1242,71 @@ git-tree-sha1 = "c55f5a9fd67bdbc8e089b5a3111fe4292986a8e8"
 registries = "General"
 uuid = "927a84f5-c5f4-47a5-9785-b46e178433df"
 version = "1.6.6"
+
+[[deps.DiffResults]]
+deps = ["StaticArraysCore"]
+git-tree-sha1 = "782dd5f4561f5d267313f23853baaaa4c52ea621"
+registries = "General"
+uuid = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
+version = "1.1.0"
+
+[[deps.DiffRules]]
+deps = ["IrrationalConstants", "LogExpFunctions", "NaNMath", "Random", "SpecialFunctions"]
+git-tree-sha1 = "23163d55f885173722d1e4cf0f6110cdbaf7e272"
+registries = "General"
+uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
+version = "1.15.1"
+
+[[deps.DifferentiationInterface]]
+deps = ["ADTypes", "LinearAlgebra"]
+git-tree-sha1 = "7ae99144ea44715402c6c882bfef2adbeadbc4ce"
+registries = "General"
+uuid = "a0c0ee7d-e4b9-4e03-894e-1c5f64a51d63"
+version = "0.7.16"
+
+    [deps.DifferentiationInterface.extensions]
+    DifferentiationInterfaceChainRulesCoreExt = "ChainRulesCore"
+    DifferentiationInterfaceDiffractorExt = "Diffractor"
+    DifferentiationInterfaceEnzymeExt = ["EnzymeCore", "Enzyme"]
+    DifferentiationInterfaceFastDifferentiationExt = "FastDifferentiation"
+    DifferentiationInterfaceFiniteDiffExt = "FiniteDiff"
+    DifferentiationInterfaceFiniteDifferencesExt = "FiniteDifferences"
+    DifferentiationInterfaceForwardDiffExt = ["ForwardDiff", "DiffResults"]
+    DifferentiationInterfaceGPUArraysCoreExt = "GPUArraysCore"
+    DifferentiationInterfaceGTPSAExt = "GTPSA"
+    DifferentiationInterfaceMooncakeExt = "Mooncake"
+    DifferentiationInterfacePolyesterForwardDiffExt = ["PolyesterForwardDiff", "ForwardDiff", "DiffResults"]
+    DifferentiationInterfaceReverseDiffExt = ["ReverseDiff", "DiffResults"]
+    DifferentiationInterfaceSparseArraysExt = "SparseArrays"
+    DifferentiationInterfaceSparseConnectivityTracerExt = "SparseConnectivityTracer"
+    DifferentiationInterfaceSparseMatrixColoringsExt = "SparseMatrixColorings"
+    DifferentiationInterfaceStaticArraysExt = "StaticArrays"
+    DifferentiationInterfaceSymbolicsExt = "Symbolics"
+    DifferentiationInterfaceTrackerExt = "Tracker"
+    DifferentiationInterfaceZygoteExt = ["Zygote", "ForwardDiff"]
+
+    [deps.DifferentiationInterface.weakdeps]
+    ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+    DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
+    Diffractor = "9f5e2b26-1114-432f-b630-d3fe2085c51c"
+    Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
+    EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
+    FastDifferentiation = "eb9bf01b-bf85-4b60-bf87-ee5de06c00be"
+    FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
+    FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
+    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+    GPUArraysCore = "46192b85-c4d5-4398-a991-12ede77f4527"
+    GTPSA = "b27dd330-f138-47c5-815b-40db9dd9b6e8"
+    Mooncake = "da2b9cff-9c12-43a0-ae48-6db2b0edb7d6"
+    PolyesterForwardDiff = "98d1487c-24ca-40b6-b7ab-df2af84e126b"
+    ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    SparseConnectivityTracer = "9f842d2f-2579-4b1d-911e-f412cf18a3f5"
+    SparseMatrixColorings = "0a514795-09f3-496d-8182-132a7b665d35"
+    StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+    Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
+    Tracker = "9f7883ad-71c0-57eb-9f7f-b5c9e6d3789c"
+    Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [[deps.Distributed]]
 deps = ["Random", "Serialization", "Sockets"]
@@ -810,6 +1402,13 @@ registries = "General"
 uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.11+0"
 
+[[deps.FITSIO]]
+deps = ["CFITSIO", "Printf", "Reexport", "Tables"]
+git-tree-sha1 = "f57de3f533590c785210893030736dc11c4a4afb"
+registries = "General"
+uuid = "525bcba6-941b-5504-bd06-fd0dc1a4d2eb"
+version = "0.17.5"
+
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]
 git-tree-sha1 = "6522cfb3b8fe97bec632252263057996cbd3de20"
@@ -870,6 +1469,25 @@ weakdeps = ["PDMats", "SparseArrays", "StaticArrays", "Statistics"]
     FillArraysStaticArraysExt = "StaticArrays"
     FillArraysStatisticsExt = "Statistics"
 
+[[deps.FiniteDiff]]
+deps = ["ArrayInterface", "LinearAlgebra", "Setfield"]
+git-tree-sha1 = "9340ca07ca27093ff68418b7558ca37b05f8aeb1"
+registries = "General"
+uuid = "6a86dc24-6348-571c-b903-95158fe2bd41"
+version = "2.29.0"
+
+    [deps.FiniteDiff.extensions]
+    FiniteDiffBandedMatricesExt = "BandedMatrices"
+    FiniteDiffBlockBandedMatricesExt = "BlockBandedMatrices"
+    FiniteDiffSparseArraysExt = "SparseArrays"
+    FiniteDiffStaticArraysExt = "StaticArrays"
+
+    [deps.FiniteDiff.weakdeps]
+    BandedMatrices = "aae01518-5342-5314-be14-df237901396f"
+    BlockBandedMatrices = "ffab5731-97b5-5995-9138-79e8c1846df0"
+    SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+    StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
 git-tree-sha1 = "05882d6995ae5c12bb5f36dd2ed3f61c98cbb172"
@@ -890,6 +1508,17 @@ registries = "General"
 uuid = "1fa38f19-a742-5d3f-a2b9-30dd87b9d5f8"
 version = "1.3.7"
 
+[[deps.ForwardDiff]]
+deps = ["CommonSubexpressions", "DiffResults", "DiffRules", "LinearAlgebra", "LogExpFunctions", "NaNMath", "Preferences", "Printf", "Random", "SpecialFunctions"]
+git-tree-sha1 = "cddeab6487248a39dae1a960fff0ac17b2a28888"
+registries = "General"
+uuid = "f6369f11-7733-5829-9624-2563aa707210"
+version = "1.3.3"
+weakdeps = ["StaticArrays"]
+
+    [deps.ForwardDiff.extensions]
+    ForwardDiffStaticArraysExt = "StaticArrays"
+
 [[deps.FreeType]]
 deps = ["CEnum", "FreeType2_jll"]
 git-tree-sha1 = "907369da0f8e80728ab49c1c7e09327bf0d6d999"
@@ -899,10 +1528,10 @@ version = "4.1.1"
 
 [[deps.FreeType2_jll]]
 deps = ["Artifacts", "Bzip2_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "2c5512e11c791d1baed2049c5652441b28fc6a31"
+git-tree-sha1 = "70329abc09b886fd2c5d94ad2d9527639c421e3e"
 registries = "General"
 uuid = "d7e528f0-a631-5988-bf34-fe36492bcfd7"
-version = "2.13.4+0"
+version = "2.14.3+1"
 
 [[deps.FreeTypeAbstraction]]
 deps = ["BaseDirs", "ColorVectorSpace", "Colors", "FreeType", "GeometryBasics", "Mmap"]
@@ -1014,17 +1643,17 @@ version = "0.0.5"
 
 [[deps.HypertextLiteral]]
 deps = ["Tricks"]
-git-tree-sha1 = "d1a86724f81bcd184a38fd284ce183ec067d71a0"
+git-tree-sha1 = "7134810b1afce04bbc1045ca1985fbe81ce17653"
 registries = "General"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "1.0.0"
+version = "0.9.5"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
-git-tree-sha1 = "0ee181ec08df7d7c911901ea38baf16f755114dc"
+git-tree-sha1 = "b6d6bfdd7ce25b0f9b2f6b3dd56b2673a66c8770"
 registries = "General"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
-version = "1.0.0"
+version = "0.2.5"
 
 [[deps.ImageAxes]]
 deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
@@ -1080,20 +1709,6 @@ registries = "General"
 uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
 version = "0.1.5"
 
-[[deps.InlineStrings]]
-git-tree-sha1 = "8f3d257792a522b4601c24a577954b0a8cd7334d"
-registries = "General"
-uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
-version = "1.4.5"
-
-    [deps.InlineStrings.extensions]
-    ArrowTypesExt = "ArrowTypes"
-    ParsersExt = "Parsers"
-
-    [deps.InlineStrings.weakdeps]
-    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
-    Parsers = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-
 [[deps.IntegerMathUtils]]
 git-tree-sha1 = "4c1acff2dc6b6967e7e750633c50bc3b8d83e617"
 registries = "General"
@@ -1118,21 +1733,18 @@ git-tree-sha1 = "65d505fa4c0d7072990d659ef3fc086eb6da8208"
 registries = "General"
 uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 version = "0.16.2"
+weakdeps = ["ForwardDiff", "Unitful"]
 
     [deps.Interpolations.extensions]
     InterpolationsForwardDiffExt = "ForwardDiff"
     InterpolationsUnitfulExt = "Unitful"
 
-    [deps.Interpolations.weakdeps]
-    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-
 [[deps.IntervalArithmetic]]
-deps = ["CRlibm", "MacroTools", "OpenBLASConsistentFPCSR_jll", "Printf", "Random", "RoundingEmulator"]
-git-tree-sha1 = "2cce1fed119ca7b6cc230c4a3b85202478af7924"
+deps = ["CRlibm", "CoreMath", "MacroTools", "OpenBLASConsistentFPCSR_jll", "Printf", "Random", "RoundingEmulator"]
+git-tree-sha1 = "cf2ba7cef4e913abe44f5a9c7ade1c3776d7f222"
 registries = "General"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "1.0.3"
+version = "1.0.4"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticArblibExt = "Arblib"
@@ -1179,12 +1791,6 @@ weakdeps = ["Dates", "Test"]
     InverseFunctionsDatesExt = "Dates"
     InverseFunctionsTestExt = "Test"
 
-[[deps.InvertedIndices]]
-git-tree-sha1 = "6da3c4316095de0f5ee2ebd875df8721e7e0bdbe"
-registries = "General"
-uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
-version = "1.3.1"
-
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "b2d91fe939cae05960e760110b328288867b5758"
 registries = "General"
@@ -1218,17 +1824,11 @@ uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.7.1"
 
 [[deps.JSON]]
-deps = ["Dates", "Logging", "Parsers", "PrecompileTools", "StructUtils", "UUIDs", "Unicode"]
-git-tree-sha1 = "b3ad4a0255688dcb895a52fafbaae3023b588a90"
+deps = ["Dates", "Mmap", "Parsers", "Unicode"]
+git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 registries = "General"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "1.4.0"
-
-    [deps.JSON.extensions]
-    JSONArrowExt = ["ArrowTypes"]
-
-    [deps.JSON.weakdeps]
-    ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
+version = "0.21.4"
 
 [[deps.JpegTurbo]]
 deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
@@ -1391,6 +1991,13 @@ registries = "General"
 uuid = "38a345b3-de98-5d2b-a5d3-14cd9215e700"
 version = "2.41.3+0"
 
+[[deps.LineSearches]]
+deps = ["LinearAlgebra", "NLSolversBase", "NaNMath", "Printf"]
+git-tree-sha1 = "9ea3422d03222c6de679934d1c08f0a99405aa03"
+registries = "General"
+uuid = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
+version = "7.5.1"
+
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -1417,11 +2024,25 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.LombScargle]]
+deps = ["FFTW", "LinearAlgebra", "Measurements", "Random", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "d64a0ce7539181136a85fd8fe4f42626387f0f26"
+registries = "General"
+uuid = "fc60dff9-86e7-5f2f-a8a0-edeadbb75bd9"
+version = "1.0.3"
+
+[[deps.LsqFit]]
+deps = ["Distributions", "ForwardDiff", "LinearAlgebra", "NLSolversBase", "Printf", "StatsAPI"]
+git-tree-sha1 = "f386224fa41af0c27f45e2f9a8f323e538143b43"
+registries = "General"
+uuid = "2fda8390-95c7-5789-9bda-21331edee243"
+version = "0.15.1"
+
 [[deps.MIMEs]]
-git-tree-sha1 = "c64d943587f7187e751162b3b84445bbbd79f691"
+git-tree-sha1 = "1833212fd6f580c20d4291da9c1b4e8a655b128e"
 registries = "General"
 uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
-version = "1.1.0"
+version = "1.0.0"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
@@ -1467,6 +2088,29 @@ registries = "General"
 uuid = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 version = "0.6.7"
 
+[[deps.Measurements]]
+deps = ["Calculus", "LinearAlgebra", "Printf"]
+git-tree-sha1 = "cb47f69a1cab9dcec7ff4a5d6e163410d6905866"
+registries = "General"
+uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+version = "2.14.1"
+
+    [deps.Measurements.extensions]
+    MeasurementsBaseTypeExt = "BaseType"
+    MeasurementsJunoExt = "Juno"
+    MeasurementsMakieExt = "Makie"
+    MeasurementsRecipesBaseExt = "RecipesBase"
+    MeasurementsSpecialFunctionsExt = "SpecialFunctions"
+    MeasurementsUnitfulExt = "Unitful"
+
+    [deps.Measurements.weakdeps]
+    BaseType = "7fbed51b-1ef5-4d67-9085-a4a9b26f478c"
+    Juno = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+    SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
+
 [[deps.Missings]]
 deps = ["DataAPI"]
 git-tree-sha1 = "ec4f7fbeab05d7747bdf98eb74d130a2a2ed298d"
@@ -1494,6 +2138,13 @@ git-tree-sha1 = "cac9cc5499c25554cba55cd3c30543cff5ca4fab"
 registries = "General"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.4"
+
+[[deps.NLSolversBase]]
+deps = ["ADTypes", "DifferentiationInterface", "Distributed", "FiniteDiff", "ForwardDiff"]
+git-tree-sha1 = "25a6638571a902ecfb1ae2a18fc1575f86b1d4df"
+registries = "General"
+uuid = "d41bc354-129a-5804-8e4c-c37616107c6c"
+version = "7.10.0"
 
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
@@ -1557,10 +2208,10 @@ version = "0.3.3"
 
 [[deps.OpenEXR_jll]]
 deps = ["Artifacts", "Imath_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "df9b7c88c2e7a2e77146223c526bf9e236d5f450"
+git-tree-sha1 = "135492b7e97fc86d9b132b96a54d2d3dd3e0c6a8"
 registries = "General"
 uuid = "18a262bb-aa17-5467-a713-aee519bc75cb"
-version = "3.4.4+0"
+version = "3.4.8+0"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -1578,6 +2229,19 @@ git-tree-sha1 = "1346c9208249809840c91b26703912dff463d335"
 registries = "General"
 uuid = "efe28fd5-8261-553b-a9e1-b2916fc3738e"
 version = "0.5.6+0"
+
+[[deps.Optim]]
+deps = ["Compat", "EnumX", "FillArrays", "ForwardDiff", "LineSearches", "LinearAlgebra", "NLSolversBase", "NaNMath", "PositiveFactorizations", "Printf", "SparseArrays", "StatsBase"]
+git-tree-sha1 = "48968edaf014f67e58fe4c8a4ce72d392aed3294"
+registries = "General"
+uuid = "429524aa-4258-5aef-a3af-852621145aeb"
+version = "1.13.3"
+
+    [deps.Optim.extensions]
+    OptimMOIExt = "MathOptInterface"
+
+    [deps.Optim.weakdeps]
+    MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [[deps.Opus_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1638,10 +2302,10 @@ version = "1.57.0+0"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
-git-tree-sha1 = "7d2f8f21da5db6a806faf7b9b292296da42b2810"
+git-tree-sha1 = "8489905bcdbcfac64d1daa51ca07c0d8f0283821"
 registries = "General"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.8.3"
+version = "2.8.1"
 
 [[deps.Pixman_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "Libdl"]
@@ -1681,11 +2345,11 @@ uuid = "661c6b06-c737-4d37-b85c-46df65de6f69"
 version = "0.4.7"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Downloads", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
-git-tree-sha1 = "3ac7038a98ef6977d44adeadc73cc6f596c08109"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "7e71a55b87222942f0f9337be62e26b1f103d3e4"
 registries = "General"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.79"
+version = "0.7.61"
 
 [[deps.PolygonOps]]
 git-tree-sha1 = "77b3d3605fc1cd0b42d95eba87dfcd2bf67d5ff6"
@@ -1693,39 +2357,26 @@ registries = "General"
 uuid = "647866c9-e3ac-4575-94e7-e3d426903924"
 version = "0.1.2"
 
-[[deps.PooledArrays]]
-deps = ["DataAPI", "Future"]
-git-tree-sha1 = "36d8b4b899628fb92c2749eb488d884a926614d3"
+[[deps.PositiveFactorizations]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "17275485f373e6673f7e7f97051f703ed5b15b20"
 registries = "General"
-uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-version = "1.4.3"
+uuid = "85a6dd25-e78a-55b7-8502-1745935b8125"
+version = "0.2.4"
 
 [[deps.PrecompileTools]]
 deps = ["Preferences"]
-git-tree-sha1 = "07a921781cab75691315adc645096ed5e370cb77"
+git-tree-sha1 = "5aa36f7049a63a1528fe8f7c3f2113413ffd4e1f"
 registries = "General"
 uuid = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
-version = "1.3.3"
+version = "1.2.1"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "8b770b60760d4451834fe79dd483e318eee709c4"
+git-tree-sha1 = "9306f6085165d270f7e3db02af26a400d580f5c6"
 registries = "General"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.5.2"
-
-[[deps.PrettyTables]]
-deps = ["Crayons", "LaTeXStrings", "Markdown", "PrecompileTools", "Printf", "REPL", "Reexport", "StringManipulation", "Tables"]
-git-tree-sha1 = "211530a7dc76ab59087f4d4d1fc3f086fbe87594"
-registries = "General"
-uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
-version = "3.2.3"
-
-    [deps.PrettyTables.extensions]
-    PrettyTablesTypstryExt = "Typstry"
-
-    [deps.PrettyTables.weakdeps]
-    Typstry = "f0ed7684-a786-439e-b1e3-3b82803b501e"
+version = "1.4.3"
 
 [[deps.Primes]]
 deps = ["IntegerMathUtils"]
@@ -1738,6 +2389,13 @@ version = "0.5.7"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 version = "1.11.0"
+
+[[deps.ProgressLogging]]
+deps = ["Logging", "SHA", "UUIDs"]
+git-tree-sha1 = "f0803bc1171e455a04124affa9c21bba5ac4db32"
+registries = "General"
+uuid = "33c8b6b6-d38a-422a-b730-caa89a2f386c"
+version = "0.1.6"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
@@ -1857,16 +2515,16 @@ registries = "General"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.3.0"
 
-[[deps.SentinelArrays]]
-deps = ["Dates", "Random"]
-git-tree-sha1 = "ebe7e59b37c400f694f52b58c93d26201387da70"
-registries = "General"
-uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
-version = "1.4.9"
-
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 version = "1.11.0"
+
+[[deps.Setfield]]
+deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
+git-tree-sha1 = "c5391c6ace3bc430ca630251d02ea9687169ca68"
+registries = "General"
+uuid = "efcf1570-3423-57d1-acb7-fd33fddbac46"
+version = "1.1.2"
 
 [[deps.ShaderAbstractions]]
 deps = ["ColorTypes", "FixedPointNumbers", "GeometryBasics", "LinearAlgebra", "Observables", "StaticArrays"]
@@ -1926,10 +2584,10 @@ version = "1.13.0"
 
 [[deps.SpecialFunctions]]
 deps = ["IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
-git-tree-sha1 = "5acc6a41b3082920f79ca3c759acbcecf18a8d78"
+git-tree-sha1 = "2700b235561b0335d5bef7097a111dc513b8655e"
 registries = "General"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
-version = "2.7.1"
+version = "2.7.2"
 weakdeps = ["ChainRulesCore"]
 
     [deps.SpecialFunctions.extensions]
@@ -2004,19 +2662,12 @@ weakdeps = ["ChainRulesCore", "InverseFunctions"]
     StatsFunsChainRulesCoreExt = "ChainRulesCore"
     StatsFunsInverseFunctionsExt = "InverseFunctions"
 
-[[deps.StringManipulation]]
-deps = ["PrecompileTools"]
-git-tree-sha1 = "d05693d339e37d6ab134c5ab53c29fce5ee5d7d5"
-registries = "General"
-uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
-version = "0.4.4"
-
 [[deps.StructArrays]]
 deps = ["ConstructionBase", "DataAPI", "Tables"]
-git-tree-sha1 = "a2c37d815bf00575332b7bd0389f771cb7987214"
+git-tree-sha1 = "ad8002667372439f2e3611cfd14097e03fa4bccd"
 registries = "General"
 uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.7.2"
+version = "0.7.3"
 
     [deps.StructArrays.extensions]
     StructArraysAdaptExt = "Adapt"
@@ -2032,23 +2683,6 @@ version = "0.7.2"
     LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-
-[[deps.StructUtils]]
-deps = ["Dates", "UUIDs"]
-git-tree-sha1 = "fa95b3b097bcef5845c142ea2e085f1b2591e92c"
-registries = "General"
-uuid = "ec057cc2-7a8d-4b58-b3b3-92acb9f63b42"
-version = "2.7.1"
-
-    [deps.StructUtils.extensions]
-    StructUtilsMeasurementsExt = ["Measurements"]
-    StructUtilsStaticArraysCoreExt = ["StaticArraysCore"]
-    StructUtilsTablesExt = ["Tables"]
-
-    [deps.StructUtils.weakdeps]
-    Measurements = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
-    StaticArraysCore = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-    Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
@@ -2113,10 +2747,10 @@ uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.11.3"
 
 [[deps.Tricks]]
-git-tree-sha1 = "311349fd1c93a31f783f977a71e8b062a57d4101"
+git-tree-sha1 = "6cae795a5a9313bbb4f60683f7263318fc7d1505"
 registries = "General"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
-version = "0.1.13"
+version = "0.1.10"
 
 [[deps.TriplotBase]]
 git-tree-sha1 = "4d4ed7f294cda19382ff7de4c137d24d16adc89b"
@@ -2125,10 +2759,10 @@ uuid = "981d1d27-644d-49a2-9326-4793e63143c3"
 version = "0.1.0"
 
 [[deps.URIs]]
-git-tree-sha1 = "bef26fb046d031353ef97a82e3fdb6afe7f21b1a"
+git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
 registries = "General"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.6.1"
+version = "1.5.1"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
@@ -2152,6 +2786,7 @@ git-tree-sha1 = "57e1b2c9de4bd6f40ecb9de4ac1797b81970d008"
 registries = "General"
 uuid = "1986cc42-f94f-5a68-af5c-568840ba703d"
 version = "1.28.0"
+weakdeps = ["ConstructionBase", "ForwardDiff", "InverseFunctions", "LaTeXStrings", "Latexify", "NaNMath", "Printf"]
 
     [deps.Unitful.extensions]
     ConstructionBaseUnitfulExt = "ConstructionBase"
@@ -2160,22 +2795,6 @@ version = "1.28.0"
     LatexifyExt = ["Latexify", "LaTeXStrings"]
     NaNMathExt = "NaNMath"
     PrintfExt = "Printf"
-
-    [deps.Unitful.weakdeps]
-    ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-    ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
-    InverseFunctions = "3587e190-3f89-42d0-90ee-14403ec27112"
-    LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
-    Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-    NaNMath = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
-    Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-
-[[deps.WeakRefStrings]]
-deps = ["DataAPI", "InlineStrings", "Parsers"]
-git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
-registries = "General"
-uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
-version = "1.4.2"
 
 [[deps.WebP]]
 deps = ["CEnum", "ColorTypes", "FileIO", "FixedPointNumbers", "ImageCore", "libwebp_jll"]
@@ -2190,12 +2809,6 @@ git-tree-sha1 = "248a7031b3da79a127f14e5dc5f417e26f9f6db7"
 registries = "General"
 uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
 version = "1.1.0"
-
-[[deps.WorkerUtilities]]
-git-tree-sha1 = "cd1659ba0d57b71a464a29e64dbc67cfe83d54e7"
-registries = "General"
-uuid = "76eceee3-57b5-4d4a-8e66-0e911cebbf60"
-version = "1.6.1"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -2319,10 +2932,10 @@ version = "2.0.4+0"
 
 [[deps.libpng_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "e015f211ebb898c8180887012b938f3851e719ac"
+git-tree-sha1 = "e2a7072fc0cdd7949528c1455a3e5da4122e1153"
 registries = "General"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
-version = "1.6.55+0"
+version = "1.6.56+0"
 
 [[deps.libsixel_jll]]
 deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "libpng_jll"]
@@ -2389,32 +3002,68 @@ uuid = "23338594-aafe-5451-b93e-139f81909106"
 """
 
 # ╔═╡ Cell order:
-# ╟─483145c0-6fa9-415d-a8a7-50b07f87fa6d
-# ╟─c0bbc94b-6ffe-4f23-b161-49efe7fd02ef
-# ╟─d8870852-a4f6-49df-b0df-6255ba6d5820
-# ╟─b29c2db1-3e03-4ae9-a238-368bed0a25b0
-# ╟─eec5d097-10bc-4100-beee-d67ddf3eaf85
-# ╟─ad5b4949-a4c8-4667-8980-a8de6d4b9aef
-# ╟─3cedd3d4-eec0-41a9-bad4-961aa52c4186
-# ╟─ecdad28d-bdfa-4d04-ac0b-e86f1acbd597
-# ╟─4a05f9f3-35ee-4c3f-86d9-ae90d8229c7a
-# ╟─7274e731-f51d-4faf-af93-674c841a999b
-# ╟─c9a1a2f7-eab0-42b3-860e-096ee3218408
-# ╟─c7c39446-d44a-4956-ba06-f089d19d6df3
-# ╟─e8ab4250-ae9f-4bd5-9a96-962423ae616f
-# ╟─661310b7-b25e-4973-a9df-7d7cb58bd980
-# ╟─c521f09e-d1ca-4437-a002-aa20a03f4002
-# ╟─43865de5-a009-4e32-9852-738cc7e4a4ee
-# ╟─36bd4afb-7665-414d-8067-8721e52ad28e
-# ╟─25ce07ac-eddb-48fe-8e29-dd72421c0fa8
-# ╟─5c2d7acb-fad3-49ad-8ad0-59c84501763c
-# ╟─4e40f09e-feb4-46fe-947b-dedb993ce55c
-# ╟─9d8f3aed-091f-4cd2-a746-0da33cee6102
-# ╟─92ba500c-7a58-4abd-bfc8-4f8ba0ccc043
-# ╟─8647ad0a-8f92-46f7-93ce-d7b3d36f7e51
-# ╟─df32f65b-42f6-48c1-9bae-476b17a088f4
-# ╟─08202728-5e8e-490d-93f1-722e313cd057
-# ╟─b593377d-fb58-49ec-b922-8c967fc94eb8
-# ╟─a3e9cda2-1a92-405c-80ac-f8bfbdd46cf9
+# ╟─4d477519-c44f-434c-b7e0-8daaa5009358
+# ╟─badf3084-04b6-4807-93ad-dd2298c28901
+# ╟─6a1315d1-9a6d-4ce0-b1c0-3fe22beb1ec2
+# ╟─7f04786b-a1c6-42ac-ac41-2cbe68878149
+# ╟─3ddd0f61-79d0-473c-8fec-a0e0c3fc72bf
+# ╟─5029a214-0841-40fb-b397-4a2e1047bfb7
+# ╟─404060d3-23ec-400b-84cf-779e63b90293
+# ╟─72cf6fcf-2e2f-4dee-994b-ce2bfef51802
+# ╟─e1f2b5ca-49e4-4f8f-b69c-c3f621ffc068
+# ╟─6bbb867f-4166-4ee9-9049-039dd46773d4
+# ╟─c1637e39-fcbe-434c-9197-6426d6743d1a
+# ╟─df340319-d931-4906-893f-bc0b0c043be7
+# ╟─b83b11be-cbc2-45d1-aa27-92b90dec6506
+# ╟─89cf67f7-8ed9-4d79-9320-aa526b7720e3
+# ╠═c813bd45-a811-4f84-bb5d-55175a895f96
+# ╠═46aa7e89-4b15-4149-8065-afb603ec1b06
+# ╟─2d9914d0-b7dc-4364-9374-3b3f668a8005
+# ╠═37973ee8-e45f-48bc-834a-28a2deebab0c
+# ╟─55e51bb5-211d-444a-be27-3c441212a310
+# ╠═a4bb200d-9f3a-413c-a0b3-78a351f6cc42
+# ╟─8e06fdfb-6a39-4131-9a82-e178fc060a6c
+# ╠═6be178b8-f38b-4f64-983b-f4ade0d40e55
+# ╟─0e7f2c00-f012-45dc-98ec-a36f8e653c2e
+# ╟─8d1d5f66-22bc-4dc7-83d0-f663b0ca2024
+# ╠═5e16d0ab-1f08-461a-92aa-8b135e125c0d
+# ╟─d4011a10-eac2-4f98-b57a-5ede937b4182
+# ╟─b87886f6-865b-47a9-8318-7a08913db0c6
+# ╟─432e78d5-5d73-4833-bd14-f0f4c62e93fb
+# ╟─02b09798-fb21-4b2b-80a3-15f0006a9b7b
+# ╠═b58dd13b-3e1f-4d02-8cac-f24cbb3e45d3
+# ╠═dececc3e-5676-416e-94dd-76e0a3b8c1f9
+# ╟─da981eda-aa53-4751-b498-a5f0e27d9167
+# ╠═e1d78c1a-61ac-4364-8e5b-d8a4d3a84e76
+# ╟─e55d34c8-8e97-4f04-b339-406068f862cf
+# ╟─d73fb514-e125-439c-afcd-4b2b0c019541
+# ╟─4101debc-dae4-49b3-8d1e-359bf2f6db54
+# ╠═87e5b3d7-bcde-46e5-88c0-6c649adf99a8
+# ╠═e6f7338c-5ae8-471e-bc89-8864e2b8f107
+# ╠═d12af425-6a65-476d-915f-4548628f4d2d
+# ╟─9d7de95a-9179-47ad-b75b-08c96ab10d68
+# ╟─459347f8-da91-47d1-ab14-ec4af1c3c650
+# ╟─4ed94405-688f-4f72-80d6-e09d632f907d
+# ╟─907b2aea-ff2b-426f-a336-215467adc25e
+# ╠═3d81e826-977c-401c-aec1-0e63c1c8db8b
+# ╟─edf2856d-5c77-456c-bde5-db3bc4de8ed5
+# ╟─f72f2ffc-e826-4102-b849-a95a3f305627
+# ╟─97cf17ef-694a-4902-9e55-4c2a9eaee802
+# ╠═7e025fee-891b-4b0e-bca5-1e4dd513b4d2
+# ╠═8fd8d5b1-9201-4b72-bd8c-dd6fbc09fb54
+# ╟─2098381f-69dc-46ac-a97d-7e38ac2dec45
+# ╠═f6a030e2-83df-433b-b2a8-8f02afae4d33
+# ╟─7d3438f2-aa91-41a1-a114-3ca6ac5032c2
+# ╟─9ef091df-0e08-458a-a842-87415c964e75
+# ╟─0e01d42b-00f7-4075-99c0-901618092807
+# ╟─b3b65052-c99d-4431-9fab-29a446c3700c
+# ╠═db8d55db-b7c8-499d-a720-a91d7e29519d
+# ╟─35e1f8b4-7ec7-4932-9586-8a5d449dda22
+# ╟─2ff0ecfc-cfe1-402a-b25d-9da6ae24be40
+# ╟─2d596c28-74bc-4ff8-a030-fbac18dbceb0
+# ╟─3adba216-1df6-43f0-8000-05084c4d58c2
+# ╟─b36fd613-95c8-44bf-876d-4eb345c26f08
+# ╟─206474b8-0811-4785-8a71-acdcfd20b76c
+# ╟─0eaec6b9-82a6-4166-a8bd-c3c8147238d8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
